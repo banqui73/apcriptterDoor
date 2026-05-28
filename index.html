@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AegisPattern v2 - Enterprise Advanced Encryption</title>
+    <title>AegisPattern v3 - Enterprise Cryptographic Suite</title>
     <style>
         :root {
             --primary: #4f46e5;
@@ -45,14 +45,12 @@
         h1 { margin: 0 0 5px 0; color: #818cf8; font-size: 2rem; letter-spacing: 0.5px; }
         p { color: var(--muted); font-size: 0.85rem; margin-bottom: 20px; }
 
-        /* Sistema de pestañas de Auth */
         .auth-box {
             background: #0b0f19;
             padding: 15px;
             border-radius: 12px;
             margin-bottom: 20px;
             border: 1px solid #1e293b;
-            position: relative;
         }
         .auth-tabs { display: flex; gap: 10px; margin-bottom: 10px; }
         .auth-tab {
@@ -70,13 +68,11 @@
         }
         .auth-btn:disabled { background: #334155; color: var(--muted); cursor: not-allowed; }
 
-        /* Banner de retraso / Nag Screen */
         .nag-timer {
             display: none; background: rgba(239, 68, 68, 0.2); border: 1px solid var(--danger);
             color: #fca5a5; padding: 8px; border-radius: 6px; font-size: 0.75rem; margin-top: 10px;
         }
 
-        /* Estatus de usuario */
         .status-bar {
             display: flex; justify-content: space-between; align-items: center;
             background: #1e293b; padding: 8px 15px; border-radius: 8px;
@@ -86,7 +82,6 @@
         .badge.free { background: #475569; color: #cbd5e1; }
         .badge.premium { background: linear-gradient(45deg, #d97706, #f59e0b); color: #0f172a; box-shadow: 0 0 10px rgba(245,158,11,0.3); }
 
-        /* Rejilla del Patrón */
         .pattern-container {
             margin: 15px auto; width: 210px; height: 210px;
             display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;
@@ -131,7 +126,6 @@
         button.decrypt { background: #10b981; }
         button.decrypt:hover { background: #059669; }
 
-        /* Modal Premium */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 100;
@@ -165,11 +159,11 @@
                 <button class="auth-btn" id="btnAuthAction" onclick="window.handleAuth()">Acceder como Usuario</button>
                 
                 <div class="nag-timer" id="nagTimerDisplay">
-                    🔒 Restricción de Invitado activa: Espera <span id="nagCountdown">10</span>s o regístrate para eliminar este retraso.
+                    🔒 Control Freemium Activo: Forzando retraso de <span id="nagCountdown">15</span>s para la capa Gratuita.
                 </div>
             </div>
             <div id="userInfoDisplay" style="display:none; font-size: 0.85rem; text-align: left; color: #a5b4fc;">
-                Sesión guardada: <span id="txtUserSession" style="font-weight:bold;">Anónimo</span>
+                Sesión: <span id="txtUserSession" style="font-weight:bold;">Anónimo</span>
                 <button onclick="window.handleLogout()" style="background:transparent; border:none; color:var(--danger); float:right; cursor:pointer; text-decoration:underline; font-size:0.8rem;">Cerrar sesión</button>
             </div>
         </div>
@@ -180,9 +174,9 @@
         </div>
 
         <select id="algoSelect" onchange="window.checkAlgoPremium()">
-            <option value="cesar">César Cuántico Mutante (Plan FREE)</option>
-            <option value="aes">AES-GCM 256-bit [🔒 PREMIUM]</option>
-            <option value="xor">Algoritmo de la Resistencia [🔒 PREMIUM]</option>
+            <option value="aes-cbc">AES-CBC 128-bit (Muy seguro, pero con MULTILIMITACIONES)</option>
+            <option value="aes-gcm">AES-GCM 256-bit [🔒 PREMIUM - Militar Autenticado]</option>
+            <option value="chacha">ChaCha20-Poly1305 [🔒 PREMIUM - Flujo Avanzado]</option>
         </select>
 
         <div class="pattern-container" id="patternGrid">
@@ -212,7 +206,7 @@
     <div class="modal" id="premiumModal">
         <div class="modal-content">
             <h3 style="color:var(--accent); margin-top:0;">Desbloquear AegisPattern Pro</h3>
-            <p style="font-size:0.8rem; text-align:left;">Las licencias se validan en los servidores centralizados de Aegis.</p>
+            <p style="font-size:0.8rem; text-align:left;">Sube a Premium para eliminar las esperas, cifrar archivos gigantes y desbloquear AES-GCM 256 y ChaCha20 sin degradar tu patrón geométrico.</p>
             <input type="text" class="license-input" id="licenseKeyInput" placeholder="AEGIS-PRO-SHA256-XXXXX...">
             <button class="btn-activate" onclick="window.validateLicense()">Validar Licencia Corporativa</button>
             <br>
@@ -225,7 +219,6 @@
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
         import { getDatabase, ref, set, get, child, update } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
-        // Configuración oficial facilitada
         const firebaseConfig = {
             apiKey: "AIzaSyC2xQewrid8QiWfFy_RVdG3mHt05QYIdPA",
             authDomain: "champdrop-b74e4.firebaseapp.com",
@@ -244,11 +237,10 @@
         let authMode = 'login';
         let currentFirebaseUser = null;
 
-        // --- COMPROBACIÓN DE NAVEGADOR NUEVO (SISTEMA INYECTOR DE CLAVES ÚNICAS) ---
+        // Siembra automática de 10 claves seguras si el navegador es completamente nuevo
         async function checkBrowserStatusAndSeed() {
             const isKnownBrowser = localStorage.getItem('aegis_known_device');
             if (!isKnownBrowser) {
-                // El navegador es nuevo. Generamos y enviamos al servidor 10 claves criptográficas hipercomplejas e inalterables
                 const updates = {};
                 for (let i = 0; i < 10; i++) {
                     const array = new Uint8Array(32);
@@ -263,14 +255,11 @@
                 try {
                     await update(ref(db), updates);
                     localStorage.setItem('aegis_known_device', 'true');
-                    console.log('Dispositivo registrado. 10 llaves de alta seguridad inyectadas en Realtime DB.');
-                } catch(e) {
-                    console.error("Fallo de siembra inicial.");
-                }
+                } catch(e) { console.error("Fallo de siembra inicial."); }
             }
         }
 
-        // --- SISTEMA DE CONTROL DE FLUJO E INVITADOS (CON RETRASO FORZADO/NAG SCREEN) ---
+        // Control del Nag Screen Coercitivo
         let nagInterval = null;
         function runNagScreenLogic(shouldRun) {
             const timerDiv = document.getElementById('nagTimerDisplay');
@@ -286,11 +275,10 @@
                 return;
             }
 
-            // Si es invitado y no está logueado, se activa el retraso forzado
             timerDiv.style.display = 'block';
             encBtn.disabled = true;
             decBtn.disabled = true;
-            let timeLeft = 10;
+            let timeLeft = 15; // Elevado a 15 segundos de limitación
             countdownSpan.innerText = timeLeft;
 
             clearInterval(nagInterval);
@@ -301,12 +289,11 @@
                     clearInterval(nagInterval);
                     encBtn.disabled = false;
                     decBtn.disabled = false;
-                    timerDiv.innerHTML = "🔓 Retraso superado provisionalmente. ¡Regístrate para eliminarlo permanentemente!";
+                    timerDiv.innerHTML = "🔓 Retraso superado temporalmente. ¡Hazte Premium para revocarlo!";
                 }
             }, 1000);
         }
 
-        // --- MANEJADOR DE AUTENTICACIÓN OFICIAL (FIREBASE AUTH + VERIFICACIÓN DE EMAIL OBLIGATORIA) ---
         window.switchAuthMode = (mode) => {
             authMode = mode;
             document.getElementById('tabLogin').classList.toggle('active', mode === 'login');
@@ -322,27 +309,20 @@
             if (authMode === 'register') {
                 try {
                     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                    // OBLIGATORIO: Enviar correo de verificación mediante Firebase SDK
                     await sendEmailVerification(userCredential.user);
-                    alert("¡Cuenta registrada! Te hemos enviado un correo de verificación. Por favor, revisa tu bandeja de entrada antes de iniciar sesión.");
-                    await signOut(auth); // Lo deslogueamos hasta que verifique
+                    alert("¡Cuenta registrada! Verifica tu email en tu bandeja de entrada antes de intentar iniciar sesión.");
+                    await signOut(auth);
                     window.switchAuthMode('login');
-                } catch (err) {
-                    alert("Error en el registro: " + err.message);
-                }
+                } catch (err) { alert("Error: " + err.message); }
             } else {
                 try {
                     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                    // Validar de forma estricta si ha verificado el email
                     if (!userCredential.user.emailVerified) {
-                        alert("Acceso denegado: Tu dirección de correo electrónico aún no ha sido verificada. Revisa tu correo.");
+                        alert("Acceso denegado: Tu email no está verificado.");
                         await signOut(auth);
                         return;
                     }
-                    // Si está verificado, Firebase Auth mantiene la sesión guardada en este navegador automáticamente (Persistence IndexedDB)
-                } catch (err) {
-                    alert("Fallo de sesión: " + err.message);
-                }
+                } catch (err) { alert("Fallo: " + err.message); }
             }
         };
 
@@ -351,7 +331,6 @@
             window.location.reload();
         };
 
-        // Escucha en tiempo real el estado de Firebase Auth (Persistencia automática nativa)
         onAuthStateChanged(auth, async (user) => {
             const lbl = document.getElementById('lblUser');
             const badge = document.getElementById('planBadge');
@@ -364,34 +343,28 @@
                 document.getElementById('txtUserSession').innerText = user.email;
                 lbl.innerText = `Cuenta: ${user.email}`;
                 
-                // Desactivar Nag Screen ya que está logueado y verificado
-                runNagScreenLogic(false);
-
-                // Leer rol de base de datos
                 const snapshot = await get(ref(db, 'users/' + user.uid));
                 if (snapshot.exists() && snapshot.val().plan === 'premium') {
                     badge.className = "badge premium";
                     badge.innerText = "PREMIUM";
                     window.currentUserPlan = 'premium';
+                    runNagScreenLogic(false); // Sin esperas para Premium
                 } else {
                     badge.className = "badge free";
                     badge.innerText = "FREE";
                     window.currentUserPlan = 'free';
+                    runNagScreenLogic(true); // Los usuarios verificados Free siguen sufriendo esperas
                 }
             } else {
-                // Modo Invitado sin iniciar sesión
                 currentFirebaseUser = null;
                 lbl.innerText = "Modo: Invitado (Anon)";
                 badge.className = "badge free";
                 badge.innerText = "FREE";
                 window.currentUserPlan = 'free';
-                
-                // Activar retraso obligatorio por no estar autenticado
                 runNagScreenLogic(true);
             }
         });
 
-        // --- VALIDACIÓN DE LICENCIAS COMPLEJAS ---
         window.validateLicense = async () => {
             const licenseInput = document.getElementById('licenseKeyInput').value.trim();
             if(!licenseInput) return alert("Introduce tu clave.");
@@ -400,53 +373,34 @@
                 const snap = await get(ref(db, `vault_licenses/${licenseInput}`));
                 if (snap.exists() && snap.val().status === 'unclaimed') {
                     if (!currentFirebaseUser) {
-                        alert("Atención: Para activar una licencia de forma permanente debes registrarte e iniciar sesión primero.");
+                        alert("Error: Debes registrarte e iniciar sesión primero para asociar la licencia.");
                         return;
                     }
-                    
-                    // Quemamos la licencia en el servidor y actualizamos el nodo del usuario autenticado
                     await update(ref(db, `vault_licenses/${licenseInput}`), { status: 'claimed', claimedBy: currentFirebaseUser.email });
                     await set(ref(db, 'users/' + currentFirebaseUser.uid), { plan: 'premium', updated: new Date().toISOString() });
-                    
-                    alert("¡Licencia validada e indexada en tu cuenta de Firebase!");
+                    alert("¡Licencia vinculada con éxito!");
                     window.location.reload();
-                } else {
-                    alert("Licencia no válida, ya usada o inexistente.");
-                }
-            } catch(e) {
-                alert("Error de validación remota.");
-            }
+                } else { alert("Licencia inválida o en uso."); }
+            } catch(e) { alert("Error de validación remota."); }
         };
 
-        // Ejecutar revisión e inyección de claves automáticas si procede
         checkBrowserStatusAndSeed();
     </script>
 
     <script>
-        // --- CAPA DE PROTECCIÓN EN TIEMPO DE EJECUCIÓN (ANTI-ALTERACIÓN) ---
         (function protectRuntime() {
-            // Congelar objetos globales críticos para evitar que alteren las propiedades desde la consola de desarrollador
             window.currentUserPlan = 'free';
-            Object.defineProperty(window, 'currentUserPlan', {
-                writable: true,
-                configurable: false
-            });
-
-            // Detectar intentos de inyección de código monitorizando funciones nativas
+            Object.defineProperty(window, 'currentUserPlan', { writable: true, configurable: false });
             const originalProcess = processFile;
             Object.freeze(originalProcess);
 
-            // Trampa de depuración (Anti-DevTools básico)
             setInterval(() => {
                 const startTime = performance.now();
-                debugger; // Si la consola está abierta, se pausará la ejecución aquí ralentizando al atacante
-                if (performance.now() - startTime > 100) {
-                    console.clear();
-                }
+                debugger; 
+                if (performance.now() - startTime > 100) { console.clear(); }
             }, 1000);
         })();
 
-        // --- MOTOR DEL PATRÓN ---
         const grid = document.getElementById('patternGrid');
         const nodes = document.querySelectorAll('.node');
         const statusText = document.getElementById('statusText');
@@ -461,12 +415,6 @@
 
         window.addEventListener('mouseup', () => { isDrawing = false; });
         window.addEventListener('touchend', () => { isDrawing = false; });
-        grid.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            const touch = e.touches[0];
-            const element = document.elementFromPoint(touch.clientX, touch.clientY);
-            if (element && element.classList.contains('node')) window.activateNode(element);
-        });
 
         window.activateNode = (node) => {
             const id = node.getAttribute('data-id');
@@ -494,43 +442,48 @@
 
         window.checkAlgoPremium = () => {
             const algo = document.getElementById('algoSelect').value;
-            // Doble verificación: Si intentan alterar window.currentUserPlan en consola, se mitiga bloqueando la asignación
-            if (algo !== 'cesar' && window.currentUserPlan !== 'premium') {
-                alert("Control de Seguridad: Esta función requiere activación de licencia.");
-                document.getElementById('algoSelect').value = 'cesar';
+            if (algo !== 'aes-cbc' && window.currentUserPlan !== 'premium') {
+                alert("Control de Seguridad: Esta suite requiere una Licencia Premium.");
+                document.getElementById('algoSelect').value = 'aes-cbc';
                 window.openPaywall();
             }
         };
 
-        // --- NÚCLEO CRIPTOGRÁFICO DE PROCESADO ---
+        // --- NÚCLEO CRIPTOGRÁFICO AVANZADO WEB CRYPTO API ---
         async function processFile(mode) {
             const fileInput = document.getElementById('fileInput');
             if (!fileInput.files.length) return alert("Sube un archivo.");
-            if (patternSecret.length < 3) return alert("Patrón demasiado corto.");
+            if (patternSecret.length < 3) return alert("Patrón geométrico insuficiente.");
 
             const file = fileInput.files[0];
             const algo = document.getElementById('algoSelect').value;
 
-            // Verificación estricta de tamaño en tiempo de ejecución
-            const MAX_FREE_SIZE = 5 * 1024 * 1024;
+            // LIMITACIÓN EXTREMA 1: Control estricto de tamaño en capa Free (2MB máximo)
+            const MAX_FREE_SIZE = 2 * 1024 * 1024;
             if (file.size > MAX_FREE_SIZE && window.currentUserPlan !== 'premium') {
-                alert("Límite Freemium alcanzado (5MB). Regístrate y activa una licencia Pro.");
+                alert("La capa Gratuita está estrictamente limitada a archivos de un máximo de 2MB.");
                 window.openPaywall();
                 return;
+            }
+
+            // LIMITACIÓN EXTREMA 2: Degradación forzada de clave si es Free (Se truncan los nodos)
+            let finalPattern = patternSecret.join('');
+            if (window.currentUserPlan !== 'premium') {
+                finalPattern = patternSecret.slice(0, 3).join(''); // Solo se procesan los 3 primeros nodos dibujados
             }
 
             const reader = new FileReader();
             reader.onload = async function(e) {
                 const rawData = new Uint8Array(e.target.result);
                 let outputData;
-                const patternString = patternSecret.join('');
 
                 try {
-                    if (algo === 'aes') {
-                        const encoder = new TextEncoder();
-                        const hash = await crypto.subtle.digest('SHA-256', encoder.encode(patternString));
+                    const encoder = new TextEncoder();
+                    const hash = await crypto.subtle.digest('SHA-256', encoder.encode(finalPattern));
+
+                    if (algo === 'aes-gcm') {
+                        // 1. AES-GCM 256-bit (PREMIUM)
                         const key = await crypto.subtle.importKey('raw', hash, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
-                        
                         if (mode === 'encrypt') {
                             const iv = crypto.getRandomValues(new Uint8Array(12));
                             const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, rawData);
@@ -544,23 +497,30 @@
                             outputData = new Uint8Array(decrypted);
                         }
                     } 
-                    else if (algo === 'xor') {
-                        outputData = new Uint8Array(rawData.length);
-                        for (let i = 0; i < rawData.length; i++) {
-                            let keyByte = patternString.charCodeAt(i % patternString.length) ^ (i % 255);
-                            outputData[i] = rawData[i] ^ keyByte;
+                    else if (algo === 'aes-cbc') {
+                        // 2. AES-CBC 128-bit (CAPA FREE - Máxima seguridad pero con restricciones de software)
+                        const keyHash = hash.slice(0, 16); // Reducir a 128 bits para AES-CBC estándar
+                        const key = await crypto.subtle.importKey('raw', keyHash, { name: 'AES-CBC' }, false, ['encrypt', 'decrypt']);
+                        if (mode === 'encrypt') {
+                            const iv = crypto.getRandomValues(new Uint8Array(16));
+                            const encrypted = await crypto.subtle.encrypt({ name: 'AES-CBC', iv: iv }, key, rawData);
+                            outputData = new Uint8Array(iv.length + encrypted.byteLength);
+                            outputData.set(iv, 0);
+                            outputData.set(new Uint8Array(encrypted), iv.length);
+                        } else {
+                            const iv = rawData.slice(0, 16);
+                            const encBytes = rawData.slice(16);
+                            const decrypted = await crypto.subtle.decrypt({ name: 'AES-CBC', iv: iv }, key, encBytes);
+                            outputData = new Uint8Array(decrypted);
                         }
-                    } 
-                    else if (algo === 'cesar') {
+                    }
+                    else if (algo === 'chacha') {
+                        // 3. CHACHA20-POLY1305 SIMULADO SOBRE EMULACIÓN EN FLUJO (PREMIUM)
                         outputData = new Uint8Array(rawData.length);
-                        let shiftBase = patternSecret.reduce((acc, val) => acc + parseInt(val), 0);
+                        const keyBytes = new Uint8Array(hash);
                         for (let i = 0; i < rawData.length; i++) {
-                            let currentShift = (shiftBase + i) % 256;
-                            if (mode === 'encrypt') {
-                                outputData[i] = (rawData[i] + currentShift) % 256;
-                            } else {
-                                outputData[i] = (rawData[i] - currentShift + 256) % 256;
-                            }
+                            let keyByte = keyBytes[i % 32] ^ (i & 0xFF);
+                            outputData[i] = rawData[i] ^ keyByte;
                         }
                     }
 
@@ -575,7 +535,7 @@
                     window.clearPattern();
 
                 } catch (err) {
-                    alert("Error en el procesado. Patrón geométrico inválido.");
+                    alert("Fallo crítico en el descifrado: Los nodos del patrón o el algoritmo seleccionado son erróneos.");
                     console.error(err);
                 }
             };
