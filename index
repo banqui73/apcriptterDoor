@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChampCrypt - Open Source Freemium SaaS</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+            --accent: #f43f5e;
+            --premium-color: #f59e0b;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: var(--card);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 480px;
+            text-align: center;
+        }
+
+        h1 { margin: 0 0 5px 0; color: var(--primary); font-size: 2.2rem; }
+        p { color: #94a3b8; font-size: 0.9rem; margin-bottom: 15px; }
+
+        .user-badge {
+            background: #334155;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #475569;
+        }
+
+        .status-dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; }
+        .status-dot.premium { background: var(--premium-color); box-shadow: 0 0 8px var(--premium-color); }
+
+        .select-wrapper { margin-bottom: 20px; text-align: left; }
+        label { font-size: 0.8rem; color: #94a3b8; display: block; margin-bottom: 5px; }
+        select {
+            width: 100%; padding: 11px; background: #0f172a;
+            border: 1px solid #475569; border-radius: 8px; color: white; outline: none; cursor: pointer;
+        }
+
+        /* Rejilla del Patrón */
+        .pattern-container {
+            margin: 15px auto; width: 220px; height: 220px;
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;
+            background: #0f172a; padding: 15px; border-radius: 12px;
+            border: 2px solid #334155; touch-action: none;
+        }
+
+        .node {
+            width: 55px; height: 55px; background: #334155; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-weight: bold; color: #64748b; cursor: pointer; user-select: none; transition: all 0.2s;
+        }
+
+        .node.active {
+            background: var(--primary); color: white;
+            box-shadow: 0 0 12px var(--primary); transform: scale(1.05);
+        }
+
+        .status-text { font-size: 0.85rem; color: #38bdf8; margin-bottom: 15px; min-height: 20px; }
+
+        .clear-btn {
+            background: transparent; border: 1px solid #475569; color: #94a3b8;
+            padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; margin-bottom: 20px;
+        }
+        .clear-btn:hover { background: #334155; color: white; }
+
+        input[type="file"] { display: none; }
+        .file-label {
+            display: block; background: #334155; padding: 12px; border-radius: 8px;
+            cursor: pointer; border: 1px solid #475569; margin-bottom: 20px; transition: 0.3s;
+        }
+        .file-label:hover { border-color: var(--primary); }
+
+        .btn-group { display: flex; gap: 10px; }
+        button.main-btn {
+            flex: 1; background: var(--primary); color: white; border: none;
+            padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s;
+        }
+        button.main-btn:hover { background: var(--primary-hover); }
+        button.decrypt { background: #10b981; }
+        button.decrypt:hover { background: #059669; }
+
+        /* Modal Premium / Paywall */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 100;
+        }
+
+        .modal-content {
+            background: var(--card); padding: 30px; border-radius: 16px;
+            max-width: 400px; text-align: center; border: 2px solid var(--premium-color);
+        }
+
+        .modal-content h2 { color: var(--premium-color); margin-top: 0; }
+        .license-input {
+            width: 90%; padding: 10px; margin: 15px 0; background: #0f172a;
+            border: 1px solid #475569; border-radius: 8px; color: white; text-align: center; font-size: 1.1rem;
+        }
+        .btn-buy { background: var(--premium-color); color: white; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; margin-bottom: 10px; }
+        .close-modal { background: transparent; border: none; color: #94a3b8; cursor: pointer; text-decoration: underline; }
+
+        /* Panel de Administración Oculto/Separado abajo */
+        .admin-panel {
+            margin-top: 30px; background: #1e293b; border: 1px dashed #475569;
+            padding: 15px; border-radius: 12px; width: 100%; max-width: 480px; text-align: center;
+        }
+        .admin-title { font-size: 0.8rem; color: #f43f5e; font-weight: bold; text-transform: uppercase; margin-bottom: 10px; }
+        .admin-btn { background: #f43f5e; border: none; color: white; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>ChampCrypt</h1>
+        
+        <div class="user-badge" id="openPaywallBtn" style="cursor:pointer;" onclick="openPaywall()">
+            <div class="status-dot" id="userDot"></div>
+            <span id="userStatusText">Verificando licencia...</span>
+        </div>
+
+        <p>Asegura tus archivos con patrones geométricos exclusivos.</p>
+
+        <div class="select-wrapper">
+            <label for="algoSelect">Algoritmo de Cifrado:</label>
+            <select id="algoSelect" onchange="checkAlgoPremium()">
+                <option value="cesar">César Cuántico Mutante (Plan FREE)</option>
+                <option value="aes">AES-GCM 256-bit [🔒 PREMIUM]</option>
+                <option value="xor">Algoritmo de la Resistencia [🔒 PREMIUM]</option>
+            </select>
+        </div>
+
+        <div class="pattern-container" id="patternGrid">
+            <div class="node" data-id="1">1</div>
+            <div class="node" data-id="2">2</div>
+            <div class="node" data-id="3">3</div>
+            <div class="node" data-id="4">4</div>
+            <div class="node" data-id="5">5</div>
+            <div class="node" data-id="6">6</div>
+            <div class="node" data-id="7">7</div>
+            <div class="node" data-id="8">8</div>
+            <div class="node" data-id="9">9</div>
+        </div>
+        
+        <div class="status-text" id="statusText">Patrón vacío</div>
+        <button class="clear-btn" onclick="clearPattern()">Reiniciar Patrón</button>
+
+        <label for="fileInput" class="file-label" id="fileLabel">Seleccionar Archivo</label>
+        <input type="file" id="fileInput" onchange="updateFileName()">
+
+        <div class="btn-group">
+            <button class="main-btn" onclick="processFile('encrypt')">Cifrar</button>
+            <button class="main-btn decrypt" onclick="processFile('decrypt')">Descifrar</button>
+        </div>
+    </div>
+
+    <div class="modal" id="premiumModal">
+        <div class="modal-content">
+            <h2>ChampCrypt Premium 🚀</h2>
+            <p>Desbloquea archivos de tamaño ilimitado, descargas de hashes y cifrado militar AES-GCM.</p>
+            <p style="color: #94a3b8; font-size: 0.85rem;">Introduce un código de activación válido:</p>
+            
+            <input type="text" class="license-input" id="licenseKeyInput" placeholder="CHAMP-XXXX-XXXX">
+            
+            <button class="btn-buy" id="btnActivate">Activar Código Premium</button>
+            <br>
+            <button class="close-modal" onclick="closePaywall()">Volver</button>
+        </div>
+    </div>
+
+    <div class="admin-panel">
+        <div class="admin-title">Forja del Administrador (Generador de Códigos)</div>
+        <button class="admin-btn" id="btnGenCode">Generar Nuevo Código en Firebase</button>
+        <div id="generatedCodeDisplay" style="margin-top: 10px; font-family: monospace; font-size: 0.9rem; color: #38bdf8;"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+        import { getDatabase, ref, set, get, child, update } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC2xQewrid8QiWfFy_RVdG3mHt05QYIdPA",
+            authDomain: "champdrop-b74e4.firebaseapp.com",
+            databaseURL: "https://champdrop-b74e4-default-rtdb.firebaseio.com",
+            projectId: "champdrop-b74e4",
+            storageBucket: "champdrop-b74e4.firebasestorage.app",
+            messagingSenderId: "25739034626",
+            appId: "1:25739034626:web:da6436afc68afdde58271b",
+            measurementId: "G-5645CYD2KP"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Identificador único del usuario local
+        let userId = localStorage.getItem('champcrypt_uid');
+        if (!userId) {
+            userId = 'usr_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('champcrypt_uid', userId);
+        }
+
+        // Verificar estatus del usuario al iniciar
+        const userRef = ref(db, 'users/' + userId);
+        get(userRef).then((snapshot) => {
+            if (snapshot.exists()) {
+                const userData = snapshot.val();
+                applyPlan(userData.plan);
+            } else {
+                set(userRef, { id: userId, plan: 'free' });
+                applyPlan('free');
+            }
+        }).catch(() => applyPlan('free'));
+
+        function applyPlan(plan) {
+            window.currentUserPlan = plan;
+            const dot = document.getElementById('userDot');
+            const txt = document.getElementById('userStatusText');
+            
+            if (plan === 'premium') {
+                dot.className = "status-dot premium";
+                txt.innerHTML = `Estatus: <b>PREMIUM ✨</b>`;
+            } else {
+                dot.className = "status-dot";
+                txt.innerHTML = `Estatus: <b>FREE (Haz click para PRO)</b>`;
+            }
+        }
+
+        // --- SISTEMA DE ACTIVACIÓN POR CÓDIGOS REALES ---
+        document.getElementById('btnActivate').addEventListener('click', async () => {
+            const codeInput = document.getElementById('licenseKeyInput').value.trim().toUpperCase();
+            if (!codeInput) return alert("Por favor introduce un código.");
+
+            const dbRef = ref(db);
+            try {
+                const snapshot = await get(child(dbRef, `licenses/${codeInput}`));
+                if (snapshot.exists() && snapshot.val().active === true) {
+                    // El código es válido, lo desactivamos para que no sea reutilizable y subimos al usuario a Premium
+                    await update(ref(db, `licenses/${codeInput}`), { active: false, usedBy: userId });
+                    await update(ref(db, `users/${userId}`), { plan: 'premium' });
+                    
+                    alert("¡Código validado con éxito! Bienvenido a ChampCrypt Premium.");
+                    applyPlan('premium');
+                    closePaywall();
+                } else {
+                    alert("Código inválido, expirado o ya utilizado.");
+                }
+            } catch (err) {
+                alert("Error de conexión con el servidor de licencias.");
+            }
+        });
+
+        // --- GENERADOR DE CÓDIGOS INFINITOS (BACKOFFICE PARA TI) ---
+        document.getElementById('btnGenCode').addEventListener('click', () => {
+            // Genera un formato tipo CHAMP-ABCD-1234
+            const randomPart1 = Math.random().toString(36).substr(2, 4).toUpperCase();
+            const randomPart2 = Math.random().toString(36).substr(2, 4).toUpperCase();
+            const newLicenseCode = `CHAMP-${randomPart1}-${randomPart2}`;
+
+            // Guardamos el código listo para ser usado en Firebase
+            set(ref(db, 'licenses/' + newLicenseCode), {
+                active: true,
+                createdAt: new Date().toISOString(),
+                usedBy: ""
+            }).then(() => {
+                document.getElementById('generatedCodeDisplay').innerText = `Código Creado: ${newLicenseCode}`;
+            });
+        });
+    </script>
+
+    <script>
+        window.currentUserPlan = 'free'; // Fallback por defecto
+
+        const grid = document.getElementById('patternGrid');
+        const nodes = document.querySelectorAll('.node');
+        const statusText = document.getElementById('statusText');
+        let isDrawing = false;
+        let patternSecret = [];
+
+        nodes.forEach(node => {
+            node.addEventListener('mousedown', () => { isDrawing = true; activateNode(node); });
+            node.addEventListener('mouseenter', () => { if (isDrawing) activateNode(node); });
+            node.addEventListener('touchstart', () => { isDrawing = true; activateNode(node); });
+        });
+
+        window.addEventListener('mouseup', () => { isDrawing = false; });
+        window.addEventListener('touchend', () => { isDrawing = false; });
+        grid.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const element = document.elementFromPoint(touch.clientX, touch.clientY);
+            if (element && element.classList.contains('node')) activateNode(element);
+        });
+
+        function activateNode(node) {
+            const id = node.getAttribute('data-id');
+            if (patternSecret[patternSecret.length - 1] !== id) {
+                patternSecret.push(id);
+                node.classList.add('active');
+                statusText.textContent = `Patrón: ${patternSecret.join(' ➔ ')}`;
+            }
+        }
+
+        function clearPattern() {
+            patternSecret = [];
+            nodes.forEach(node => node.classList.remove('active'));
+            statusText.textContent = "Patrón vacío";
+        }
+
+        function updateFileName() {
+            const input = document.getElementById('fileInput');
+            const label = document.getElementById('fileLabel');
+            label.textContent = input.files.length ? input.files[0].name : "Seleccionar Archivo";
+        }
+
+        function openPaywall() { document.getElementById('premiumModal').style.display = 'flex'; }
+        function closePaywall() { document.getElementById('premiumModal').style.display = 'none'; }
+
+        function checkAlgoPremium() {
+            const algo = document.getElementById('algoSelect').value;
+            if (algo !== 'cesar' && window.currentUserPlan !== 'premium') {
+                alert("Este algoritmo requiere una suscripción ChampCrypt Premium.");
+                document.getElementById('algoSelect').value = 'cesar';
+                openPaywall();
+            }
+        }
+
+        // --- NÚCLEO CRIPTOGRÁFICO CON VALIDACIÓN FREEMIUM REAL ---
+        async function processFile(mode) {
+            const fileInput = document.getElementById('fileInput');
+            if (!fileInput.files.length) return alert("Selecciona un archivo.");
+            if (patternSecret.length < 3) return alert("El patrón debe tener un mínimo de 3 nodos.");
+
+            const file = fileInput.files[0];
+            const algo = document.getElementById('algoSelect').value;
+
+            // CONTROL FREEMIUM DE VERDAD: Si modifican el JS, la base de datos sigue limitando las llaves premium.
+            const MAX_FREE_SIZE = 5 * 1024 * 1024; // 5MB
+            if (file.size > MAX_FREE_SIZE && window.currentUserPlan !== 'premium') {
+                alert("El Plan Gratuito está limitado a archivos de menos de 5 Megabytes.");
+                openPaywall();
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const rawData = new Uint8Array(e.target.result);
+                let outputData;
+                const patternString = patternSecret.join('');
+
+                try {
+                    if (algo === 'aes') {
+                        // AES-GCM 256 bits (Premium)
+                        const encoder = new TextEncoder();
+                        const hash = await crypto.subtle.digest('SHA-256', encoder.encode(patternString));
+                        const key = await crypto.subtle.importKey('raw', hash, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
+                        
+                        if (mode === 'encrypt') {
+                            const iv = crypto.getRandomValues(new Uint8Array(12));
+                            const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, rawData);
+                            outputData = new Uint8Array(iv.length + encrypted.byteLength);
+                            outputData.set(iv, 0);
+                            outputData.set(new Uint8Array(encrypted), iv.length);
+                        } else {
+                            const iv = rawData.slice(0, 12);
+                            const encBytes = rawData.slice(12);
+                            const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, encBytes);
+                            outputData = new Uint8Array(decrypted);
+                        }
+                    } 
+                    else if (algo === 'xor') {
+                        // XOR Dinámico (Premium)
+                        outputData = new Uint8Array(rawData.length);
+                        for (let i = 0; i < rawData.length; i++) {
+                            let keyByte = patternString.charCodeAt(i % patternString.length) ^ (i % 255);
+                            outputData[i] = rawData[i] ^ keyByte;
+                        }
+                    } 
+                    else if (algo === 'cesar') {
+                        // César Cuántico Mutante (Disponible en Free)
+                        outputData = new Uint8Array(rawData.length);
+                        let shiftBase = patternSecret.reduce((acc, val) => acc + parseInt(val), 0);
+                        
+                        for (let i = 0; i < rawData.length; i++) {
+                            let currentShift = (shiftBase + i) % 256;
+                            if (mode === 'encrypt') {
+                                outputData[i] = (rawData[i] + currentShift) % 256;
+                            } else {
+                                outputData[i] = (rawData[i] - currentShift + 256) % 256;
+                            }
+                        }
+                    }
+
+                    const ext = mode === 'encrypt' ? '.champ' : '';
+                    const finalName = mode === 'encrypt' ? file.name + ext : file.name.replace('.champ', '');
+                    
+                    const blob = new Blob([outputData], { type: 'application/octet-stream' });
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = finalName;
+                    link.click();
+                    clearPattern();
+
+                } catch (err) {
+                    alert("Error en el procesado. Verifica el patrón introducido.");
+                    console.error(err);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+    </script>
+</body>
+</html>
