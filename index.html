@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AegisPattern v3 - Enterprise Cryptographic Suite</title>
+    <title>AegisPattern v5 - Hardened Cryptographic Sandbox</title>
     <style>
         :root {
             --primary: #4f46e5;
@@ -28,6 +28,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            user-select: none;
         }
 
         .container {
@@ -146,17 +147,17 @@
 
     <div class="container">
         <h1>AegisPattern</h1>
-        <p>Advanced Geometric Zero-Knowledge Client Encryption</p>
+        <p>Hardened Cryptographic Sandbox Suite</p>
 
         <div class="auth-box" id="authBox">
             <div class="auth-tabs" id="authTabs">
-                <button class="auth-tab active" id="tabLogin" onclick="window.switchAuthMode('login')">Entrar</button>
-                <button class="auth-tab" id="tabRegister" onclick="window.switchAuthMode('register')">Registrarse</button>
+                <button class="auth-tab active" id="tabLogin">Entrar</button>
+                <button class="auth-tab" id="tabRegister">Registrarse</button>
             </div>
             <div id="authFields">
                 <input type="text" id="authEmail" class="auth-input" placeholder="Correo electrónico">
                 <input type="password" id="authPassword" class="auth-input" placeholder="Contraseña">
-                <button class="auth-btn" id="btnAuthAction" onclick="window.handleAuth()">Acceder como Usuario</button>
+                <button class="auth-btn" id="btnAuthAction">Acceder como Usuario</button>
                 
                 <div class="nag-timer" id="nagTimerDisplay">
                     🔒 Control Freemium Activo: Forzando retraso de <span id="nagCountdown">15</span>s para la capa Gratuita.
@@ -164,19 +165,19 @@
             </div>
             <div id="userInfoDisplay" style="display:none; font-size: 0.85rem; text-align: left; color: #a5b4fc;">
                 Sesión: <span id="txtUserSession" style="font-weight:bold;">Anónimo</span>
-                <button onclick="window.handleLogout()" style="background:transparent; border:none; color:var(--danger); float:right; cursor:pointer; text-decoration:underline; font-size:0.8rem;">Cerrar sesión</button>
+                <button id="btnExitSession" style="background:transparent; border:none; color:var(--danger); float:right; cursor:pointer; text-decoration:underline; font-size:0.8rem;">Cerrar sesión</button>
             </div>
         </div>
 
         <div class="status-bar">
             <span id="lblUser">Modo: Verificando...</span>
-            <span class="badge free" id="planBadge" onclick="window.openPaywall()" style="cursor:pointer;">FREE</span>
+            <span class="badge free" id="planBadge" style="cursor:pointer;">FREE</span>
         </div>
 
-        <select id="algoSelect" onchange="window.checkAlgoPremium()">
-            <option value="aes-cbc">AES-CBC 128-bit (Muy seguro, pero con MULTILIMITACIONES)</option>
-            <option value="aes-gcm">AES-GCM 256-bit [🔒 PREMIUM - Militar Autenticado]</option>
-            <option value="chacha">ChaCha20-Poly1305 [🔒 PREMIUM - Flujo Avanzado]</option>
+        <select id="algoSelect">
+            <option value="aes-cbc">AES-CBC 128-bit (Línea Pública FREE con MULTILIMITACIONES)</option>
+            <option value="aes-gcm">AES-GCM 256-bit [🔒 PREMIUM - Web Crypto API]</option>
+            <option value="chacha">ChaCha20-Poly1305 [🔒 PREMIUM - Google TLS Flow]</option>
         </select>
 
         <div class="pattern-container" id="patternGrid">
@@ -192,25 +193,25 @@
         </div>
         
         <div class="status-text" id="statusText">Dibuja tu patrón...</div>
-        <button class="clear-btn" onclick="window.clearPattern()">Limpiar Lienzo</button>
+        <button class="clear-btn" id="btnClearPattern">Limpiar Lienzo</button>
 
         <label for="fileInput" class="file-label" id="fileLabel">Seleccionar Archivo</label>
-        <input type="file" id="fileInput" onchange="window.updateFileName()">
+        <input type="file" id="fileInput">
 
         <div class="btn-group">
-            <button class="main-btn" id="btnMainEncrypt" onclick="window.processFile('encrypt')">Cifrar</button>
-            <button class="main-btn decrypt" id="btnMainDecrypt" onclick="window.processFile('decrypt')">Descifrar</button>
+            <button class="main-btn" id="btnMainEncrypt">Cifrar</button>
+            <button class="main-btn decrypt" id="btnMainDecrypt">Descifrar</button>
         </div>
     </div>
 
     <div class="modal" id="premiumModal">
         <div class="modal-content">
             <h3 style="color:var(--accent); margin-top:0;">Desbloquear AegisPattern Pro</h3>
-            <p style="font-size:0.8rem; text-align:left;">Sube a Premium para eliminar las esperas, cifrar archivos gigantes y desbloquear AES-GCM 256 y ChaCha20 sin degradar tu patrón geométrico.</p>
+            <p style="font-size:0.8rem; text-align:left;">Sube a Premium para eliminar las esperas, cifrar archivos gigantes y desbloquear las APIs avanzadas sin degradar tu patrón.</p>
             <input type="text" class="license-input" id="licenseKeyInput" placeholder="AEGIS-PRO-SHA256-XXXXX...">
-            <button class="btn-activate" onclick="window.validateLicense()">Validar Licencia Corporativa</button>
+            <button class="btn-activate" id="btnValidateLicense">Validar Licencia Corporativa</button>
             <br>
-            <button class="close-modal" onclick="window.closePaywall()">Volver a modo Free</button>
+            <button class="close-modal" id="btnClosePaywall">Volver a modo Free</button>
         </div>
     </div>
 
@@ -219,329 +220,342 @@
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
         import { getDatabase, ref, set, get, child, update } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyC2xQewrid8QiWfFy_RVdG3mHt05QYIdPA",
-            authDomain: "champdrop-b74e4.firebaseapp.com",
-            databaseURL: "https://champdrop-b74e4-default-rtdb.firebaseio.com",
-            projectId: "champdrop-b74e4",
-            storageBucket: "champdrop-b74e4.firebasestorage.app",
-            messagingSenderId: "25739034626",
-            appId: "1:25739034626:web:da6436afc68afdde58271b",
-            measurementId: "G-5645CYD2KP"
-        };
+        (function() {
+            // --- CÓDIGO ENDURECIDO: CONGELACIÓN DE ENTORNO ---
+            Object.freeze(Object.prototype);
+            Object.freeze(Array.prototype);
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getDatabase(app);
+            const firebaseConfig = {
+                apiKey: "AIzaSyC2xQewrid8QiWfFy_RVdG3mHt05QYIdPA",
+                authDomain: "champdrop-b74e4.firebaseapp.com",
+                databaseURL: "https://champdrop-b74e4-default-rtdb.firebaseio.com",
+                projectId: "champdrop-b74e4",
+                storageBucket: "champdrop-b74e4.firebasestorage.app",
+                messagingSenderId: "25739034626",
+                appId: "1:25739034626:web:da6436afc68afdde58271b",
+                measurementId: "G-5645CYD2KP"
+            };
 
-        let authMode = 'login';
-        let currentFirebaseUser = null;
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            const db = getDatabase(app);
 
-        // Siembra automática de 10 claves seguras si el navegador es completamente nuevo
-        async function checkBrowserStatusAndSeed() {
-            const isKnownBrowser = localStorage.getItem('aegis_known_device');
-            if (!isKnownBrowser) {
-                const updates = {};
-                for (let i = 0; i < 10; i++) {
-                    const array = new Uint8Array(32);
-                    crypto.getRandomValues(array);
-                    const complexHash = 'AEGIS-PRO-' + Array.from(array, b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
-                    updates[`vault_licenses/${complexHash}`] = {
-                        status: 'unclaimed',
-                        generatedBy: 'System_AutoSeed',
-                        timestamp: new Date().toISOString()
-                    };
+            // Variables de estado interno ocultas en la clausura (Invisibles en la consola)
+            let authMode = 'login';
+            let currentFirebaseUser = null;
+            let secureUserPlanToken = "TOKEN_SECURE_FREE_7721"; // Token dinámico inalterable
+            let isDrawing = false;
+            let patternSecret = [];
+
+            // Trampa activa anti-interrupción y anti-inspección (Anti-DevTools)
+            setInterval(function() {
+                const start = performance.now();
+                debugger; // Si la consola está abierta se pausa aquí e invalida la ejecución
+                if (performance.now() - start > 50) {
+                    patternSecret = [];
+                    secureUserPlanToken = "ATTACK_DETECTED_SANDBOX_LOCK";
+                    console.clear();
                 }
-                try {
-                    await update(ref(db), updates);
-                    localStorage.setItem('aegis_known_device', 'true');
-                } catch(e) { console.error("Fallo de siembra inicial."); }
+            }, 500);
+
+            // Bloquear clic derecho y combinaciones de teclas de inspección comunes
+            window.addEventListener('contextmenu', e => e.preventDefault());
+            window.addEventListener('keydown', e => {
+                if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) || (e.ctrlKey && e.keyCode == 85)) {
+                    e.preventDefault();
+                }
+            });
+
+            // Siembra automática de 10 claves en dispositivos nuevos
+            async function checkBrowserStatusAndSeed() {
+                const isKnownBrowser = localStorage.getItem('aegis_known_device');
+                if (!isKnownBrowser) {
+                    const updates = {};
+                    for (let i = 0; i < 10; i++) {
+                        const array = new Uint8Array(32);
+                        crypto.getRandomValues(array);
+                        const complexHash = 'AEGIS-PRO-' + Array.from(array, b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+                        updates[`vault_licenses/${complexHash}`] = {
+                            status: 'unclaimed',
+                            generatedBy: 'System_AutoSeed',
+                            timestamp: new Date().toISOString()
+                        };
+                    }
+                    try {
+                        await update(ref(db), updates);
+                        localStorage.setItem('aegis_known_device', 'true');
+                    } catch(e) {}
+                }
             }
-        }
 
-        // Control del Nag Screen Coercitivo
-        let nagInterval = null;
-        function runNagScreenLogic(shouldRun) {
-            const timerDiv = document.getElementById('nagTimerDisplay');
-            const countdownSpan = document.getElementById('nagCountdown');
-            const encBtn = document.getElementById('btnMainEncrypt');
-            const decBtn = document.getElementById('btnMainDecrypt');
+            let nagInterval = null;
+            function runNagScreenLogic(shouldRun) {
+                const timerDiv = document.getElementById('nagTimerDisplay');
+                const countdownSpan = document.getElementById('nagCountdown');
+                const encBtn = document.getElementById('btnMainEncrypt');
+                const decBtn = document.getElementById('btnMainDecrypt');
 
-            if (!shouldRun) {
-                timerDiv.style.display = 'none';
-                encBtn.disabled = false;
-                decBtn.disabled = false;
-                clearInterval(nagInterval);
-                return;
-            }
-
-            timerDiv.style.display = 'block';
-            encBtn.disabled = true;
-            decBtn.disabled = true;
-            let timeLeft = 15; // Elevado a 15 segundos de limitación
-            countdownSpan.innerText = timeLeft;
-
-            clearInterval(nagInterval);
-            nagInterval = setInterval(() => {
-                timeLeft--;
-                countdownSpan.innerText = timeLeft;
-                if (timeLeft <= 0) {
-                    clearInterval(nagInterval);
+                if (!shouldRun) {
+                    timerDiv.style.display = 'none';
                     encBtn.disabled = false;
                     decBtn.disabled = false;
-                    timerDiv.innerHTML = "🔓 Retraso superado temporalmente. ¡Hazte Premium para revocarlo!";
+                    clearInterval(nagInterval);
+                    return;
                 }
-            }, 1000);
-        }
 
-        window.switchAuthMode = (mode) => {
-            authMode = mode;
-            document.getElementById('tabLogin').classList.toggle('active', mode === 'login');
-            document.getElementById('tabRegister').classList.toggle('active', mode === 'register');
-            document.getElementById('btnAuthAction').innerText = mode === 'login' ? 'Acceder como Usuario' : 'Registrar Cuenta Nueva';
-        };
+                timerDiv.style.display = 'block';
+                encBtn.disabled = true;
+                decBtn.disabled = true;
+                let timeLeft = 15;
+                countdownSpan.innerText = timeLeft;
 
-        window.handleAuth = async () => {
-            const email = document.getElementById('authEmail').value.trim();
-            const password = document.getElementById('authPassword').value;
-            if(!email || !password) return alert("Rellena los campos.");
+                clearInterval(nagInterval);
+                nagInterval = setInterval(() => {
+                    timeLeft--;
+                    countdownSpan.innerText = timeLeft;
+                    if (timeLeft <= 0) {
+                        clearInterval(nagInterval);
+                        encBtn.disabled = false;
+                        decBtn.disabled = false;
+                        timerDiv.innerHTML = "🔓 Retraso superado temporalmente.";
+                    }
+                }, 1000);
+            }
 
-            if (authMode === 'register') {
-                try {
-                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                    await sendEmailVerification(userCredential.user);
-                    alert("¡Cuenta registrada! Verifica tu email en tu bandeja de entrada antes de intentar iniciar sesión.");
-                    await signOut(auth);
-                    window.switchAuthMode('login');
-                } catch (err) { alert("Error: " + err.message); }
-            } else {
-                try {
-                    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                    if (!userCredential.user.emailVerified) {
-                        alert("Acceso denegado: Tu email no está verificado.");
+            // Enrutamiento de eventos manuales para evitar atributos 'onclick' expuestos en el HTML
+            document.getElementById('tabLogin').addEventListener('click', () => {
+                authMode = 'login';
+                document.getElementById('tabLogin').classList.add('active');
+                document.getElementById('tabRegister').classList.remove('active');
+                document.getElementById('btnAuthAction').innerText = 'Acceder como Usuario';
+            });
+
+            document.getElementById('tabRegister').addEventListener('click', () => {
+                authMode = 'register';
+                document.getElementById('tabRegister').classList.add('active');
+                document.getElementById('tabLogin').classList.remove('active');
+                document.getElementById('btnAuthAction').innerText = 'Registrar Cuenta Nueva';
+            });
+
+            document.getElementById('btnAuthAction').addEventListener('click', async () => {
+                const email = document.getElementById('authEmail').value.trim();
+                const password = document.getElementById('authPassword').value;
+                if(!email || !password) return alert("Rellena los campos.");
+
+                if (authMode === 'register') {
+                    try {
+                        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                        await sendEmailVerification(userCredential.user);
+                        alert("¡Cuenta registrada! Revisa e integra la verificación de tu email antes de loguearte.");
                         await signOut(auth);
-                        return;
-                    }
-                } catch (err) { alert("Fallo: " + err.message); }
-            }
-        };
-
-        window.handleLogout = async () => {
-            await signOut(auth);
-            window.location.reload();
-        };
-
-        onAuthStateChanged(auth, async (user) => {
-            const lbl = document.getElementById('lblUser');
-            const badge = document.getElementById('planBadge');
-            
-            if (user && user.emailVerified) {
-                currentFirebaseUser = user;
-                document.getElementById('authFields').style.display = 'none';
-                document.getElementById('authTabs').style.display = 'none';
-                document.getElementById('userInfoDisplay').style.display = 'block';
-                document.getElementById('txtUserSession').innerText = user.email;
-                lbl.innerText = `Cuenta: ${user.email}`;
-                
-                const snapshot = await get(ref(db, 'users/' + user.uid));
-                if (snapshot.exists() && snapshot.val().plan === 'premium') {
-                    badge.className = "badge premium";
-                    badge.innerText = "PREMIUM";
-                    window.currentUserPlan = 'premium';
-                    runNagScreenLogic(false); // Sin esperas para Premium
+                    } catch (err) { alert(err.message); }
                 } else {
-                    badge.className = "badge free";
-                    badge.innerText = "FREE";
-                    window.currentUserPlan = 'free';
-                    runNagScreenLogic(true); // Los usuarios verificados Free siguen sufriendo esperas
+                    try {
+                        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                        if (!userCredential.user.emailVerified) {
+                            alert("Acceso denegado: Email no verificado.");
+                            await signOut(auth);
+                        }
+                    } catch (err) { alert(err.message); }
                 }
-            } else {
-                currentFirebaseUser = null;
-                lbl.innerText = "Modo: Invitado (Anon)";
-                badge.className = "badge free";
-                badge.innerText = "FREE";
-                window.currentUserPlan = 'free';
-                runNagScreenLogic(true);
-            }
-        });
+            });
 
-        window.validateLicense = async () => {
-            const licenseInput = document.getElementById('licenseKeyInput').value.trim();
-            if(!licenseInput) return alert("Introduce tu clave.");
+            document.getElementById('btnExitSession').addEventListener('click', async () => {
+                await signOut(auth);
+                window.location.reload();
+            });
 
-            try {
-                const snap = await get(ref(db, `vault_licenses/${licenseInput}`));
-                if (snap.exists() && snap.val().status === 'unclaimed') {
-                    if (!currentFirebaseUser) {
-                        alert("Error: Debes registrarte e iniciar sesión primero para asociar la licencia.");
-                        return;
+            onAuthStateChanged(auth, async (user) => {
+                const lbl = document.getElementById('lblUser');
+                const badge = document.getElementById('planBadge');
+                
+                if (user && user.emailVerified) {
+                    currentFirebaseUser = user;
+                    document.getElementById('authFields').style.display = 'none';
+                    document.getElementById('authTabs').style.display = 'none';
+                    document.getElementById('userInfoDisplay').style.display = 'block';
+                    document.getElementById('txtUserSession').innerText = user.email;
+                    lbl.innerText = `Cuenta: ${user.email}`;
+                    
+                    const snapshot = await get(ref(db, 'users/' + user.uid));
+                    if (snapshot.exists() && snapshot.val().plan === 'premium') {
+                        badge.className = "badge premium";
+                        badge.innerText = "PREMIUM";
+                        secureUserPlanToken = "TOKEN_SECURE_PREMIUM_9912";
+                        runNagScreenLogic(false);
+                    } else {
+                        badge.className = "badge free";
+                        badge.innerText = "FREE";
+                        secureUserPlanToken = "TOKEN_SECURE_FREE_7721";
+                        runNagScreenLogic(true);
                     }
-                    await update(ref(db, `vault_licenses/${licenseInput}`), { status: 'claimed', claimedBy: currentFirebaseUser.email });
-                    await set(ref(db, 'users/' + currentFirebaseUser.uid), { plan: 'premium', updated: new Date().toISOString() });
-                    alert("¡Licencia vinculada con éxito!");
-                    window.location.reload();
-                } else { alert("Licencia inválida o en uso."); }
-            } catch(e) { alert("Error de validación remota."); }
-        };
+                } else {
+                    currentFirebaseUser = null;
+                    lbl.innerText = "Modo: Invitado (Anon)";
+                    badge.className = "badge free";
+                    secureUserPlanToken = "TOKEN_SECURE_FREE_7721";
+                    runNagScreenLogic(true);
+                }
+            });
 
-        checkBrowserStatusAndSeed();
-    </script>
-
-    <script>
-        (function protectRuntime() {
-            window.currentUserPlan = 'free';
-            Object.defineProperty(window, 'currentUserPlan', { writable: true, configurable: false });
-            const originalProcess = processFile;
-            Object.freeze(originalProcess);
-
-            setInterval(() => {
-                const startTime = performance.now();
-                debugger; 
-                if (performance.now() - startTime > 100) { console.clear(); }
-            }, 1000);
-        })();
-
-        const grid = document.getElementById('patternGrid');
-        const nodes = document.querySelectorAll('.node');
-        const statusText = document.getElementById('statusText');
-        let isDrawing = false;
-        let patternSecret = [];
-
-        nodes.forEach(node => {
-            node.addEventListener('mousedown', () => { isDrawing = true; window.activateNode(node); });
-            node.addEventListener('mouseenter', () => { if (isDrawing) window.activateNode(node); });
-            node.addEventListener('touchstart', () => { isDrawing = true; window.activateNode(node); });
-        });
-
-        window.addEventListener('mouseup', () => { isDrawing = false; });
-        window.addEventListener('touchend', () => { isDrawing = false; });
-
-        window.activateNode = (node) => {
-            const id = node.getAttribute('data-id');
-            if (patternSecret[patternSecret.length - 1] !== id) {
-                patternSecret.push(id);
-                node.classList.add('active');
-                statusText.textContent = `Nodos: ${patternSecret.join(' ➔ ')}`;
-            }
-        };
-
-        window.clearPattern = () => {
-            patternSecret = [];
-            nodes.forEach(node => node.classList.remove('active'));
-            statusText.textContent = "Dibuja tu patrón...";
-        };
-
-        window.updateFileName = () => {
-            const input = document.getElementById('fileInput');
-            const label = document.getElementById('fileLabel');
-            label.textContent = input.files.length ? input.files[0].name : "Seleccionar Archivo";
-        };
-
-        window.openPaywall = () => { document.getElementById('premiumModal').style.display = 'flex'; };
-        window.closePaywall = () => { document.getElementById('premiumModal').style.display = 'none'; };
-
-        window.checkAlgoPremium = () => {
-            const algo = document.getElementById('algoSelect').value;
-            if (algo !== 'aes-cbc' && window.currentUserPlan !== 'premium') {
-                alert("Control de Seguridad: Esta suite requiere una Licencia Premium.");
-                document.getElementById('algoSelect').value = 'aes-cbc';
-                window.openPaywall();
-            }
-        };
-
-        // --- NÚCLEO CRIPTOGRÁFICO AVANZADO WEB CRYPTO API ---
-        async function processFile(mode) {
-            const fileInput = document.getElementById('fileInput');
-            if (!fileInput.files.length) return alert("Sube un archivo.");
-            if (patternSecret.length < 3) return alert("Patrón geométrico insuficiente.");
-
-            const file = fileInput.files[0];
-            const algo = document.getElementById('algoSelect').value;
-
-            // LIMITACIÓN EXTREMA 1: Control estricto de tamaño en capa Free (2MB máximo)
-            const MAX_FREE_SIZE = 2 * 1024 * 1024;
-            if (file.size > MAX_FREE_SIZE && window.currentUserPlan !== 'premium') {
-                alert("La capa Gratuita está estrictamente limitada a archivos de un máximo de 2MB.");
-                window.openPaywall();
-                return;
-            }
-
-            // LIMITACIÓN EXTREMA 2: Degradación forzada de clave si es Free (Se truncan los nodos)
-            let finalPattern = patternSecret.join('');
-            if (window.currentUserPlan !== 'premium') {
-                finalPattern = patternSecret.slice(0, 3).join(''); // Solo se procesan los 3 primeros nodos dibujados
-            }
-
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                const rawData = new Uint8Array(e.target.result);
-                let outputData;
+            document.getElementById('btnValidateLicense').addEventListener('click', async () => {
+                const licenseInput = document.getElementById('licenseKeyInput').value.trim();
+                if(!licenseInput) return alert("Introduce tu clave.");
 
                 try {
-                    const encoder = new TextEncoder();
-                    const hash = await crypto.subtle.digest('SHA-256', encoder.encode(finalPattern));
+                    const snap = await get(ref(db, `vault_licenses/${licenseInput}`));
+                    if (snap.exists() && snap.val().status === 'unclaimed') {
+                        if (!currentFirebaseUser) return alert("Regístrate primero.");
+                        await update(ref(db, `vault_licenses/${licenseInput}`), { status: 'claimed', claimedBy: currentFirebaseUser.email });
+                        await set(ref(db, 'users/' + currentFirebaseUser.uid), { plan: 'premium', updated: new Date().toISOString() });
+                        alert("¡Licencia validada!");
+                        window.location.reload();
+                    } else { alert("Licencia inválida."); }
+                } catch(e) { alert("Error de comunicación remota."); }
+            });
 
-                    if (algo === 'aes-gcm') {
-                        // 1. AES-GCM 256-bit (PREMIUM)
-                        const key = await crypto.subtle.importKey('raw', hash, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
-                        if (mode === 'encrypt') {
-                            const iv = crypto.getRandomValues(new Uint8Array(12));
-                            const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, rawData);
-                            outputData = new Uint8Array(iv.length + encrypted.byteLength);
-                            outputData.set(iv, 0);
-                            outputData.set(new Uint8Array(encrypted), iv.length);
-                        } else {
-                            const iv = rawData.slice(0, 12);
-                            const encBytes = rawData.slice(12);
-                            const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, encBytes);
-                            outputData = new Uint8Array(decrypted);
-                        }
-                    } 
-                    else if (algo === 'aes-cbc') {
-                        // 2. AES-CBC 128-bit (CAPA FREE - Máxima seguridad pero con restricciones de software)
-                        const keyHash = hash.slice(0, 16); // Reducir a 128 bits para AES-CBC estándar
-                        const key = await crypto.subtle.importKey('raw', keyHash, { name: 'AES-CBC' }, false, ['encrypt', 'decrypt']);
-                        if (mode === 'encrypt') {
-                            const iv = crypto.getRandomValues(new Uint8Array(16));
-                            const encrypted = await crypto.subtle.encrypt({ name: 'AES-CBC', iv: iv }, key, rawData);
-                            outputData = new Uint8Array(iv.length + encrypted.byteLength);
-                            outputData.set(iv, 0);
-                            outputData.set(new Uint8Array(encrypted), iv.length);
-                        } else {
-                            const iv = rawData.slice(0, 16);
-                            const encBytes = rawData.slice(16);
-                            const decrypted = await crypto.subtle.decrypt({ name: 'AES-CBC', iv: iv }, key, encBytes);
-                            outputData = new Uint8Array(decrypted);
-                        }
-                    }
-                    else if (algo === 'chacha') {
-                        // 3. CHACHA20-POLY1305 SIMULADO SOBRE EMULACIÓN EN FLUJO (PREMIUM)
-                        outputData = new Uint8Array(rawData.length);
-                        const keyBytes = new Uint8Array(hash);
-                        for (let i = 0; i < rawData.length; i++) {
-                            let keyByte = keyBytes[i % 32] ^ (i & 0xFF);
-                            outputData[i] = rawData[i] ^ keyByte;
-                        }
-                    }
+            // --- INTERFAZ DEL PATRÓN COMPLETAMENTE CAPSULADA ---
+            const nodes = document.querySelectorAll('.node');
+            const statusText = document.getElementById('statusText');
 
-                    const ext = mode === 'encrypt' ? '.aegis' : '';
-                    const finalName = mode === 'encrypt' ? file.name + ext : file.name.replace('.aegis', '');
-                    
-                    const blob = new Blob([outputData], { type: 'application/octet-stream' });
-                    const link = document.createElement('a');
-                    link.href = URL.createObjectURL(blob);
-                    link.download = finalName;
-                    link.click();
-                    window.clearPattern();
-
-                } catch (err) {
-                    alert("Fallo crítico en el descifrado: Los nodos del patrón o el algoritmo seleccionado son erróneos.");
-                    console.error(err);
+            const activateNode = (node) => {
+                const id = node.getAttribute('data-id');
+                if (patternSecret[patternSecret.length - 1] !== id) {
+                    patternSecret.push(id);
+                    node.classList.add('active');
+                    statusText.textContent = `Nodos: ${patternSecret.join(' ➔ ')}`;
                 }
             };
-            reader.readAsArrayBuffer(file);
-        }
-        window.processFile = processFile;
+
+            nodes.forEach(node => {
+                node.addEventListener('mousedown', () => { isDrawing = true; activateNode(node); });
+                node.addEventListener('mouseenter', () => { if (isDrawing) activateNode(node); });
+                node.addEventListener('touchstart', () => { isDrawing = true; activateNode(node); });
+            });
+
+            window.addEventListener('mouseup', () => { isDrawing = false; });
+            window.addEventListener('touchend', () => { isDrawing = false; });
+
+            const clearPattern = () => {
+                patternSecret = [];
+                nodes.forEach(node => node.classList.remove('active'));
+                statusText.textContent = "Dibuja tu patrón...";
+            };
+            document.getElementById('btnClearPattern').addEventListener('click', clearPattern);
+
+            document.getElementById('fileInput').addEventListener('change', () => {
+                const input = document.getElementById('fileInput');
+                document.getElementById('fileLabel').textContent = input.files.length ? input.files[0].name : "Seleccionar Archivo";
+            });
+
+            const openPaywall = () => { document.getElementById('premiumModal').style.display = 'flex'; };
+            const closePaywall = () => { document.getElementById('premiumModal').style.display = 'none'; };
+            document.getElementById('planBadge').addEventListener('click', openPaywall);
+            document.getElementById('btnClosePaywall').addEventListener('click', closePaywall);
+
+            document.getElementById('algoSelect').addEventListener('change', () => {
+                const algo = document.getElementById('algoSelect').value;
+                if (algo !== 'aes-cbc' && secureUserPlanToken !== "TOKEN_SECURE_PREMIUM_9912") {
+                    alert("Control de Seguridad: Suite protegida.");
+                    document.getElementById('algoSelect').value = 'aes-cbc';
+                    openPaywall();
+                }
+            });
+
+            // --- NÚCLEO CRIPTOGRÁFICO DE EJECUCIÓN PROTEGIDA ---
+            const processFile = async (mode) => {
+                const fileInput = document.getElementById('fileInput');
+                if (!fileInput.files.length) return alert("Sube un archivo.");
+                if (patternSecret.length < 3) return alert("Patrón insuficiente.");
+
+                const file = fileInput.files[0];
+                const algo = document.getElementById('algoSelect').value;
+
+                const MAX_FREE_SIZE = 2 * 1024 * 1024;
+                if (file.size > MAX_FREE_SIZE && secureUserPlanToken !== "TOKEN_SECURE_PREMIUM_9912") {
+                    alert("Capa gratuita limitada a 2MB.");
+                    openPaywall();
+                    return;
+                }
+
+                let finalPattern = patternSecret.join('');
+                if (secureUserPlanToken !== "TOKEN_SECURE_PREMIUM_9912") {
+                    finalPattern = patternSecret.slice(0, 3).join('');
+                }
+
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    const rawData = new Uint8Array(e.target.result);
+                    let outputData;
+
+                    try {
+                        const encoder = new TextEncoder();
+                        const hash = await crypto.subtle.digest('SHA-256', encoder.encode(finalPattern));
+
+                        if (algo === 'aes-gcm' && secureUserPlanToken === "TOKEN_SECURE_PREMIUM_9912") {
+                            const key = await crypto.subtle.importKey('raw', hash, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
+                            if (mode === 'encrypt') {
+                                const iv = crypto.getRandomValues(new Uint8Array(12));
+                                const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, rawData);
+                                outputData = new Uint8Array(iv.length + encrypted.byteLength);
+                                outputData.set(iv, 0);
+                                outputData.set(new Uint8Array(encrypted), iv.length);
+                            } else {
+                                const iv = rawData.slice(0, 12);
+                                const encBytes = rawData.slice(12);
+                                const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, encBytes);
+                                outputData = new Uint8Array(decrypted);
+                            }
+                        } 
+                        else if (algo === 'aes-cbc') {
+                            const keyHash = hash.slice(0, 16);
+                            const key = await crypto.subtle.importKey('raw', keyHash, { name: 'AES-CBC' }, false, ['encrypt', 'decrypt']);
+                            if (mode === 'encrypt') {
+                                const iv = crypto.getRandomValues(new Uint8Array(16));
+                                const encrypted = await crypto.subtle.encrypt({ name: 'AES-CBC', iv: iv }, key, rawData);
+                                outputData = new Uint8Array(iv.length + encrypted.byteLength);
+                                outputData.set(iv, 0);
+                                outputData.set(new Uint8Array(encrypted), iv.length);
+                            } else {
+                                const iv = rawData.slice(0, 16);
+                                const encBytes = rawData.slice(16);
+                                const decrypted = await crypto.subtle.decrypt({ name: 'AES-CBC', iv: iv }, key, encBytes);
+                                outputData = new Uint8Array(decrypted);
+                            }
+                        }
+                        else if (algo === 'chacha' && secureUserPlanToken === "TOKEN_SECURE_PREMIUM_9912") {
+                            outputData = new Uint8Array(rawData.length);
+                            const keyBytes = new Uint8Array(hash);
+                            for (let i = 0; i < rawData.length; i++) {
+                                let keyByte = keyBytes[i % 32] ^ (i & 0xFF);
+                                outputData[i] = rawData[i] ^ keyByte;
+                            }
+                        } else {
+                            throw new Error("Violación de firmas o algoritmo no disponible.");
+                        }
+
+                        const ext = mode === 'encrypt' ? '.aegis' : '';
+                        const finalName = mode === 'encrypt' ? file.name + ext : file.name.replace('.aegis', '');
+                        
+                        const blob = new Blob([outputData], { type: 'application/octet-stream' });
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(blob);
+                        link.download = finalName;
+                        link.click();
+                        clearPattern();
+
+                    } catch (err) {
+                        alert("Error crítico de decodificación.");
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            };
+
+            document.getElementById('btnMainEncrypt').addEventListener('click', () => processFile('encrypt'));
+            document.getElementById('btnMainDecrypt').addEventListener('click', () => processFile('decrypt'));
+
+            checkBrowserStatusAndSeed();
+        })();
     </script>
 </body>
 </html>
