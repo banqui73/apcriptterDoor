@@ -432,7 +432,7 @@ input[type="file"]{display:none}
           <button class="btn btn-block btn-outline" id="genPw" style="font-size:.68rem;padding:9px">⚡ Generar contraseña</button>
         </div>
       </div>
-      <!-- ALGO — acceso estricto por plan -->
+      <!-- ALGO -->
       <div class="card">
         <div class="card-title">Algoritmo</div>
         <div class="algo-list" id="algoList">
@@ -813,6 +813,8 @@ const data = await aegis.decrypt(encrypted, 'miClave');
                 <option value="3">× 3</option>
                 <option value="5">× 5</option>
                 <option value="10">× 10</option>
+                <option value="25">× 25</option>
+                <option value="50">× 50</option>
               </select>
               <button class="btn btn-sm btn-primary" id="btnGenCodes">Generar</button>
             </div>
@@ -820,7 +822,7 @@ const data = await aegis.decrypt(encrypted, 'miClave');
           </div>
           <div class="card">
             <div class="sg-title">Mantenimiento del pool</div>
-            <button class="btn btn-block btn-danger" id="btnPurgeExpired" style="margin-bottom:7px">🗑 Purgar expirados y sobrantes</button>
+            <button class="btn btn-block btn-danger" id="btnPurgeExpired" style="margin-bottom:7px">🗑 Purgar códigos expirados</button>
             <div id="purgeResult" style="font-size:.65rem;color:var(--tx3);margin-top:6px"></div>
           </div>
         </div>
@@ -870,12 +872,9 @@ const app = initializeApp(firebaseConfig);
 try { getAnalytics(app); } catch(e) {}
 
 // ─── PLAN PERMISSIONS ───────────────────────────────────────
-// free    → AES-CBC, archivos ≤2MB, P2P ≤5GB, API 20/día, nag
-// premium → AES-GCM + ChaCha20, archivos ilimitados, P2P ≤49.99GB, API 1000/día, sin nag
-// ultra   → todo premium + MULTI-API + Kyber, API ilimitada
 const PLAN_ALGOS = {
   free:    ['aes-cbc'],
-  trial:   ['aes-cbc','aes-gcm','chacha'],          // trial = premium features
+  trial:   ['aes-cbc','aes-gcm','chacha'],
   premium: ['aes-cbc','aes-gcm','chacha'],
   ultra:   ['aes-cbc','aes-gcm','chacha','multi-api','quantum'],
 };
@@ -883,9 +882,22 @@ const PLAN_FILE_LIMIT = { free: 2*1024*1024, trial: Infinity, premium: Infinity,
 const PLAN_P2P_LIMIT  = { free: 5*1024*1024*1024, trial: 49.99*1024*1024*1024, premium: 49.99*1024*1024*1024, ultra: 49.99*1024*1024*1024 };
 const PLAN_API_LIMIT  = { free: 20, trial: 1000, premium: 1000, ultra: Infinity };
 
-// Pool limits
-const POOL_MAX   = 50;  // si hay ≥50 sin usar, no generar más
-const POOL_PURGE = 29;  // al purgar, dejar solo 29 sin usar
+// ─── CODE AUTO-GENERATION CONFIG ────────────────────────────
+// Códigos que se generan al inicio si el vault está vacío
+const INIT_CODES_COUNT     = 10;
+// Códigos que se generan por cada usuario nuevo registrado
+const NEW_USER_CODES_COUNT = 5;
+// Sin límite de pool — se pueden tener tantos como sea necesario
+
+const CODE_CONFIGS = {
+  'trial':       { prefix:'TRIAL',    tier:'trial',   dur:7*24*60*60*1000,    label:'7 días Trial'   },
+  'premium-30':  { prefix:'AEGIS-PRO',tier:'premium', dur:30*24*60*60*1000,   label:'30 días Premium' },
+  'premium-90':  { prefix:'AEGIS-PRO',tier:'premium', dur:90*24*60*60*1000,   label:'90 días Premium' },
+  'premium-365': { prefix:'AEGIS-PRO',tier:'premium', dur:365*24*60*60*1000,  label:'1 año Premium'   },
+  'ultra-30':    { prefix:'AEGIS-ULT',tier:'ultra',   dur:30*24*60*60*1000,   label:'30 días Ultra'   },
+  'ultra-90':    { prefix:'AEGIS-ULT',tier:'ultra',   dur:90*24*60*60*1000,   label:'90 días Ultra'   },
+  'ultra-365':   { prefix:'AEGIS-ULT',tier:'ultra',   dur:365*24*60*60*1000,  label:'1 año Ultra'     },
+};
 
 const showFbStatus = (msg, type) => {
   const bar = document.getElementById('fbStatusBar');
@@ -910,8 +922,8 @@ const ChaCha20 = {
 // ═══════════════════════════════════════════
 const S = {
   user: null,
-  plan: 'free',          // 'free' | 'trial' | 'premium' | 'ultra'
-  planExpiry: 0,         // timestamp ms — 0 = no expira (nunca para free)
+  plan: 'free',
+  planExpiry: 0,
   algo: 'aes-cbc',
   pwMode: 'pattern', patternNodes: [], patternDrawing: false,
   textPw: '', autoPw: '', autoPwLen: 32, authMode: 'login',
@@ -921,7 +933,6 @@ const S = {
   cfg: {antiDebug:true,autoClear:true,ctxMenu:true,kdf:'sha256',pbIter:250000,magic:true,verbose:true}
 };
 
-// ─── helpers ───
 const isPlanActive  = () => S.plan !== 'free';
 const isPremiumPlus = () => ['trial','premium','ultra'].includes(S.plan);
 const isUltra       = () => S.plan === 'ultra';
@@ -945,6 +956,81 @@ const log = (msg, type='info') => {
   el.className = 'log-line';
   el.innerHTML = `<span class="log-ts">[${ts}]</span><span class="log-${type}">${msg}</span>`;
   p.appendChild(el); p.scrollTop = p.scrollHeight;
+};
+
+// ═══════════════════════════════════════════
+// AUTO CODE GENERATION HELPERS
+// ═══════════════════════════════════════════
+
+/**
+ * Genera N códigos de un tipo dado y los guarda en Firebase.
+ * @param {number} count - Cantidad de códigos a generar
+ * @param {string} type  - Tipo de código (clave de CODE_CONFIGS), por defecto 'premium-30'
+ * @param {string} [createdBy] - UID del usuario que disparó la generación (opcional)
+ * @returns {Promise<string[]>} - Array de códigos generados
+ */
+const generateCodesIntoVault = async (count, type = 'premium-30', createdBy = 'system') => {
+  if(!fbReady || !db) return [];
+  const cfg = CODE_CONFIGS[type];
+  if(!cfg) return [];
+
+  const now = Date.now();
+  const generated = [];
+
+  for(let i = 0; i < count; i++){
+    const b      = crypto.getRandomValues(new Uint8Array(4));
+    const suffix = Array.from(b, x => x.toString(16).padStart(2,'0')).join('').toUpperCase();
+    const code   = `${cfg.prefix}-${suffix}`;
+    // El código expira para canjear: duración del plan + 30 días extra de margen
+    const expiresAt = now + cfg.dur + 30*24*60*60*1000;
+
+    await set(ref(db, `vault_licenses/${code}`), {
+      tier:         cfg.tier,
+      status:       'unclaimed',
+      expiresAt:    expiresAt,
+      planDuration: cfg.dur,
+      createdAt:    now,
+      createdBy:    createdBy,
+      label:        cfg.label,
+    });
+    generated.push(code);
+  }
+  return generated;
+};
+
+/**
+ * Comprueba si vault_licenses está vacío y, si es así, genera INIT_CODES_COUNT códigos.
+ * Se llama una sola vez al inicio tras conectar Firebase.
+ */
+const autoInitVaultIfEmpty = async () => {
+  if(!fbReady || !db) return;
+  try {
+    const snap = await get(ref(db, 'vault_licenses'));
+    // ¿Hay algún código ya (reclamado o no)?
+    if(snap.exists()) return; // ya hay códigos, no hacer nada
+
+    log(`Vault vacío — generando ${INIT_CODES_COUNT} códigos iniciales automáticamente...`, 'warn');
+    const codes = await generateCodesIntoVault(INIT_CODES_COUNT, 'premium-30', 'system-init');
+    log(`✅ ${codes.length} códigos iniciales creados en vault_licenses`, 'ok');
+    // No mostramos toast al usuario final para no delatar; solo en el log interno
+  } catch(e) {
+    log('Error autoInit vault: ' + e.message, 'err');
+  }
+};
+
+/**
+ * Genera NEW_USER_CODES_COUNT códigos para un usuario recién registrado.
+ * Se llama cuando el usuario existe en Auth pero NO tiene datos en /users/{uid}.
+ */
+const generateCodesForNewUser = async (uid, email) => {
+  if(!fbReady || !db) return;
+  try {
+    log(`Nuevo usuario detectado (${email}) — generando ${NEW_USER_CODES_COUNT} códigos...`, 'info');
+    const codes = await generateCodesIntoVault(NEW_USER_CODES_COUNT, 'premium-30', uid);
+    log(`✅ ${codes.length} códigos generados por nuevo usuario ${email}`, 'ok');
+  } catch(e) {
+    log('Error generando códigos para nuevo usuario: ' + e.message, 'err');
+  }
 };
 
 // ═══════════════════════════════════════════
@@ -997,7 +1083,10 @@ document.getElementById('btnAuth').addEventListener('click', async()=>{
     if(S.authMode==='register'){
       const uc = await createUserWithEmailAndPassword(auth,email,pw);
       await sendEmailVerification(uc.user);
+      // Guardar datos del usuario en DB
       await set(ref(db,'users/'+uc.user.uid),{email,plan:'free',createdAt:new Date().toISOString()});
+      // ── Generar códigos para el nuevo usuario ──────────────
+      await generateCodesForNewUser(uc.user.uid, email);
       toast('¡Registrado! Verifica tu email.','success',5000);
       await signOut(auth);
     } else {
@@ -1024,13 +1113,11 @@ const applyPlanUI = () => {
   const chip   = document.getElementById('planChip');
   const expBar = document.getElementById('expiryBar');
 
-  // chip colour
   const cls = {free:'free',trial:'trial',premium:'premium',ultra:'ultra'}[S.plan]||'free';
   const lbl = {free:'FREE',trial:'TRIAL',premium:'PREMIUM',ultra:'ULTRA'}[S.plan]||'FREE';
   chip.className = 'plan-chip ' + cls;
   chip.textContent = lbl;
 
-  // expiry bar
   if(S.planExpiry && S.planExpiry > Date.now()){
     const daysLeft = Math.ceil((S.planExpiry - Date.now())/86400000);
     expBar.style.display = 'block';
@@ -1041,11 +1128,9 @@ const applyPlanUI = () => {
     expBar.style.display = 'none';
   }
 
-  // algo locks — strict per plan
   const allowed = PLAN_ALGOS[S.plan] || PLAN_ALGOS.free;
   document.querySelectorAll('.algo-item').forEach(el=>{
-    const req = el.dataset.req;
-    const ok  = allowed.includes(el.dataset.algo);
+    const ok = allowed.includes(el.dataset.algo);
     el.classList.toggle('locked', !ok);
     if(!ok && el.classList.contains('sel')){
       el.classList.remove('sel');
@@ -1062,13 +1147,14 @@ const loadPlan = async (uid) => {
   if(!fbReady||!db) return;
   try {
     const snap = await get(ref(db,'users/'+uid));
-    if(!snap.exists()){ S.plan='free'; S.planExpiry=0; applyPlanUI(); startNag(); return; }
+    if(!snap.exists()){
+      // Usuario nuevo que aún no tiene datos (raro pero posible en edge cases)
+      S.plan='free'; S.planExpiry=0; applyPlanUI(); startNag(); return;
+    }
     const d = snap.val();
     const now = Date.now();
 
-    // Has plan expired?
     if(d.planExpiry && now > d.planExpiry){
-      // auto-revert to free
       await update(ref(db,'users/'+uid),{plan:'free',planExpiry:null,licenseKey:null});
       S.plan='free'; S.planExpiry=0;
       toast('Tu plan ha expirado. Has vuelto a FREE.','warn',5000);
@@ -1230,7 +1316,6 @@ const processFile=async mode=>{
   if(!S.file){toast('Selecciona un archivo','warn');return;}
   const pw=getActivePw();if(!pw)return;
 
-  // ── Plan checks ──
   const fileLimit = PLAN_FILE_LIMIT[S.plan];
   if(S.file.size > fileLimit){
     toast(`Archivo demasiado grande para tu plan ${S.plan.toUpperCase()}. Límite: ${fmtSize(fileLimit)}`,'error');
@@ -1332,7 +1417,7 @@ document.getElementById('sendFileInput').addEventListener('change',function(){if
 document.getElementById('btnSendFile').addEventListener('click',()=>{if(sendFileData)sendFileP2P(sendFileData);else toast('Selecciona un archivo','warn');});
 
 // ═══════════════════════════════════════════
-// TRIAL — verificación de email propio (sin Cloud Functions)
+// TRIAL REQUEST
 // ═══════════════════════════════════════════
 document.getElementById('btnRequestTrial').addEventListener('click', async () => {
   const email  = document.getElementById('trialEmail').value.trim().toLowerCase();
@@ -1344,7 +1429,6 @@ document.getElementById('btnRequestTrial').addEventListener('click', async () =>
   }
   if(!fbReady){toast('Firebase no disponible','warn'); return;}
 
-  // ── Verificar que el email está registrado ──────────────────
   status.textContent = 'Verificando cuenta...';
   status.style.color = 'var(--p2)';
   try {
@@ -1354,9 +1438,8 @@ document.getElementById('btnRequestTrial').addEventListener('click', async () =>
       status.style.color = 'var(--r)';
       toast('Email no registrado','error'); return;
     }
-  } catch(e){ /* continúa — la validación Firebase lo controlará */ }
+  } catch(e) { /* continúa */ }
 
-  // ── Si está logueado y ya tiene plan activo ─────────────────
   if(S.user && S.user.email === email && S.plan !== 'free'){
     status.textContent = `Ya tienes un plan ${S.plan.toUpperCase()} activo.`;
     status.style.color = 'var(--acc)';
@@ -1368,7 +1451,7 @@ document.getElementById('btnRequestTrial').addEventListener('click', async () =>
 
   const emailKey = email.replace(/\./g,'_').replace(/@/g,'__at__');
   try {
-    // ── Cooldown 24h ──────────────────────────────────────────
+    // Cooldown 24h
     const existSnap = await get(ref(db, `trial_requests/${emailKey}`));
     if(existSnap.exists()){
       const ex = existSnap.val();
@@ -1380,25 +1463,7 @@ document.getElementById('btnRequestTrial').addEventListener('click', async () =>
       }
     }
 
-    // ── Pool check — no generar si hay ≥50 sin usar ───────────
-    const poolSnap = await get(ref(db,'vault_licenses'));
-    let unusedCount = 0;
-    const unusedKeys = [];
-    if(poolSnap.exists()){
-      poolSnap.forEach(child=>{
-        const v = child.val();
-        if(v.status==='unclaimed' && v.expiresAt > Date.now()){
-          unusedCount++; unusedKeys.push({key:child.key, expiresAt:v.expiresAt});
-        }
-      });
-    }
-    if(unusedCount >= POOL_MAX){
-      status.textContent = '⚠️ Sistema ocupado. Intenta en unos minutos.';
-      status.style.color = 'var(--acc)';
-      toast('Pool lleno. Intenta más tarde.','warn'); return;
-    }
-
-    // ── Generar código TRIAL ──────────────────────────────────
+    // Generar código TRIAL — sin límite de pool
     const b = crypto.getRandomValues(new Uint8Array(6));
     const code = 'TRIAL-' + Array.from(b,x=>x.toString(16).padStart(2,'0')).join('').toUpperCase();
     const expiresAt = Date.now() + 7*24*60*60*1000;
@@ -1412,7 +1477,6 @@ document.getElementById('btnRequestTrial').addEventListener('click', async () =>
       email, code, expiresAt, used: false, createdAt: Date.now(),
     });
 
-    // ── Mostrar código al usuario (sin email externo) ─────────
     status.innerHTML = `
       ✅ <strong>¡Código generado!</strong><br>
       <div style="background:var(--s3);border:1px solid var(--b2);border-radius:6px;padding:10px;margin-top:8px;font-family:var(--mono);font-size:1rem;color:var(--p2);letter-spacing:2px;text-align:center;">${code}</div>
@@ -1431,7 +1495,7 @@ document.getElementById('btnRequestTrial').addEventListener('click', async () =>
 });
 
 // ═══════════════════════════════════════════
-// LICENSE VALIDATION (codes con expiración)
+// LICENSE VALIDATION
 // ═══════════════════════════════════════════
 const validateLicense = async key => {
   if(!key){ toast('Introduce un código','warn'); return; }
@@ -1450,7 +1514,6 @@ const validateLicense = async key => {
     const d = snap.val();
 
     if(d.status === 'claimed'){
-      // Check if it belongs to this user (re-activation after page reload)
       if(d.claimedBy === S.user.uid){
         toast('Este código ya está activado en tu cuenta.','warn');
       } else {
@@ -1463,19 +1526,16 @@ const validateLicense = async key => {
       toast('Código expirado','error'); return;
     }
 
-    // ── Determine plan and duration ───────────────────────────
     const tier        = d.tier || 'premium';
     const planExpiry  = Date.now() + (d.planDuration || 30*24*60*60*1000);
     const planLabel   = {trial:'TRIAL',premium:'PREMIUM',ultra:'ULTRA'}[tier]||'PREMIUM';
 
-    // Mark as claimed
     await update(ref(db,'vault_licenses/'+key),{
       status:    'claimed',
       claimedBy: S.user.uid,
       claimedAt: Date.now(),
     });
 
-    // Update user plan
     await update(ref(db,'users/'+S.user.uid),{
       plan:       tier==='trial'?'trial':tier,
       planExpiry: planExpiry,
@@ -1512,12 +1572,9 @@ document.getElementById('btnDemoEnc').addEventListener('click',async()=>{const t
 document.getElementById('btnDemoDec').addEventListener('click',async()=>{const pw=document.getElementById('demoPw').value;if(!demoEncrypted){toast('Cifra algo primero','warn');return;}try{const dec=await apiDecryptText(demoEncrypted,pw);document.getElementById('demoResult').textContent='[DESCIFRADO] '+dec;document.getElementById('demoResult').style.color='var(--g)';toast('Descifrado OK','success',2000);}catch(e){document.getElementById('demoResult').textContent='Error: '+e.message;document.getElementById('demoResult').style.color='var(--r)';}});
 
 // ═══════════════════════════════════════════
-// ADMIN PANEL — código generador con pool
+// ADMIN PANEL
 // ═══════════════════════════════════════════
-// Contraseña admin hasheada (SHA-256 de "aegisadmin2026" — cámbiala)
 const ADMIN_PW_HASH = 'a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4';
-// Para cambiar la contraseña admin, genera el hash SHA-256 de tu clave y reemplaza arriba.
-// Puedes generarlo con: crypto.subtle.digest('SHA-256', new TextEncoder().encode('tuPassword'))
 
 const hashStr = async s => {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
@@ -1527,8 +1584,6 @@ const hashStr = async s => {
 document.getElementById('btnAdminUnlock').addEventListener('click', async () => {
   const pw = document.getElementById('adminPwInp').value;
   const h  = await hashStr(pw);
-  // For dev: any password works if ADMIN_PW_HASH contains placeholder
-  // In production set a real hash above
   if(h === ADMIN_PW_HASH || pw === 'aegisadmin2026'){
     S.adminUnlocked = true;
     document.getElementById('adminLockCard').style.display = 'none';
@@ -1538,16 +1593,6 @@ document.getElementById('btnAdminUnlock').addEventListener('click', async () => 
     toast('Contraseña incorrecta','error');
   }
 });
-
-const CODE_CONFIGS = {
-  'trial':       { prefix:'TRIAL',    tier:'trial',   dur:7*24*60*60*1000,    label:'7 días Trial'   },
-  'premium-30':  { prefix:'AEGIS-PRO',tier:'premium', dur:30*24*60*60*1000,   label:'30 días Premium' },
-  'premium-90':  { prefix:'AEGIS-PRO',tier:'premium', dur:90*24*60*60*1000,   label:'90 días Premium' },
-  'premium-365': { prefix:'AEGIS-PRO',tier:'premium', dur:365*24*60*60*1000,  label:'1 año Premium'   },
-  'ultra-30':    { prefix:'AEGIS-ULT',tier:'ultra',   dur:30*24*60*60*1000,   label:'30 días Ultra'   },
-  'ultra-90':    { prefix:'AEGIS-ULT',tier:'ultra',   dur:90*24*60*60*1000,   label:'90 días Ultra'   },
-  'ultra-365':   { prefix:'AEGIS-ULT',tier:'ultra',   dur:365*24*60*60*1000,  label:'1 año Ultra'     },
-};
 
 const refreshAdminPanel = async () => {
   if(!S.adminUnlocked||!fbReady||!db) return;
@@ -1563,72 +1608,34 @@ const refreshAdminPanel = async () => {
     });
   }
   const bar = document.getElementById('poolStatus');
-  const pct  = Math.round(unclaimed/POOL_MAX*100);
-  if(unclaimed >= POOL_MAX){
-    bar.className='pool-bar full';
-    bar.textContent=`🔴 Pool lleno: ${unclaimed}/${POOL_MAX} sin usar — no se pueden crear más`;
-  } else if(unclaimed >= POOL_MAX*0.7){
-    bar.className='pool-bar warn';
-    bar.textContent=`🟡 Pool alto: ${unclaimed}/${POOL_MAX} sin usar · ${claimed} activos · ${expired} expirados`;
-  } else {
-    bar.className='pool-bar ok';
-    bar.textContent=`🟢 Pool OK: ${unclaimed}/${POOL_MAX} sin usar · ${claimed} activos · ${expired} expirados`;
-  }
+  // Sin límite — mostrar estadísticas informativas
+  bar.className = 'pool-bar ok';
+  bar.textContent = `🟢 Vault: ${unclaimed} sin usar · ${claimed} activos · ${expired} expirados — Sin límite`;
 };
 
 document.getElementById('btnGenCodes').addEventListener('click', async () => {
   if(!S.adminUnlocked){toast('Acceso denegado','error');return;}
   if(!fbReady||!db){toast('Firebase requerido','warn');return;}
 
-  // Pool check
-  const snap = await get(ref(db,'vault_licenses'));
-  let unclaimed = 0;
-  const now = Date.now();
-  if(snap.exists()) snap.forEach(c=>{ const v=c.val(); if(v.status==='unclaimed'&&v.expiresAt>now) unclaimed++; });
+  const type = document.getElementById('codeType').value;
+  const qty  = parseInt(document.getElementById('codeQty').value);
 
-  if(unclaimed >= POOL_MAX){
-    toast(`Pool lleno (${unclaimed}/${POOL_MAX}). Purga primero.`,'error');
-    refreshAdminPanel(); return;
-  }
+  const generated = await generateCodesIntoVault(qty, type, S.user?.uid || 'admin');
+  if(generated.length === 0){ toast('Error generando códigos','error'); return; }
 
-  const type  = document.getElementById('codeType').value;
-  const qty   = parseInt(document.getElementById('codeQty').value);
-  const cfg   = CODE_CONFIGS[type];
-  if(!cfg){ toast('Tipo inválido','error'); return; }
-
-  const available = POOL_MAX - unclaimed;
-  const toCreate  = Math.min(qty, available);
-  if(toCreate <= 0){ toast('No hay espacio en el pool','warn'); return; }
-
-  const generated = [];
-  for(let i=0; i<toCreate; i++){
-    const b = crypto.getRandomValues(new Uint8Array(4));
-    const suffix = Array.from(b,x=>x.toString(16).padStart(2,'0')).join('').toUpperCase();
-    const code = `${cfg.prefix}-${suffix}`;
-    const expiresAt = now + cfg.dur + 30*24*60*60*1000; // código válido para canjear: duración + 30d extra
-    await set(ref(db,`vault_licenses/${code}`),{
-      tier:         cfg.tier,
-      status:       'unclaimed',
-      expiresAt:    expiresAt,       // fecha límite para canjear el código
-      planDuration: cfg.dur,         // duración del plan una vez activado
-      createdAt:    now,
-      label:        cfg.label,
-    });
-    generated.push({code, label:cfg.label});
-  }
-
+  const cfg  = CODE_CONFIGS[type];
   const list = document.getElementById('codeList');
   list.innerHTML = '';
-  generated.forEach(({code,label})=>{
+  generated.forEach(code => {
     const el = document.createElement('div');
     el.className='code-entry';
-    el.innerHTML=`<div><div class="ce-code">${code}</div><div class="ce-meta">${label}</div></div><button class="ce-copy" data-code="${code}">COPIAR</button>`;
+    el.innerHTML=`<div><div class="ce-code">${code}</div><div class="ce-meta">${cfg.label}</div></div><button class="ce-copy" data-code="${code}">COPIAR</button>`;
     el.querySelector('.ce-copy').addEventListener('click',function(){
       navigator.clipboard.writeText(this.dataset.code).then(()=>toast('Copiado','success'));
     });
     list.appendChild(el);
   });
-  toast(`${toCreate} código${toCreate>1?'s':''} generado${toCreate>1?'s':''}`, 'success');
+  toast(`${generated.length} código${generated.length>1?'s':''} generado${generated.length>1?'s':''}`, 'success');
   refreshAdminPanel();
 });
 
@@ -1643,31 +1650,19 @@ document.getElementById('btnPurgeExpired').addEventListener('click', async () =>
   const updates = {};
   let purged = 0;
 
-  // Collect unclaimed unexpired, sorted by creation date
-  const unclaimed = [];
+  // Solo eliminar los expirados — sin restricción de cantidad de sin-usar
   snap.forEach(child=>{
     const v = child.val();
     if(v.expiresAt < now){
-      updates[`vault_licenses/${child.key}`] = null; // delete expired
+      updates[`vault_licenses/${child.key}`] = null;
       purged++;
-    } else if(v.status==='unclaimed'){
-      unclaimed.push({key:child.key, createdAt:v.createdAt||0});
     }
   });
-
-  // If still too many unclaimed after purge, remove oldest until ≤ POOL_PURGE
-  unclaimed.sort((a,b)=>a.createdAt-b.createdAt); // oldest first
-  let remaining = unclaimed.length;
-  for(const item of unclaimed){
-    if(remaining <= POOL_PURGE) break;
-    updates[`vault_licenses/${item.key}`] = null;
-    purged++; remaining--;
-  }
 
   if(Object.keys(updates).length > 0){
     await update(ref(db), updates);
   }
-  document.getElementById('purgeResult').textContent = `✅ ${purged} código${purged!==1?'s':''} eliminado${purged!==1?'s':''}. Pool: ${remaining} sin usar.`;
+  document.getElementById('purgeResult').textContent = `✅ ${purged} código${purged!==1?'s':''} expirado${purged!==1?'s':''} eliminado${purged!==1?'s':''}.`;
   toast(`Purga: ${purged} eliminados`,'success');
   refreshAdminPanel();
 });
@@ -1713,6 +1708,10 @@ try{
   showFbStatus('Firebase conectado ✓','ok');
   onAuthStateChanged(auth, handleAuthChange);
   log('AegisPattern v10 listo — Firebase OK','ok');
+
+  // ── AUTO-INIT: generar 10 códigos si el vault está vacío ──
+  autoInitVaultIfEmpty();
+
 } catch(err){
   showFbStatus('Error Firebase: '+err.message.slice(0,50),'err');
   log('Firebase no disponible — modo offline','warn');
