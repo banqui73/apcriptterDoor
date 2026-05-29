@@ -863,6 +863,7 @@ import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.14.0/firebas
 import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword,
          sendEmailVerification, signOut } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
 import { getDatabase, ref, set, get, update, onValue, remove, push } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-functions.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC2xQewrid8QiWfFy_RVdG3mHt05QYIdPA",
@@ -875,7 +876,7 @@ const firebaseConfig = {
   measurementId: "G-5645CYD2KP"
 };
 
-let auth = null, db = null, fbReady = false;
+let auth = null, db = null, fbReady = false, functions_sdk = null;
 const app = initializeApp(firebaseConfig);
 try { getAnalytics(app); } catch(e) {}
 
@@ -1505,41 +1506,80 @@ document.getElementById('btnSendFile').addEventListener('click',()=>{if(sendFile
 // ═══════════════════════════════════════════
 // TRIAL VIA EMAIL (Firebase)
 // ═══════════════════════════════════════════
-document.getElementById('btnRequestTrial').addEventListener('click', async()=>{
-  const email = document.getElementById('trialEmail').value.trim();
+document.getElementById('btnRequestTrial').addEventListener('click', async () => {
+  const email  = document.getElementById('trialEmail').value.trim().toLowerCase();
   const status = document.getElementById('trialStatus');
-  if(!email||!email.includes('@')){toast('Email inválido','warn');return;}
-  if(!fbReady||!db){toast('Firebase requerido','warn');status.textContent='Firebase no disponible';return;}
+  const btn    = document.getElementById('btnRequestTrial');
 
-  // Check if already requested
-  const emailKey = email.replace(/\./g,'_').replace(/@/g,'__at__');
-  try{
-    const existing = await get(ref(db,`trial_requests/${emailKey}`));
-    if(existing.exists()){
-      status.textContent='⚠️ Ya se solicitó una prueba para este email.';
-      status.style.color='var(--acc)';
+  // ── Validación rápida en cliente ──
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    toast('Email inválido', 'warn');
+    return;
+  }
+
+  if (!fbReady) {
+    toast('Firebase no disponible', 'warn');
+    status.textContent = 'Firebase no disponible.';
+    return;
+  }
+
+  // ── Verificar que el email está registrado en Auth (fetch de signIn methods) ──
+  // Usamos fetchSignInMethodsForEmail del SDK de Auth ya importado
+  // Si no hay métodos → no está registrado
+  status.textContent = 'Verificando cuenta...';
+  status.style.color = 'var(--p2)';
+
+  try {
+    const { fetchSignInMethodsForEmail } = await import(
+      'https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js'
+    );
+    const methods = await fetchSignInMethodsForEmail(auth, email);
+    if (!methods || methods.length === 0) {
+      status.innerHTML = '❌ Este email no está registrado.<br>'
+        + '<span style="color:var(--tx3);font-size:12px">Regístrate primero en la pestaña "Cifrado".</span>';
+      status.style.color = 'var(--r)';
+      toast('Email no registrado — regístrate primero', 'error');
       return;
     }
+  } catch (authCheckErr) {
+    console.warn('No se pudo verificar Auth localmente:', authCheckErr.message);
+    // No bloqueamos: la Cloud Function lo verifica igualmente en el servidor
+  }
 
-    // Generate trial code
-    const codeBytes = crypto.getRandomValues(new Uint8Array(8));
-    const code = 'TRIAL-' + Array.from(codeBytes,b=>b.toString(16).padStart(2,'0')).join('').toUpperCase().slice(0,12);
-    const expires = Date.now() + 7*24*60*60*1000; // 7 days
+  // ── Deshabilitar botón ──
+  btn.disabled    = true;
+  btn.textContent = '⏳ Enviando...';
+  status.textContent = 'Generando código y enviando email...';
+  status.style.color = 'var(--p2)';
 
-    // Store in Firebase
-    await set(ref(db,`trial_requests/${emailKey}`),{email,code,expires,used:false,createdAt:new Date().toISOString()});
-    await set(ref(db,`trial_codes/${code}`),{email,expires,used:false});
+  try {
+    if (!functions_sdk) throw new Error('Firebase Functions no inicializado.');
 
-    // Show code directly (in production you'd send via email/Cloud Functions)
-    status.innerHTML = `✅ ¡Prueba activada! Tu código: <strong style="color:var(--p2)">${code}</strong><br><span style="color:var(--tx3)">Copia este código e introdúcelo en "Activar licencia" abajo. Válido 7 días.</span>`;
+    const requestTrial = httpsCallable(functions_sdk, 'requestTrial');
+    const result = await requestTrial({ email });
+
+    // ── Éxito ──
+    document.getElementById('trialEmail').value = '';
+    status.innerHTML = `
+      ✅ <strong>¡Código enviado!</strong><br>
+      <span style="color:var(--tx3);font-size:12px;display:block;margin-top:5px;">
+        Revisa la bandeja de entrada de <strong style="color:var(--p2)">${result.data.emailHint}</strong><br>
+        (también revisa spam/promociones · válido 7 días)
+      </span>
+    `;
     status.style.color = 'var(--g)';
-    toast('Código de prueba generado','success');
-    // Note: For real email sending, you need Firebase Cloud Functions + SendGrid/Nodemailer
-    // This stores the code and shows it to the user directly
-  } catch(err){
-    status.textContent='Error: '+err.message;
-    status.style.color='var(--r)';
-    toast(err.message,'error');
+    toast('🎁 Código de prueba enviado a tu email', 'success', 5000);
+
+  } catch (err) {
+    // Firebase HttpsError tiene err.code y err.message
+    const msg = err.message || 'Error desconocido';
+    status.innerHTML = `❌ ${msg}`;
+    status.style.color = 'var(--r)';
+    toast(msg, 'error', 5000);
+    console.error('Trial request error:', err);
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = 'Solicitar prueba';
   }
 });
 
@@ -1635,6 +1675,9 @@ try{
   auth = getAuth(app);
   db = getDatabase(app);
   fbReady = true;
+  try {
+    functions_sdk = getFunctions(app, 'us-central1'); // cambia la región si usas otra
+  } catch(e) { console.warn('Functions no disponible:', e); }
   window._fb = {ref,set,get,update,onValue,remove,push};
   showFbStatus('Firebase conectado ✓','ok');
   onAuthStateChanged(auth, handleAuthChange);
