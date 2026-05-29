@@ -1,298 +1,337 @@
 /**
  * Firebase Cloud Functions para AegisPattern
- * Valida emails reales y envía código trial
- * 
- * Instalación:
+ * Verifica email en Auth → genera código → envía por SendGrid
+ *
+ * Setup:
  * 1. firebase init functions
- * 2. npm install firebase-functions firebase-admin @sendgrid/mail
- * 3. firebase functions:config:set sendgrid.key="SG_API_KEY"
+ * 2. cd functions && npm install firebase-functions firebase-admin @sendgrid/mail
+ * 3. firebase functions:config:set sendgrid.key="SG.XXXXXXXXXX"
  * 4. firebase deploy --only functions
  */
 
 const functions = require('firebase-functions');
-const admin = require('firebase-admin');
-const sgMail = require('@sendgrid/mail');
+const admin     = require('firebase-admin');
+const sgMail    = require('@sendgrid/mail');
 
 admin.initializeApp();
-const db = admin.database();
+const db   = admin.database();
+const auth = admin.auth();
 
-// Configurar SendGrid
 sgMail.setApiKey(functions.config().sendgrid.key);
 
-/**
- * Validar email y enviar código trial
- * POST: /requestTrial
- * Body: { email: "user@example.com" }
- */
+// ─────────────────────────────────────────────
+// Dominios temporales/desechables bloqueados
+// ─────────────────────────────────────────────
+const TEMP_DOMAINS = [
+  'tempmail.com','guerrillamail.com','mailinator.com','temp-mail.org',
+  '10minutemail.com','maildrop.cc','throwaway.email','10minutemail.de',
+  'yopmail.com','trashmail.com','fakeinbox.com','trash-mail.com',
+  'temp-mail.io','tempmail.io','temp-email.com','fakeemail.com',
+  'dispostable.com','sharklasers.com','guerrillamailblock.com',
+  'grr.la','guerrillamail.info','spam4.me','spamgourmet.com',
+];
+
+// ─────────────────────────────────────────────
+// requestTrial — verifica Auth + envía código
+// ─────────────────────────────────────────────
 exports.requestTrial = functions.https.onCall(async (data, context) => {
   const email = (data.email || '').trim().toLowerCase();
 
-  // ═══ VALIDACIONES ═══
-  if (!email || !email.includes('@')) {
-    throw new functions.https.HttpsError('invalid-argument', 'Email inválido');
+  // ── Validación básica ──
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new functions.https.HttpsError('invalid-argument', 'Email inválido.');
   }
 
-  // Rechazar dominios públicos/temporales
-  const tempDomains = [
-    'tempmail.com', 'guerrillamail.com', 'mailinator.com', 'temp-mail.org',
-    '10minutemail.com', 'maildrop.cc', 'throwaway.email', '10minutemail.de',
-    'yopmail.com', 'trashmail.com', 'fakeinbox.com', 'trash-mail.com',
-    'temp-mail.io', 'tempmail.io', 'temp-email.com', 'fakeemail.com'
-  ];
-
   const domain = email.split('@')[1];
-  if (tempDomains.includes(domain)) {
+
+  // ── Bloquear temporales ──
+  if (TEMP_DOMAINS.includes(domain)) {
     throw new functions.https.HttpsError(
       'failed-precondition',
       'No se permiten emails temporales. Usa tu email real.'
     );
   }
 
-  // Validar dominio Gmail/Outlook/etc (opcional: verificar MX records en producción)
-  const validDomains = ['gmail.com', 'outlook.com', 'yahoo.com', 'protonmail.com', 'tutanota.com'];
-  const isValidProvider = validDomains.some(d => domain.includes(d)) || email.endsWith('.es') || email.endsWith('.com');
-
-  if (!isValidProvider && domain.split('.').length < 2) {
+  // ── Verificar que el email está registrado en Firebase Auth ──
+  let userRecord;
+  try {
+    userRecord = await auth.getUserByEmail(email);
+  } catch (authErr) {
+    // auth/user-not-found u otro error
     throw new functions.https.HttpsError(
-      'failed-precondition',
-      'Dominio de email no válido'
+      'not-found',
+      'Este email no está registrado en AegisPattern. Regístrate primero.'
     );
   }
 
-  // ═══ VERIFICAR SI YA SOLICITÓ ═══
+  // ── Verificar que el email está verificado ──
+  if (!userRecord.emailVerified) {
+    throw new functions.https.HttpsError(
+      'failed-precondition',
+      'Tu email aún no está verificado. Revisa tu bandeja de entrada.'
+    );
+  }
+
+  // ── Verificar que no tiene ya un plan activo ──
+  const userSnap = await db.ref(`users/${userRecord.uid}`).once('value');
+  if (userSnap.exists()) {
+    const userData = userSnap.val();
+    if (userData.plan === 'premium' || userData.plan === 'ultra') {
+      throw new functions.https.HttpsError(
+        'already-exists',
+        'Ya tienes un plan activo.'
+      );
+    }
+    if (userData.plan === 'trial' && userData.trialExpiry > Date.now()) {
+      throw new functions.https.HttpsError(
+        'already-exists',
+        'Ya tienes una prueba activa.'
+      );
+    }
+  }
+
+  // ── Verificar cooldown 24h por email ──
   const emailKey = email.replace(/\./g, '_').replace(/@/g, '__at__');
   const existingSnap = await db.ref(`trial_requests/${emailKey}`).once('value');
 
   if (existingSnap.exists()) {
     const existing = existingSnap.val();
-    // Si ya solicitó hace menos de 24h, rechazar
-    if (Date.now() - existing.createdAt < 24 * 60 * 60 * 1000) {
+    const elapsed = Date.now() - (existing.createdAt || 0);
+    if (elapsed < 24 * 60 * 60 * 1000) {
+      const hoursLeft = Math.ceil((24 * 60 * 60 * 1000 - elapsed) / 3600000);
       throw new functions.https.HttpsError(
         'already-exists',
-        `Ya se solicitó una prueba. Intenta en 24h.`
+        `Ya solicitaste una prueba. Intenta en ${hoursLeft}h.`
       );
     }
   }
 
-  // ═══ GENERAR CÓDIGO ═══
-  const codeBytes = crypto.getRandomValues(new Uint8Array(8));
-  const trialCode = 'TRIAL-' + Array.from(codeBytes, b => b.toString(16).padStart(2, '0'))
-    .join('')
-    .toUpperCase()
-    .slice(0, 12);
-
+  // ── Generar código ──
+  // Nota: en Node.js usamos require('crypto'), no window.crypto
+  const { randomBytes } = require('crypto');
+  const trialCode = 'TRIAL-' + randomBytes(6).toString('hex').toUpperCase();
   const expiresAt = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 días
 
-  // ═══ GUARDAR EN FIREBASE ═══
-  const trialData = {
+  // ── Guardar en Firebase ──
+  await db.ref(`trial_requests/${emailKey}`).set({
     email,
+    uid: userRecord.uid,
     code: trialCode,
     expiresAt,
     used: false,
     createdAt: admin.database.ServerValue.TIMESTAMP,
-    requestedAt: new Date().toISOString(),
-    ipHash: context.rawRequest.headers['x-forwarded-for'] || 'unknown'
-  };
-
-  // Guardar solicitud
-  await db.ref(`trial_requests/${emailKey}`).set(trialData);
-
-  // Guardar código para validación rápida
-  await db.ref(`trial_codes/${trialCode}`).set({
-    email,
-    expiresAt,
-    used: false
+    ip: (context.rawRequest && context.rawRequest.headers['x-forwarded-for']) || 'unknown',
   });
 
-  // ═══ ENVIAR EMAIL CON SENDGRID ═══
+  await db.ref(`trial_codes/${trialCode}`).set({
+    email,
+    uid: userRecord.uid,
+    expiresAt,
+    used: false,
+  });
+
+  // ── Enviar email con SendGrid ──
+  const expiryStr = new Date(expiresAt).toLocaleString('es-ES', {
+    day: '2-digit', month: 'long', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid',
+  });
+
+  const msg = {
+    to:      email,
+    from: {
+      email: 'noreply@aegispattern.io', // ← cambia por tu dominio verificado en SendGrid
+      name:  'AegisPattern',
+    },
+    subject: '🔐 Tu código de prueba AegisPattern — 7 días gratis',
+    replyTo: 'support@aegispattern.io',
+    html: `<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tu código de prueba AegisPattern</title></head>
+<body style="margin:0;padding:0;background:#0a0f1e;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0f1e;padding:40px 20px;">
+    <tr><td align="center">
+      <table width="100%" style="max-width:580px;background:#080c14;border-radius:16px;border:1px solid #1e3050;overflow:hidden;">
+
+        <!-- HEADER -->
+        <tr>
+          <td style="background:linear-gradient(135deg,#0d1422,#111929);padding:32px 32px 24px;text-align:center;border-bottom:1px solid #1e3050;">
+            <div style="font-size:26px;font-weight:900;letter-spacing:-0.5px;color:#38bdf8;">
+              ⬡ AEGIS<span style="color:#f59e0b">PATTERN</span>
+            </div>
+            <div style="font-size:13px;color:#4e6a8a;margin-top:6px;letter-spacing:1px;text-transform:uppercase;">
+              Suite Criptográfica Industrial
+            </div>
+          </td>
+        </tr>
+
+        <!-- BODY -->
+        <tr>
+          <td style="padding:32px;">
+            <h2 style="margin:0 0 12px;color:#e2eaf6;font-size:20px;">🎁 Prueba Premium — 7 días gratis</h2>
+            <p style="margin:0 0 24px;color:#8fa3bf;line-height:1.7;font-size:14px;">
+              ¡Hola! Tu solicitud de prueba gratuita ha sido aprobada.<br>
+              Copia el código de abajo y actívalo en AegisPattern:
+            </p>
+
+            <!-- CODE BOX -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 28px;">
+              <tr>
+                <td align="center" style="background:#0d1422;border:2px solid #38bdf8;border-radius:12px;padding:28px 20px;">
+                  <div style="font-family:'Courier New',monospace;font-size:26px;font-weight:700;letter-spacing:3px;color:#38bdf8;">
+                    ${trialCode}
+                  </div>
+                  <div style="font-size:12px;color:#4e6a8a;margin-top:8px;">Código de activación · copia exactamente</div>
+                </td>
+              </tr>
+            </table>
+
+            <!-- STEPS -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:#111929;border-radius:10px;border:1px solid #1e3050;margin-bottom:24px;">
+              <tr><td style="padding:20px;">
+                <div style="font-size:13px;color:#34d399;font-weight:600;margin-bottom:12px;">Cómo activarlo (30 segundos):</div>
+                <div style="font-size:13px;color:#8fa3bf;line-height:2;">
+                  1️⃣ Abre
+                  <a href="https://banqui73.github.io/apcriptterDoor/" style="color:#38bdf8;">AegisPattern</a>
+                  e inicia sesión<br>
+                  2️⃣ Ve a la pestaña <strong style="color:#e2eaf6;">Planes</strong><br>
+                  3️⃣ En "Activar licencia", pega:
+                  <code style="background:#0d1422;color:#f59e0b;padding:2px 8px;border-radius:4px;font-size:12px;">${trialCode}</code><br>
+                  4️⃣ ¡Listo! Acceso Premium desbloqueado 🚀
+                </div>
+              </td></tr>
+            </table>
+
+            <!-- FEATURES -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:#0d1a12;border-radius:10px;border:1px solid rgba(52,211,153,0.2);margin-bottom:24px;">
+              <tr><td style="padding:20px;">
+                <div style="font-size:13px;color:#34d399;font-weight:600;margin-bottom:10px;">✅ Durante 7 días tendrás acceso a:</div>
+                <table cellpadding="0" cellspacing="0">
+                  <tr><td style="padding:3px 0;font-size:13px;color:#8fa3bf;">🔑 AES-GCM 256-bit + ChaCha20-Poly1305</td></tr>
+                  <tr><td style="padding:3px 0;font-size:13px;color:#8fa3bf;">📁 Archivos sin límite de tamaño (cifrado)</td></tr>
+                  <tr><td style="padding:3px 0;font-size:13px;color:#8fa3bf;">⚡ Transferencia P2P cifrada hasta 49.99 GB</td></tr>
+                  <tr><td style="padding:3px 0;font-size:13px;color:#8fa3bf;">⚛️ Kyber-1024 post-cuántico</td></tr>
+                  <tr><td style="padding:3px 0;font-size:13px;color:#8fa3bf;">🚫 Sin espera freemium entre operaciones</td></tr>
+                </table>
+              </td></tr>
+            </table>
+
+            <!-- EXPIRY -->
+            <div style="font-size:12px;color:#4e6a8a;padding:12px 16px;background:#111929;border-radius:8px;border-left:3px solid #f59e0b;">
+              ⏰ <strong style="color:#f59e0b;">Expira el:</strong> ${expiryStr}
+            </div>
+          </td>
+        </tr>
+
+        <!-- FOOTER -->
+        <tr>
+          <td style="padding:20px 32px;border-top:1px solid #1e3050;text-align:center;">
+            <p style="margin:0;font-size:11px;color:#2d4060;line-height:1.6;">
+              © 2026 AegisPattern · Cifrado en el navegador · E2E · Sin servidores<br>
+              Si no solicitaste esto, ignora este correo. El código no se activará sin tu acción.<br>
+              <a href="https://banqui73.github.io/apcriptterDoor/" style="color:#2d4060;">Web</a> ·
+              <a href="https://github.com/banqui73/apcriptterDoor" style="color:#2d4060;">GitHub</a>
+            </p>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`,
+  };
+
   try {
-    const msg = {
-      to: email,
-      from: 'noreply@aegispattern.io', // Cambiar por tu dominio verificado
-      subject: '🔐 Tu código de prueba AegisPattern — 7 días gratis',
-      html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; }
-            .container { background: #080c14; color: #e2eaf6; padding: 40px 20px; border-radius: 12px; }
-            .header { text-align: center; margin-bottom: 30px; }
-            .logo { font-size: 24px; font-weight: 900; margin-bottom: 10px; }
-            .code-box { background: #0d1422; border: 2px solid #38bdf8; padding: 30px; text-align: center; border-radius: 8px; margin: 30px 0; }
-            .code { font-family: 'DM Mono', monospace; font-size: 28px; font-weight: 700; letter-spacing: 2px; color: #38bdf8; }
-            .expires { font-size: 14px; color: #8fa3bf; margin-top: 20px; }
-            .footer { font-size: 12px; color: #4e6a8a; text-align: center; margin-top: 40px; border-top: 1px solid #16203a; padding-top: 20px; }
-            a { color: #0ea5e9; text-decoration: none; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <div class="logo">⬡ AEGIS<strong style="color: #f59e0b">PATTERN</strong></div>
-              <p style="margin: 10px 0; color: #8fa3bf;">Suite criptográfica industrial</p>
-            </div>
-
-            <h2 style="margin: 20px 0; color: #e2eaf6;">🎁 ¡Prueba Premium por 7 días!</h2>
-            
-            <p style="color: #8fa3bf; line-height: 1.6;">
-              Hemos recibido tu solicitud para activar una prueba gratuita de AegisPattern Premium.
-              <br><br>
-              Tu código de acceso es:
-            </p>
-
-            <div class="code-box">
-              <div class="code">${trialCode}</div>
-              <p style="margin: 0; color: #8fa3bf; font-size: 13px;">Copia este código</p>
-            </div>
-
-            <p style="color: #8fa3bf; line-height: 1.6; margin: 0 0 20px;">
-              <strong>Cómo activarlo:</strong>
-              <br>1. Abre <a href="https://banqui73.github.io/apcriptterDoor/">AegisPattern</a>
-              <br>2. Ve a <strong>Planes → Activar licencia</strong>
-              <br>3. Pega este código: <code style="background: #111929; padding: 2px 6px; border-radius: 3px; color: #f59e0b;">${trialCode}</code>
-              <br>4. ¡Acceso Premium desbloqueado durante 7 días! 🚀
-            </p>
-
-            <div style="background: #111929; border-left: 3px solid #10b981; padding: 15px; margin: 20px 0; border-radius: 4px;">
-              <p style="margin: 0; color: #34d399; font-size: 14px; font-weight: 600;">✅ Con Premium accedes a:</p>
-              <ul style="margin: 10px 0; padding-left: 20px; color: #8fa3bf; font-size: 13px;">
-                <li>AES-GCM 256-bit + ChaCha20</li>
-                <li>Archivos sin límite para cifrar</li>
-                <li>Transferencia P2P hasta 49.99GB</li>
-                <li>Algoritmos avanzados y Kyber-1024</li>
-                <li>Sin espera freemium entre operaciones</li>
-              </ul>
-            </div>
-
-            <p style="color: #8fa3bf; margin: 20px 0; font-size: 13px;">
-              <strong>⏰ Este código expira el:</strong> ${new Date(expiresAt).toLocaleString('es-ES')}
-            </p>
-
-            <p style="color: #4e6a8a; margin: 20px 0; font-size: 13px;">
-              Si no solicitaste esta prueba, simplemente ignora este email. El código no se activará sin tu acción.
-            </p>
-
-            <div class="footer">
-              <p style="margin: 0;">© 2026 AegisPattern · Cifrado en el navegador · E2E · Sin servidores</p>
-              <p style="margin: 5px 0 0;"><a href="https://github.com/banqui73/apcriptterDoor">GitHub</a> • <a href="https://banqui73.github.io/apcriptterDoor/">Web</a></p>
-            </div>
-          </div>
-        </body>
-        </html>
-      `,
-      replyTo: 'support@aegispattern.io'
-    };
-
     await sgMail.send(msg);
-    
-    return {
-      success: true,
-      message: 'Código de prueba enviado a tu email',
-      email: email.replace(/(.{2})(.*)(.{2})/, '$1***$3'), // Ocultar parcialmente
-      expiresIn: '7 días'
-    };
-  } catch (sendError) {
-    console.error('SendGrid error:', sendError);
-    // Si falla el email, guardar para reintento
+  } catch (sendErr) {
+    console.error('SendGrid error:', JSON.stringify(sendErr.response?.body || sendErr.message));
+    // Guardar para reintento manual
     await db.ref(`failed_emails/${emailKey}`).set({
-      email,
-      code: trialCode,
-      error: sendError.message,
-      timestamp: admin.database.ServerValue.TIMESTAMP
+      email, code: trialCode,
+      error: sendErr.message,
+      ts: admin.database.ServerValue.TIMESTAMP,
     });
     throw new functions.https.HttpsError(
       'internal',
-      'No pudimos enviar el email. Intenta de nuevo.'
+      'No se pudo enviar el email. Intenta de nuevo en unos minutos.'
     );
   }
+
+  return {
+    success: true,
+    message: 'Código enviado a tu email.',
+    // Ocultamos parte del email por privacidad
+    emailHint: email.replace(/^(.{2})(.+?)(@.+)$/, (_, a, b, c) => a + '*'.repeat(b.length) + c),
+    expiresIn: '7 días',
+  };
 });
 
-/**
- * Validar y canjear código trial
- * POST: /validateTrialCode
- * Body: { code: "TRIAL-XXXXXXXX", uid: "user-id" }
- */
+
+// ─────────────────────────────────────────────
+// validateTrialCode — canjea el código
+// ─────────────────────────────────────────────
 exports.validateTrialCode = functions.https.onCall(async (data, context) => {
   const { code, uid } = data;
 
   if (!code || !uid) {
-    throw new functions.https.HttpsError('invalid-argument', 'Código o UID faltante');
+    throw new functions.https.HttpsError('invalid-argument', 'Código o UID faltante.');
   }
 
-  try {
-    // Buscar código
-    const codeSnap = await db.ref(`trial_codes/${code}`).once('value');
-    if (!codeSnap.exists()) {
-      throw new functions.https.HttpsError('not-found', 'Código no válido');
-    }
-
-    const codeData = codeSnap.val();
-
-    // Verificar si está expirado
-    if (Date.now() > codeData.expiresAt) {
-      throw new functions.https.HttpsError('failed-precondition', 'Código expirado');
-    }
-
-    // Verificar si ya fue usado
-    if (codeData.used) {
-      throw new functions.https.HttpsError('already-exists', 'Código ya utilizado');
-    }
-
-    // Marcar como usado
-    await db.ref(`trial_codes/${code}`).update({
-      used: true,
-      usedBy: uid,
-      usedAt: admin.database.ServerValue.TIMESTAMP
-    });
-
-    // Actualizar plan del usuario
-    await db.ref(`users/${uid}`).update({
-      plan: 'trial',
-      trialExpiry: codeData.expiresAt,
-      trialActivatedAt: admin.database.ServerValue.TIMESTAMP,
-      trialCode: code
-    });
-
-    return {
-      success: true,
-      plan: 'trial',
-      expiresAt: codeData.expiresAt,
-      daysLeft: Math.ceil((codeData.expiresAt - Date.now()) / (24 * 60 * 60 * 1000))
-    };
-  } catch (err) {
-    console.error('Validation error:', err);
-    throw err;
+  const codeSnap = await db.ref(`trial_codes/${code}`).once('value');
+  if (!codeSnap.exists()) {
+    throw new functions.https.HttpsError('not-found', 'Código no válido.');
   }
+
+  const codeData = codeSnap.val();
+
+  if (Date.now() > codeData.expiresAt) {
+    throw new functions.https.HttpsError('failed-precondition', 'Código expirado.');
+  }
+  if (codeData.used) {
+    throw new functions.https.HttpsError('already-exists', 'Código ya utilizado.');
+  }
+
+  await db.ref(`trial_codes/${code}`).update({
+    used: true,
+    usedBy: uid,
+    usedAt: admin.database.ServerValue.TIMESTAMP,
+  });
+
+  await db.ref(`users/${uid}`).update({
+    plan: 'trial',
+    trialExpiry: codeData.expiresAt,
+    trialActivatedAt: admin.database.ServerValue.TIMESTAMP,
+    trialCode: code,
+  });
+
+  return {
+    success: true,
+    plan: 'trial',
+    expiresAt: codeData.expiresAt,
+    daysLeft: Math.ceil((codeData.expiresAt - Date.now()) / 86400000),
+  };
 });
 
-/**
- * Limpiar códigos expirados (ejecutar diariamente)
- */
+
+// ─────────────────────────────────────────────
+// cleanupExpiredCodes — limpieza diaria 03:00
+// ─────────────────────────────────────────────
 exports.cleanupExpiredCodes = functions.pubsub
   .schedule('every day 03:00')
   .timeZone('Europe/Madrid')
-  .onRun(async (context) => {
-    const now = Date.now();
-    const codesRef = db.ref('trial_codes');
-    
-    const snap = await codesRef.once('value');
+  .onRun(async () => {
+    const now  = Date.now();
+    const snap = await db.ref('trial_codes').once('value');
     const codes = snap.val() || {};
-
     const updates = {};
     let cleaned = 0;
 
     Object.entries(codes).forEach(([key, val]) => {
-      if (val.expiresAt < now && !val.used) {
-        updates[`trial_codes/${key}`] = null;
-        cleaned++;
-      }
+      if (val.expiresAt < now) { updates[`trial_codes/${key}`] = null; cleaned++; }
     });
 
-    if (Object.keys(updates).length > 0) {
-      await db.ref().update(updates);
-      console.log(`Limpieza: ${cleaned} códigos expirados eliminados`);
-    }
-
+    if (cleaned > 0) await db.ref().update(updates);
+    console.log(`Limpieza: ${cleaned} códigos eliminados.`);
     return { cleaned };
   });
