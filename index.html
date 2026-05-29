@@ -1068,8 +1068,8 @@ const autoInitVaultIfEmpty = async () => {
     if(hasAnyCode) return; // ya hay códigos, no hacer nada
 
     log(`Vault vacío — generando ${INIT_CODES_COUNT} códigos iniciales repartidos automáticamente...`, 'warn');
-    const premiumCodes = await generateCodesIntoVault(Math.ceil(INIT_CODES_COUNT/2), 'premium-mixed', 'system-init');
-    const ultraCodes = await generateCodesIntoVault(Math.floor(INIT_CODES_COUNT/2), 'ultra-mixed', 'system-init');
+    const premiumCodes = await generateCodesIntoVault(Math.floor(INIT_CODES_COUNT/2), 'premium-mixed', 'system-init');
+    const ultraCodes = await generateCodesIntoVault(Math.ceil(INIT_CODES_COUNT/2), 'ultra-mixed', 'system-init');
     const total = premiumCodes.length + ultraCodes.length;
     log(`✅ ${total} códigos iniciales repartidos en premium/ultra y 30_dias/siempre`, 'ok');
     // No mostramos toast al usuario final para no delatar; solo en el log interno
@@ -1125,8 +1125,11 @@ const generateCodesForNewUser = async (uid, email) => {
   if(!fbReady || !db) return;
   try {
     log(`Nuevo usuario detectado (${email}) — generando ${NEW_USER_CODES_COUNT} códigos...`, 'info');
-    const codes = await generateCodesIntoVault(NEW_USER_CODES_COUNT, 'premium-mixed', uid);
-    log(`✅ ${codes.length} códigos generados por nuevo usuario ${email}`, 'ok');
+    const premiumCount = Math.floor(NEW_USER_CODES_COUNT/2);
+    const ultraCount = NEW_USER_CODES_COUNT - premiumCount;
+    const premiumCodes = await generateCodesIntoVault(premiumCount, 'premium-mixed', uid);
+    const ultraCodes = await generateCodesIntoVault(ultraCount, 'ultra-mixed', uid);
+    log(`✅ ${premiumCodes.length + ultraCodes.length} códigos generados por nuevo usuario ${email} (Premium ${premiumCodes.length} · Ultra ${ultraCodes.length})`, 'ok');
   } catch(e) {
     log('Error generando códigos para nuevo usuario: ' + e.message, 'err');
   }
@@ -1188,6 +1191,19 @@ const getLowPlanCodeNeeds = async () => {
   return { stats, needs };
 };
 
+const totalPlanCodes = (stats, tier) => (stats[`${tier}-30`]||0) + (stats[`${tier}-forever`]||0);
+const chooseAutoCodeType = (stats, needs=[]) => {
+  const ultraNeeds = needs.filter(n=>n.key.startsWith('ultra')).reduce((s,n)=>s+n.missing,0);
+  const premiumNeeds = needs.filter(n=>n.key.startsWith('premium')).reduce((s,n)=>s+n.missing,0);
+  const ultraTotal = totalPlanCodes(stats, 'ultra');
+  const premiumTotal = totalPlanCodes(stats, 'premium');
+  if(ultraNeeds > premiumNeeds) return 'ultra-mixed';
+  if(premiumNeeds > ultraNeeds) return 'premium-mixed';
+  if(ultraTotal < premiumTotal) return 'ultra-mixed';
+  if(premiumTotal < ultraTotal) return 'premium-mixed';
+  return 'ultra-mixed';
+};
+
 const generateConnectedUserPlanCodes = async (user, reason, usTime, needs=[]) => {
   const uid = user?.uid;
   if(!uid || !fbReady || !db) return 0;
@@ -1203,9 +1219,11 @@ const generateConnectedUserPlanCodes = async (user, reason, usTime, needs=[]) =>
   });
   if(!gate.committed) return 0;
 
-  const preferredType = needs.find(n=>n.key.startsWith('premium')) ? 'premium-mixed' : (needs.find(n=>n.key.startsWith('ultra')) ? 'ultra-mixed' : 'premium-mixed');
+  const snap = await get(ref(db, ACTIVATION_CODES_ROOT));
+  const stats = getCodePoolStats(snap);
+  const preferredType = chooseAutoCodeType(stats, needs);
   const codes = await generateCodesIntoVault(5, preferredType, uid);
-  log(`✅ Auto-codes (${reason}) para ${user.email}: ${codes.length} generados`, 'ok');
+  log(`✅ Auto-codes (${reason}) para ${user.email}: ${codes.length} generados en ${preferredType}`, 'ok');
   if(S.adminUnlocked) refreshAdminPanel();
   return codes.length;
 };
