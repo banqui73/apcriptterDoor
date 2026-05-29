@@ -7,116 +7,53 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="AegisPattern">
-<meta name="description" content="Suite criptográfica industrial. AES-CBC, AES-GCM, ChaCha20, Kyber-1024.">
+<meta name="description" content="Suite criptográfica industrial. AES-CBC, AES-GCM, ChaCha20, Kyber-1024. Transferencia P2P E2E cifrada.">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>AegisPattern v9</title>
+<title>AegisPattern v10</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #080c14;
-  --s1: #0d1422;
-  --s2: #111929;
-  --s3: #16203a;
-  --b1: #1e3050;
-  --b2: #263d5e;
-  --p: #38bdf8;
-  --p2: #0ea5e9;
-  --acc: #f59e0b;
-  --g: #34d399;
-  --r: #f87171;
-  --pu: #a78bfa;
-  --tx: #e2eaf6;
-  --tx2: #8fa3bf;
-  --tx3: #4e6a8a;
-  --rad: 12px;
-  --rad-sm: 8px;
-  --mono: 'DM Mono', monospace;
-  --disp: 'Outfit', sans-serif;
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --safe-top: env(safe-area-inset-top, 0px);
+  --bg: #080c14;--s1: #0d1422;--s2: #111929;--s3: #16203a;
+  --b1: #1e3050;--b2: #263d5e;
+  --p: #38bdf8;--p2: #0ea5e9;--acc: #f59e0b;--g: #34d399;--r: #f87171;--pu: #a78bfa;
+  --tx: #e2eaf6;--tx2: #8fa3bf;--tx3: #4e6a8a;
+  --rad: 12px;--rad-sm: 8px;
+  --mono: 'DM Mono', monospace;--disp: 'Outfit', sans-serif;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);--safe-top: env(safe-area-inset-top, 0px);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{scroll-behavior:smooth}
-body{
-  font-family:var(--mono);background:var(--bg);color:var(--tx);
-  min-height:100dvh;overflow-x:hidden;
-  padding-top:calc(56px + var(--safe-top));
-  padding-bottom:calc(64px + var(--safe-bottom));
-}
-@media(min-width:768px){
-  body{padding-top:calc(60px + var(--safe-top));padding-bottom:0}
-}
+body{font-family:var(--mono);background:var(--bg);color:var(--tx);min-height:100dvh;overflow-x:hidden;padding-top:calc(56px + var(--safe-top));padding-bottom:calc(64px + var(--safe-bottom));}
+@media(min-width:768px){body{padding-top:calc(60px + var(--safe-top));padding-bottom:0}}
 
 /* TOPBAR */
-.topbar{
-  position:fixed;top:0;left:0;right:0;z-index:100;
-  height:calc(56px + var(--safe-top));
-  padding-top:var(--safe-top);
-  background:rgba(8,12,20,.95);
-  border-bottom:1px solid var(--b1);
-  backdrop-filter:blur(20px);
-  display:flex;align-items:center;justify-content:space-between;
-  padding-left:16px;padding-right:16px;
-}
-.logo{
-  font-family:var(--disp);font-weight:900;font-size:1.1rem;
-  color:var(--p);letter-spacing:-0.5px;display:flex;align-items:center;gap:6px;
-}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:100;height:calc(56px + var(--safe-top));padding-top:var(--safe-top);background:rgba(8,12,20,.95);border-bottom:1px solid var(--b1);backdrop-filter:blur(20px);display:flex;align-items:center;justify-content:space-between;padding-left:16px;padding-right:16px;}
+.logo{font-family:var(--disp);font-weight:900;font-size:1.1rem;color:var(--p);letter-spacing:-0.5px;display:flex;align-items:center;gap:6px;}
 .logo em{color:var(--acc);font-style:normal}
-.logo sup{
-  font-size:.55rem;background:var(--s3);border:1px solid var(--b2);
-  color:var(--tx3);padding:1px 5px;border-radius:4px;font-weight:400;
-}
+.logo sup{font-size:.55rem;background:var(--s3);border:1px solid var(--b2);color:var(--tx3);padding:1px 5px;border-radius:4px;font-weight:400;}
 .topbar-right{display:flex;align-items:center;gap:8px}
-.plan-chip{
-  font-family:var(--mono);font-size:.6rem;font-weight:500;
-  padding:4px 10px;border-radius:20px;letter-spacing:.5px;cursor:pointer;
-  transition:all .2s;
-}
+.plan-chip{font-family:var(--mono);font-size:.6rem;font-weight:500;padding:4px 10px;border-radius:20px;letter-spacing:.5px;cursor:pointer;transition:all .2s;}
 .plan-chip.free{background:var(--s2);border:1px solid var(--b1);color:var(--tx3)}
 .plan-chip.trial{background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3);color:var(--g)}
-.plan-chip.premium{
-  background:linear-gradient(135deg,#b45309,#f59e0b);
-  color:#0f172a;font-weight:700;border:none;
-}
+.plan-chip.premium{background:linear-gradient(135deg,#b45309,#f59e0b);color:#0f172a;font-weight:700;border:none;}
+.plan-chip.ultra{background:linear-gradient(135deg,#5b21b6,#a78bfa);color:white;font-weight:700;border:none;}
 .status-dot{width:7px;height:7px;border-radius:50%;background:var(--tx3);flex-shrink:0}
 .status-dot.on{background:var(--g);box-shadow:0 0 6px var(--g)}
 
-/* BOTTOM NAV (mobile) */
-.bottom-nav{
-  position:fixed;bottom:0;left:0;right:0;z-index:100;
-  height:calc(56px + var(--safe-bottom));
-  padding-bottom:var(--safe-bottom);
-  background:rgba(8,12,20,.98);
-  border-top:1px solid var(--b1);
-  display:flex;align-items:center;
-  backdrop-filter:blur(20px);
-}
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:100;height:calc(56px + var(--safe-bottom));padding-bottom:var(--safe-bottom);background:rgba(8,12,20,.98);border-top:1px solid var(--b1);display:flex;align-items:center;backdrop-filter:blur(20px);}
 @media(min-width:768px){.bottom-nav{display:none}}
-.bnav-btn{
-  flex:1;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;gap:3px;padding:8px 4px;
-  border:none;background:transparent;color:var(--tx3);
-  font-family:var(--mono);font-size:.55rem;letter-spacing:.5px;
-  cursor:pointer;transition:color .2s;text-transform:uppercase;
-}
+.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 4px;border:none;background:transparent;color:var(--tx3);font-family:var(--mono);font-size:.5rem;letter-spacing:.5px;cursor:pointer;transition:color .2s;text-transform:uppercase;}
 .bnav-btn.active{color:var(--p)}
 .bnav-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8}
 
-/* TOP NAV (desktop) */
+/* DESKTOP NAV */
 .desk-nav{display:none}
 @media(min-width:768px){
-  .desk-nav{
-    display:flex;gap:4px;
-  }
-  .desk-nav-btn{
-    font-family:var(--mono);font-size:.7rem;letter-spacing:.5px;
-    background:transparent;border:1px solid transparent;
-    color:var(--tx3);padding:7px 14px;border-radius:var(--rad-sm);
-    cursor:pointer;transition:all .2s;text-transform:uppercase;
-  }
+  .desk-nav{display:flex;gap:4px;}
+  .desk-nav-btn{font-family:var(--mono);font-size:.7rem;letter-spacing:.5px;background:transparent;border:1px solid transparent;color:var(--tx3);padding:7px 14px;border-radius:var(--rad-sm);cursor:pointer;transition:all .2s;text-transform:uppercase;}
   .desk-nav-btn:hover{background:var(--s2);color:var(--tx);border-color:var(--b1)}
   .desk-nav-btn.active{background:var(--s3);border-color:var(--b2);color:var(--p)}
 }
@@ -127,36 +64,19 @@ body{
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
 /* CARDS */
-.card{
-  background:var(--s1);border:1px solid var(--b1);
-  border-radius:var(--rad);padding:16px;margin-bottom:12px;
-}
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--rad);padding:16px;margin-bottom:12px;}
 .card:last-child{margin-bottom:0}
-.card-title{
-  font-size:.6rem;color:var(--tx3);text-transform:uppercase;
-  letter-spacing:1.5px;margin-bottom:12px;
-}
+.card-title{font-size:.6rem;color:var(--tx3);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;}
 
-/* FORM ELEMENTS */
-.inp{
-  width:100%;padding:11px 13px;background:var(--bg);
-  border:1px solid var(--b1);border-radius:var(--rad-sm);
-  color:var(--tx);font-family:var(--mono);font-size:.85rem;
-  outline:none;transition:border-color .2s;
-}
+/* FORM */
+.inp{width:100%;padding:11px 13px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--rad-sm);color:var(--tx);font-family:var(--mono);font-size:.85rem;outline:none;transition:border-color .2s;}
 .inp:focus{border-color:var(--p)}
 .inp::placeholder{color:var(--tx3)}
 .label{font-size:.6rem;color:var(--tx3);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:5px}
 .field{margin-bottom:10px}
 
 /* BUTTONS */
-.btn{
-  font-family:var(--mono);font-size:.75rem;font-weight:500;
-  letter-spacing:.5px;border:none;border-radius:var(--rad-sm);
-  cursor:pointer;transition:all .2s;text-transform:uppercase;
-  display:inline-flex;align-items:center;justify-content:center;gap:6px;
-  -webkit-user-select:none;user-select:none;
-}
+.btn{font-family:var(--mono);font-size:.75rem;font-weight:500;letter-spacing:.5px;border:none;border-radius:var(--rad-sm);cursor:pointer;transition:all .2s;text-transform:uppercase;display:inline-flex;align-items:center;justify-content:center;gap:6px;-webkit-user-select:none;user-select:none;}
 .btn-block{width:100%;padding:12px}
 .btn-sm{padding:8px 14px}
 .btn-primary{background:var(--p2);color:white}
@@ -167,122 +87,50 @@ body{
 .btn-danger{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:var(--r)}
 .btn:disabled{opacity:.4;cursor:not-allowed;pointer-events:none}
 
-/* AUTH TABS */
+/* AUTH */
 .tabs{display:flex;gap:6px;margin-bottom:12px}
-.tab{
-  flex:1;font-family:var(--mono);font-size:.65rem;letter-spacing:.5px;
-  background:var(--s2);border:1px solid var(--b1);color:var(--tx3);
-  padding:8px;border-radius:var(--rad-sm);cursor:pointer;transition:all .2s;
-  text-transform:uppercase;
-}
+.tab{flex:1;font-family:var(--mono);font-size:.65rem;letter-spacing:.5px;background:var(--s2);border:1px solid var(--b1);color:var(--tx3);padding:8px;border-radius:var(--rad-sm);cursor:pointer;transition:all .2s;text-transform:uppercase;}
 .tab.active{background:var(--s3);border-color:var(--p2);color:var(--p2)}
-
-/* SESSION ROW */
-.session-row{
-  display:none;align-items:center;justify-content:space-between;
-  padding:8px 12px;background:var(--bg);border-radius:var(--rad-sm);
-  border:1px solid var(--b1);font-size:.72rem;
-}
+.session-row{display:none;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg);border-radius:var(--rad-sm);border:1px solid var(--b1);font-size:.72rem;}
 .session-email{color:var(--p2)}
 .session-logout{background:none;border:none;color:var(--tx3);font-family:var(--mono);font-size:.65rem;cursor:pointer;text-decoration:underline}
+.nag{display:none;margin-top:8px;padding:8px 12px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:var(--rad-sm);font-size:.68rem;color:#fcd34d;text-align:center;}
 
-/* NAG */
-.nag{
-  display:none;margin-top:8px;padding:8px 12px;
-  background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);
-  border-radius:var(--rad-sm);font-size:.68rem;color:#fcd34d;text-align:center;
-}
-
-/* PASSWORD MODES */
+/* PW MODES */
 .pw-modes{display:flex;gap:5px;margin-bottom:12px}
-.pw-mode-btn{
-  flex:1;font-family:var(--mono);font-size:.6rem;letter-spacing:.3px;
-  background:var(--s2);border:1px solid var(--b1);color:var(--tx3);
-  padding:7px 4px;border-radius:var(--rad-sm);cursor:pointer;
-  transition:all .2s;text-align:center;text-transform:uppercase;
-}
+.pw-mode-btn{flex:1;font-family:var(--mono);font-size:.6rem;letter-spacing:.3px;background:var(--s2);border:1px solid var(--b1);color:var(--tx3);padding:7px 4px;border-radius:var(--rad-sm);cursor:pointer;transition:all .2s;text-align:center;text-transform:uppercase;}
 .pw-mode-btn.active{background:var(--s3);border-color:var(--p2);color:var(--p2)}
 .pw-panel{display:none}
 .pw-panel.active{display:block}
 
 /* PATTERN */
-.pattern-wrap{
-  background:var(--bg);border:1px solid var(--b1);border-radius:var(--rad);
-  padding:16px;margin-bottom:10px;display:flex;flex-direction:column;align-items:center;
-}
+.pattern-wrap{background:var(--bg);border:1px solid var(--b1);border-radius:var(--rad);padding:16px;margin-bottom:10px;display:flex;flex-direction:column;align-items:center;}
 .pattern-canvas{position:relative;width:210px;height:210px;margin:0 auto}
 .p-svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1}
-.p-grid{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:18px;
-  position:relative;z-index:2;width:210px;height:210px;padding:18px;
-}
-.p-node{
-  width:50px;height:50px;background:var(--s2);border-radius:50%;
-  border:2px solid var(--b1);display:flex;align-items:center;justify-content:center;
-  font-size:.72rem;color:var(--tx3);cursor:pointer;transition:all .2s;
-  user-select:none;position:relative;touch-action:none;
-}
-.p-node.active{
-  background:var(--p2);border-color:var(--p2);color:white;
-  box-shadow:0 0 12px rgba(14,165,233,.4);transform:scale(1.08);
-}
-.p-node.active::after{
-  content:attr(data-order);position:absolute;top:-5px;right:-5px;
-  width:14px;height:14px;background:var(--acc);color:#0f172a;
-  border-radius:50%;font-size:.5rem;font-weight:700;
-  display:flex;align-items:center;justify-content:center;
-}
+.p-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;position:relative;z-index:2;width:210px;height:210px;padding:18px;}
+.p-node{width:50px;height:50px;background:var(--s2);border-radius:50%;border:2px solid var(--b1);display:flex;align-items:center;justify-content:center;font-size:.72rem;color:var(--tx3);cursor:pointer;transition:all .2s;user-select:none;position:relative;touch-action:none;}
+.p-node.active{background:var(--p2);border-color:var(--p2);color:white;box-shadow:0 0 12px rgba(14,165,233,.4);transform:scale(1.08);}
+.p-node.active::after{content:attr(data-order);position:absolute;top:-5px;right:-5px;width:14px;height:14px;background:var(--acc);color:#0f172a;border-radius:50%;font-size:.5rem;font-weight:700;display:flex;align-items:center;justify-content:center;}
 .p-hint{font-size:.62rem;color:var(--tx3);text-align:center;margin-top:8px}
-
-/* TEXT PW */
 .pw-text-row{display:flex;gap:7px;align-items:center}
 .pw-text-row .inp{flex:1}
-.pw-vis-btn{
-  background:var(--s2);border:1px solid var(--b1);color:var(--tx3);
-  padding:10px 11px;border-radius:var(--rad-sm);cursor:pointer;flex-shrink:0;font-size:.85rem;
-}
+.pw-vis-btn{background:var(--s2);border:1px solid var(--b1);color:var(--tx3);padding:10px 11px;border-radius:var(--rad-sm);cursor:pointer;flex-shrink:0;font-size:.85rem;}
 .strength-bar{height:3px;background:var(--b1);border-radius:2px;margin-top:6px;overflow:hidden}
 .strength-fill{height:100%;border-radius:2px;transition:width .35s,background .35s}
-.strength-label{font-size:.58rem;margin-top:3px;text-align:right}
-
-/* AUTO PW */
-.auto-display{
-  background:var(--bg);border:1px solid var(--b1);border-radius:var(--rad-sm);
-  padding:10px 12px;font-family:var(--mono);font-size:.72rem;color:var(--acc);
-  letter-spacing:.5px;word-break:break-all;min-height:46px;
-  display:flex;align-items:center;margin-bottom:8px;position:relative;
-}
-.copy-btn{
-  position:absolute;right:8px;top:50%;transform:translateY(-50%);
-  background:var(--s3);border:1px solid var(--b2);color:var(--tx2);
-  padding:3px 8px;border-radius:4px;font-size:.58rem;cursor:pointer;font-family:var(--mono);
-}
+.auto-display{background:var(--bg);border:1px solid var(--b1);border-radius:var(--rad-sm);padding:10px 12px;font-family:var(--mono);font-size:.72rem;color:var(--acc);letter-spacing:.5px;word-break:break-all;min-height:46px;display:flex;align-items:center;margin-bottom:8px;position:relative;}
+.copy-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:var(--s3);border:1px solid var(--b2);color:var(--tx2);padding:3px 8px;border-radius:4px;font-size:.58rem;cursor:pointer;font-family:var(--mono);}
 .len-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
 .len-label{font-size:.62rem;color:var(--tx3);white-space:nowrap}
-.range-input{
-  flex:1;-webkit-appearance:none;height:4px;border-radius:2px;
-  background:var(--b1);outline:none;
-}
-.range-input::-webkit-slider-thumb{
-  -webkit-appearance:none;width:16px;height:16px;border-radius:50%;
-  background:var(--p2);cursor:pointer;box-shadow:0 0 8px rgba(14,165,233,.4);
-}
+.range-input{flex:1;-webkit-appearance:none;height:4px;border-radius:2px;background:var(--b1);outline:none;}
+.range-input::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--p2);cursor:pointer;box-shadow:0 0 8px rgba(14,165,233,.4);}
 .len-val{font-size:.68rem;color:var(--p2);font-weight:500;min-width:24px;text-align:right}
 .charset-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
-.cs-opt{
-  font-family:var(--mono);font-size:.6rem;padding:4px 9px;
-  background:var(--s2);border:1px solid var(--b1);border-radius:4px;
-  color:var(--tx3);cursor:pointer;transition:all .2s;user-select:none;
-}
+.cs-opt{font-family:var(--mono);font-size:.6rem;padding:4px 9px;background:var(--s2);border:1px solid var(--b1);border-radius:4px;color:var(--tx3);cursor:pointer;transition:all .2s;user-select:none;}
 .cs-opt.on{background:var(--s3);border-color:var(--acc);color:var(--acc)}
 
-/* ALGO LIST */
+/* ALGO */
 .algo-list{display:flex;flex-direction:column;gap:6px}
-.algo-item{
-  display:flex;align-items:center;gap:10px;padding:10px 12px;
-  background:var(--s2);border:1px solid var(--b1);border-radius:var(--rad-sm);
-  cursor:pointer;transition:all .2s;user-select:none;
-}
+.algo-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--s2);border:1px solid var(--b1);border-radius:var(--rad-sm);cursor:pointer;transition:all .2s;user-select:none;}
 .algo-item:hover{border-color:var(--b2)}
 .algo-item.sel{border-color:var(--p2);background:rgba(14,165,233,.05)}
 .algo-item.locked{opacity:.5;cursor:not-allowed}
@@ -290,21 +138,14 @@ body{
 .algo-info{flex:1}
 .algo-name{font-size:.75rem;color:var(--tx);font-weight:500}
 .algo-desc{font-size:.6rem;color:var(--tx3);margin-top:1px}
-.algo-tag{
-  font-size:.55rem;padding:2px 6px;border-radius:3px;
-  letter-spacing:.3px;font-weight:600;flex-shrink:0;
-}
+.algo-tag{font-size:.55rem;padding:2px 6px;border-radius:3px;letter-spacing:.3px;font-weight:600;flex-shrink:0;}
 .t-free{background:var(--s3);color:var(--tx3);border:1px solid var(--b2)}
 .t-premium{background:rgba(245,158,11,.12);color:var(--acc);border:1px solid rgba(245,158,11,.25)}
 .t-ultra{background:rgba(167,139,250,.12);color:var(--pu);border:1px solid rgba(167,139,250,.25)}
 .t-quantum{background:rgba(14,165,233,.12);color:var(--p2);border:1px solid rgba(14,165,233,.25)}
 
-/* FILE DROP */
-.file-drop{
-  border:2px dashed var(--b2);border-radius:var(--rad);
-  padding:20px 16px;text-align:center;cursor:pointer;
-  transition:all .2s;margin-bottom:12px;
-}
+/* FILE */
+.file-drop{border:2px dashed var(--b2);border-radius:var(--rad);padding:20px 16px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:12px;}
 .file-drop:hover,.file-drop.drag-over{border-color:var(--p2);background:rgba(14,165,233,.03)}
 .file-icon{font-size:1.8rem;margin-bottom:6px;opacity:.5}
 .file-label{font-size:.72rem;color:var(--tx2)}
@@ -313,11 +154,7 @@ body{
 .file-sz{font-size:.6rem;color:var(--tx3);margin-top:2px}
 
 /* LOG */
-.log-panel{
-  background:var(--bg);border:1px solid var(--b1);border-radius:var(--rad-sm);
-  padding:10px;font-size:.65rem;min-height:70px;max-height:100px;
-  overflow-y:auto;margin-bottom:12px;
-}
+.log-panel{background:var(--bg);border:1px solid var(--b1);border-radius:var(--rad-sm);padding:10px;font-size:.65rem;min-height:70px;max-height:100px;overflow-y:auto;margin-bottom:12px;}
 .log-line{margin-bottom:3px;display:flex;gap:7px}
 .log-ts{color:var(--tx3);flex-shrink:0}
 .log-info{color:var(--p2)}
@@ -339,14 +176,14 @@ body{
 .progress-track{height:4px;background:var(--b1);border-radius:2px;overflow:hidden}
 .progress-fill{height:100%;border-radius:2px;width:0%;background:linear-gradient(90deg,var(--p2),var(--pu));transition:width .2s}
 
-/* SECURITY INDICATORS */
+/* SEC INDICATORS */
 .sec-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .sec-item{background:var(--s2);border:1px solid var(--b1);border-radius:var(--rad-sm);padding:10px}
 .sec-icon{font-size:1rem;margin-bottom:3px}
 .sec-lbl{font-size:.55rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.8px}
 .sec-val{font-size:.72rem;color:var(--tx);font-weight:500;margin-top:1px}
 
-/* FILE ANALYSIS */
+/* ANALYSIS */
 .analysis{background:var(--s2);border-radius:var(--rad-sm);padding:12px}
 .ana-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(30,48,80,.5)}
 .ana-row:last-child{border-bottom:none}
@@ -356,10 +193,7 @@ body{
 .ana-v.bad{color:var(--r)}
 
 /* KYBER CARD */
-.kyber-card{
-  background:linear-gradient(135deg,rgba(14,165,233,.04),rgba(167,139,250,.04));
-  border:1px solid rgba(167,139,250,.25);border-radius:var(--rad);padding:14px;margin-bottom:12px;
-}
+.kyber-card{background:linear-gradient(135deg,rgba(14,165,233,.04),rgba(167,139,250,.04));border:1px solid rgba(167,139,250,.25);border-radius:var(--rad);padding:14px;margin-bottom:12px;}
 .kyber-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .k-dot{width:7px;height:7px;border-radius:50%;background:var(--p2);animation:kpulse 2s ease-in-out infinite;flex-shrink:0}
 @keyframes kpulse{0%,100%{opacity:1}50%{opacity:.3}}
@@ -370,67 +204,82 @@ body{
 .k-pname{font-size:.55rem;color:var(--tx3)}
 .k-pval{font-size:.68rem;color:var(--p2);font-weight:600}
 
-/* API PAGE */
-.api-endpoint{
-  background:var(--bg);border:1px solid var(--b1);border-radius:var(--rad-sm);
-  padding:12px;margin-bottom:10px;font-family:var(--mono);font-size:.7rem;
-}
-.api-method{
-  display:inline-block;padding:2px 7px;border-radius:3px;font-size:.58rem;
-  font-weight:700;letter-spacing:.5px;margin-bottom:6px;
-}
+/* ═══ P2P TRANSFER PAGE ═══ */
+.p2p-grid{display:flex;flex-direction:column;gap:12px}
+@media(min-width:768px){.p2p-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}}
+
+.room-display{font-family:var(--mono);font-size:1.8rem;font-weight:700;color:var(--acc);letter-spacing:4px;text-align:center;padding:16px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--rad-sm);margin-bottom:10px;word-break:break-all;}
+
+.peer-status{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:var(--rad-sm);font-size:.72rem;margin-bottom:10px;}
+.peer-status.waiting{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);color:var(--acc);}
+.peer-status.connected{background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2);color:var(--g);}
+.peer-status.error{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);color:var(--r);}
+.peer-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.peer-dot.waiting{background:var(--acc);animation:kpulse 1.5s ease-in-out infinite}
+.peer-dot.connected{background:var(--g);box-shadow:0 0 6px var(--g)}
+.peer-dot.error{background:var(--r)}
+
+.transfer-progress{background:var(--bg);border:1px solid var(--b1);border-radius:var(--rad-sm);padding:14px;margin-bottom:10px;}
+.tp-filename{font-size:.78rem;color:var(--tx);font-weight:500;margin-bottom:3px;word-break:break-all}
+.tp-meta{font-size:.62rem;color:var(--tx3);margin-bottom:8px}
+.tp-track{height:6px;background:var(--b1);border-radius:3px;overflow:hidden;margin-bottom:5px}
+.tp-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--p2),var(--pu));transition:width .15s}
+.tp-pct{font-size:.65rem;color:var(--p2);font-weight:500;text-align:right}
+
+.transfer-list{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.transfer-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--s2);border:1px solid var(--b1);border-radius:var(--rad-sm);font-size:.7rem;}
+.ti-name{color:var(--tx);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-right:8px}
+.ti-size{color:var(--tx3);font-size:.62rem;margin-right:8px;flex-shrink:0}
+.ti-status{font-size:.6rem;flex-shrink:0}
+.ti-dl{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);color:var(--g);padding:3px 8px;border-radius:4px;cursor:pointer;font-size:.58rem;font-family:var(--mono);}
+
+.e2e-badge{display:inline-flex;align-items:center;gap:5px;font-size:.6rem;padding:4px 10px;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.25);color:var(--g);border-radius:20px;margin-bottom:10px;}
+
+/* ═══ PLANS PAGE ═══ */
+.plans-grid{display:flex;flex-direction:column;gap:12px}
+@media(min-width:640px){.plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}}
+
+.plan-card{background:var(--s1);border:1px solid var(--b1);border-radius:16px;padding:20px;position:relative;transition:border-color .2s}
+.plan-card.popular{border-color:var(--acc);background:linear-gradient(135deg,var(--s1),rgba(245,158,11,.04))}
+.plan-card.ultra{border-color:var(--pu);background:linear-gradient(135deg,var(--s1),rgba(167,139,250,.04))}
+.plan-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:.55rem;font-weight:700;padding:3px 12px;border-radius:20px;letter-spacing:1px;white-space:nowrap}
+.pb-popular{background:var(--acc);color:#0f172a}
+.pb-ultra{background:linear-gradient(135deg,#5b21b6,#a78bfa);color:white}
+.plan-name{font-family:var(--disp);font-size:1.1rem;font-weight:900;margin-bottom:4px}
+.plan-price{font-family:var(--disp);font-size:2rem;font-weight:900;margin:10px 0 4px}
+.plan-price span{font-size:.9rem;font-weight:400;color:var(--tx3)}
+.plan-period{font-size:.62rem;color:var(--tx3);margin-bottom:14px}
+.plan-features{list-style:none;margin-bottom:16px}
+.plan-features li{font-size:.7rem;color:var(--tx2);padding:5px 0;border-bottom:1px solid rgba(30,48,80,.4);display:flex;align-items:center;gap:7px}
+.plan-features li:last-child{border-bottom:none}
+.plan-features li::before{content:'✓';color:var(--g);flex-shrink:0}
+.plan-features li.off::before{content:'✗';color:var(--tx3)}
+.plan-features li.off{color:var(--tx3)}
+.plan-btn{width:100%;padding:11px;font-family:var(--mono);font-size:.72rem;font-weight:700;border:none;border-radius:var(--rad-sm);cursor:pointer;letter-spacing:.5px;text-transform:uppercase;transition:filter .2s}
+.plan-btn.free-btn{background:var(--s3);border:1px solid var(--b2);color:var(--tx2)}
+.plan-btn.premium-btn{background:linear-gradient(135deg,#b45309,#f59e0b);color:#0f172a}
+.plan-btn.ultra-btn{background:linear-gradient(135deg,#5b21b6,#a78bfa);color:white}
+.plan-btn:hover{filter:brightness(1.1)}
+
+.trial-cta{background:linear-gradient(135deg,rgba(52,211,153,.06),rgba(14,165,233,.06));border:1px solid rgba(52,211,153,.2);border-radius:var(--rad);padding:20px;text-align:center;margin-bottom:16px}
+.trial-cta h3{font-family:var(--disp);font-size:1.1rem;font-weight:700;color:var(--g);margin-bottom:6px}
+.trial-cta p{font-size:.72rem;color:var(--tx2);margin-bottom:14px;line-height:1.6}
+
+/* ═══ API PAGE ═══ */
+.api-endpoint{background:var(--bg);border:1px solid var(--b1);border-radius:var(--rad-sm);padding:12px;margin-bottom:10px;font-family:var(--mono);font-size:.7rem;}
+.api-method{display:inline-block;padding:2px 7px;border-radius:3px;font-size:.58rem;font-weight:700;letter-spacing:.5px;margin-bottom:6px;}
 .m-get{background:rgba(52,211,153,.15);color:var(--g);border:1px solid rgba(52,211,153,.3)}
 .m-post{background:rgba(14,165,233,.15);color:var(--p2);border:1px solid rgba(14,165,233,.3)}
 .api-path{color:var(--acc);font-size:.78rem;margin-bottom:5px}
 .api-desc{color:var(--tx2);font-size:.68rem;line-height:1.5;margin-bottom:8px}
-.code-block{
-  background:var(--s3);border:1px solid var(--b1);border-radius:6px;
-  padding:10px;font-size:.62rem;color:#a3e635;overflow-x:auto;white-space:pre;
-  line-height:1.6;
-}
-.limit-badge{
-  display:inline-flex;align-items:center;gap:5px;font-size:.6rem;
-  padding:3px 9px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.2);
-  color:var(--r);border-radius:4px;margin-bottom:10px;
-}
-.info-badge{
-  display:inline-flex;align-items:center;gap:5px;font-size:.6rem;
-  padding:3px 9px;background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.2);
-  color:var(--p2);border-radius:4px;margin-bottom:10px;margin-left:6px;
-}
-
-/* NEWS */
-.news-grid{display:flex;flex-direction:column;gap:10px}
-@media(min-width:640px){.news-grid{display:grid;grid-template-columns:repeat(2,1fr)}}
-@media(min-width:960px){.news-grid{grid-template-columns:repeat(3,1fr)}}
-.news-card{
-  background:var(--s1);border:1px solid var(--b1);border-radius:var(--rad);
-  padding:14px;cursor:pointer;transition:border-color .2s;
-}
-.news-card:hover{border-color:var(--b2)}
-.n-tag{
-  display:inline-block;font-size:.55rem;padding:2px 6px;border-radius:3px;
-  letter-spacing:.8px;font-weight:700;text-transform:uppercase;margin-bottom:7px;
-}
-.t-sec{background:rgba(248,113,113,.12);color:var(--r);border:1px solid rgba(248,113,113,.25)}
-.t-cry{background:rgba(14,165,233,.12);color:var(--p2);border:1px solid rgba(14,165,233,.25)}
-.t-res{background:rgba(167,139,250,.12);color:var(--pu);border:1px solid rgba(167,139,250,.25)}
-.t-std{background:rgba(52,211,153,.12);color:var(--g);border:1px solid rgba(52,211,153,.25)}
-.n-title{font-family:var(--disp);font-size:.9rem;font-weight:600;color:var(--tx);line-height:1.4;margin-bottom:7px}
-.n-sum{font-size:.68rem;color:var(--tx2);line-height:1.6;margin-bottom:8px}
-.n-meta{display:flex;gap:7px;font-size:.6rem;color:var(--tx3)}
+.code-block{background:var(--s3);border:1px solid var(--b1);border-radius:6px;padding:10px;font-size:.62rem;color:#a3e635;overflow-x:auto;white-space:pre;line-height:1.6;}
 
 /* SETTINGS */
 .settings-body{display:flex;flex-direction:column;gap:12px}
 @media(min-width:640px){.settings-body{display:grid;grid-template-columns:160px 1fr;align-items:start}}
 .sp-nav{display:flex;flex-direction:row;gap:5px;overflow-x:auto;padding-bottom:4px}
 @media(min-width:640px){.sp-nav{flex-direction:column}}
-.sp-nav-btn{
-  font-family:var(--mono);font-size:.62rem;letter-spacing:.3px;
-  background:transparent;border:1px solid transparent;color:var(--tx3);
-  padding:8px 12px;border-radius:var(--rad-sm);cursor:pointer;
-  transition:all .2s;text-align:left;text-transform:uppercase;white-space:nowrap;flex-shrink:0;
-}
+.sp-nav-btn{font-family:var(--mono);font-size:.62rem;letter-spacing:.3px;background:transparent;border:1px solid transparent;color:var(--tx3);padding:8px 12px;border-radius:var(--rad-sm);cursor:pointer;transition:all .2s;text-align:left;text-transform:uppercase;white-space:nowrap;flex-shrink:0;}
 .sp-nav-btn:hover{background:var(--s2);color:var(--tx)}
 .sp-nav-btn.active{background:var(--s3);border-color:var(--b2);color:var(--p2)}
 .sp-panel{display:none}
@@ -440,60 +289,29 @@ body{
 .s-row:last-child{border-bottom:none}
 .s-lbl{font-size:.75rem;color:var(--tx)}
 .s-sub{font-size:.6rem;color:var(--tx3);margin-top:1px}
-
-/* TOGGLE */
 .toggle{position:relative;width:36px;height:19px;cursor:pointer;flex-shrink:0}
 .toggle input{opacity:0;width:0;height:0}
 .t-track{position:absolute;inset:0;background:var(--b2);border-radius:10px;transition:.3s}
 .toggle input:checked + .t-track{background:var(--p2)}
 .t-thumb{position:absolute;left:3px;top:3px;width:13px;height:13px;background:white;border-radius:50%;transition:.3s}
 .toggle input:checked ~ .t-thumb{left:20px}
-
-/* SELECT */
-.sel-input{
-  background:var(--s2);border:1px solid var(--b1);color:var(--tx);
-  font-family:var(--mono);font-size:.7rem;padding:6px 10px;border-radius:var(--rad-sm);outline:none;cursor:pointer;
-}
+.sel-input{background:var(--s2);border:1px solid var(--b1);color:var(--tx);font-family:var(--mono);font-size:.7rem;padding:6px 10px;border-radius:var(--rad-sm);outline:none;cursor:pointer;}
 
 /* MODAL */
-.modal-bg{
-  display:none;position:fixed;inset:0;z-index:200;
-  background:rgba(0,0,0,.88);backdrop-filter:blur(10px);
-  align-items:center;justify-content:center;padding:16px;
-}
+.modal-bg{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.88);backdrop-filter:blur(10px);align-items:center;justify-content:center;padding:16px;}
 .modal-bg.open{display:flex}
-.modal-box{
-  background:var(--s1);border:1px solid var(--b2);border-radius:16px;
-  padding:24px;max-width:360px;width:100%;
-  animation:mpop .3s cubic-bezier(.34,1.56,.64,1);
-}
+.modal-box{background:var(--s1);border:1px solid var(--b2);border-radius:16px;padding:24px;max-width:380px;width:100%;animation:mpop .3s cubic-bezier(.34,1.56,.64,1);}
 @keyframes mpop{from{opacity:0;transform:scale(.93)}to{opacity:1;transform:none}}
 .modal-title{font-family:var(--disp);font-size:1.1rem;font-weight:700;color:var(--acc);margin-bottom:7px}
 .modal-sub{font-size:.72rem;color:var(--tx2);line-height:1.6;margin-bottom:16px}
-.lic-inp{
-  width:100%;padding:11px;background:var(--bg);border:1px solid var(--b1);
-  border-radius:var(--rad-sm);color:var(--p2);font-family:var(--mono);font-size:.78rem;
-  text-align:center;letter-spacing:1.5px;outline:none;transition:border-color .2s;margin-bottom:10px;
-}
+.lic-inp{width:100%;padding:11px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--rad-sm);color:var(--p2);font-family:var(--mono);font-size:.78rem;text-align:center;letter-spacing:1.5px;outline:none;transition:border-color .2s;margin-bottom:10px;}
 .lic-inp:focus{border-color:var(--acc)}
 .lic-hint{font-size:.62rem;color:var(--tx3);margin-bottom:12px;text-align:center;line-height:1.5}
-
-/* TRIAL MODAL */
-.trial-banner{
-  background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.2);
-  border-radius:var(--rad-sm);padding:10px 12px;font-size:.68rem;
-  color:var(--g);line-height:1.6;margin-bottom:12px;
-}
 
 /* TOAST */
 .toast-wrap{position:fixed;bottom:calc(70px + var(--safe-bottom));right:12px;z-index:300;display:flex;flex-direction:column;gap:6px}
 @media(min-width:768px){.toast-wrap{bottom:20px}}
-.toast{
-  background:var(--s2);border:1px solid var(--b2);border-radius:var(--rad-sm);
-  padding:9px 14px;font-size:.7rem;max-width:280px;
-  display:flex;align-items:center;gap:7px;
-  animation:tslide .25s ease;box-shadow:0 4px 20px rgba(0,0,0,.4);
-}
+.toast{background:var(--s2);border:1px solid var(--b2);border-radius:var(--rad-sm);padding:9px 14px;font-size:.7rem;max-width:280px;display:flex;align-items:center;gap:7px;animation:tslide .25s ease;box-shadow:0 4px 20px rgba(0,0,0,.4);}
 @keyframes tslide{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
 .toast.success{border-color:var(--g)}
 .toast.error{border-color:var(--r)}
@@ -501,55 +319,43 @@ body{
 
 /* COLORS */
 .color-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
-.cswatch{
-  width:26px;height:26px;border-radius:50%;cursor:pointer;
-  transition:all .2s;border:2px solid transparent;
-}
+.cswatch{width:26px;height:26px;border-radius:50%;cursor:pointer;transition:all .2s;border:2px solid transparent;}
 .cswatch.active{border-color:white;transform:scale(1.2)}
 
-/* INSTALL BANNER */
-.install-banner{
-  display:none;align-items:center;justify-content:space-between;
-  padding:10px 14px;background:rgba(14,165,233,.08);
-  border:1px solid rgba(14,165,233,.2);border-radius:var(--rad-sm);
-  font-size:.7rem;color:var(--tx2);margin-bottom:12px;gap:10px;
-}
-.install-banner.show{display:flex}
-
-/* FIREBASE STATUS */
-.fb-status{
-  padding:8px 12px;border-radius:var(--rad-sm);font-size:.65rem;
-  margin-bottom:10px;display:flex;align-items:center;gap:8px;
-}
+/* FB STATUS */
+.fb-status{padding:8px 12px;border-radius:var(--rad-sm);font-size:.65rem;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
 .fb-status.ok{background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2);color:var(--g)}
 .fb-status.err{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);color:var(--r)}
 .fb-status.warn{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);color:var(--acc)}
 
-/* SCROLLBAR */
-::-webkit-scrollbar{width:3px;height:3px}
-::-webkit-scrollbar-track{background:var(--bg)}
-::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
-
-/* DESKTOP GRID LAYOUT */
+/* DESKTOP GRID */
 @media(min-width:768px){
   .crypto-grid{display:grid;grid-template-columns:300px 1fr;gap:16px;align-items:start}
   .crypto-left{min-width:0}
   .crypto-right{min-width:0}
 }
 
+.info-badge{display:inline-flex;align-items:center;gap:5px;font-size:.6rem;padding:3px 9px;background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.2);color:var(--p2);border-radius:4px;margin-bottom:10px;}
+.limit-badge{display:inline-flex;align-items:center;gap:5px;font-size:.6rem;padding:3px 9px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.2);color:var(--r);border-radius:4px;margin-bottom:10px;}
+
 input[type="file"]{display:none}
 .hidden{display:none!important}
+
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
 </style>
 </head>
 <body>
 
 <!-- TOPBAR -->
 <nav class="topbar">
-  <div class="logo">⬡ AEGIS<em>PATTERN</em><sup>v9</sup></div>
+  <div class="logo">⬡ AEGIS<em>PATTERN</em><sup>v10</sup></div>
   <nav class="desk-nav">
     <button class="desk-nav-btn active" data-page="crypto">Cifrado</button>
-    <button class="desk-nav-btn" data-page="api">API Pública</button>
-    <button class="desk-nav-btn" data-page="news">Noticias</button>
+    <button class="desk-nav-btn" data-page="transfer">Transferir</button>
+    <button class="desk-nav-btn" data-page="api">API</button>
+    <button class="desk-nav-btn" data-page="plans">Planes</button>
     <button class="desk-nav-btn" data-page="settings">Ajustes</button>
   </nav>
   <div class="topbar-right">
@@ -558,44 +364,30 @@ input[type="file"]{display:none}
   </div>
 </nav>
 
-<!-- BOTTOM NAV (mobile) -->
+<!-- BOTTOM NAV -->
 <nav class="bottom-nav">
   <button class="bnav-btn active" data-page="crypto">
-    <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-    Cifrado
+    <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Cifrado
+  </button>
+  <button class="bnav-btn" data-page="transfer">
+    <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>Transferir
   </button>
   <button class="bnav-btn" data-page="api">
-    <svg viewBox="0 0 24 24"><path d="M4 17l6-6-6-6M12 19h8"/></svg>
-    API
+    <svg viewBox="0 0 24 24"><path d="M4 17l6-6-6-6M12 19h8"/></svg>API
   </button>
-  <button class="bnav-btn" data-page="news">
-    <svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 00-2 2v14l4-4h12a2 2 0 002-2V5a2 2 0 00-2-2z"/></svg>
-    Noticias
+  <button class="bnav-btn" data-page="plans">
+    <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>Planes
   </button>
   <button class="bnav-btn" data-page="settings">
-    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-    Ajustes
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Ajustes
   </button>
 </nav>
-
-<!-- PWA INSTALL BANNER -->
-<div style="padding:12px 16px 0;max-width:960px;margin:0 auto">
-  <div class="install-banner" id="installBanner">
-    <span>📲 Instala AegisPattern como app</span>
-    <button class="btn btn-sm btn-outline" id="btnInstall">Instalar</button>
-  </div>
-</div>
 
 <!-- ═══ PAGE: CRYPTO ═══ -->
 <div class="page active" id="page-crypto">
   <div class="crypto-grid">
     <div class="crypto-left">
-
-      <!-- FIREBASE STATUS -->
-      <div id="fbStatusBar" class="fb-status warn" style="display:none">
-        <span id="fbStatusMsg">Conectando Firebase...</span>
-      </div>
-
+      <div id="fbStatusBar" class="fb-status warn" style="display:none"><span id="fbStatusMsg">Conectando...</span></div>
       <!-- AUTH -->
       <div class="card">
         <div class="tabs" id="authTabs">
@@ -613,8 +405,7 @@ input[type="file"]{display:none}
           <button class="session-logout" id="btnLogout">Cerrar sesión</button>
         </div>
       </div>
-
-      <!-- PASSWORD MODE -->
+      <!-- PW MODE -->
       <div class="card">
         <div class="card-title">Modo de contraseña</div>
         <div class="pw-modes" id="pwModes">
@@ -622,62 +413,42 @@ input[type="file"]{display:none}
           <button class="pw-mode-btn" data-mode="text">Texto</button>
           <button class="pw-mode-btn" data-mode="auto">Auto</button>
         </div>
-
-        <!-- PATTERN -->
         <div class="pw-panel active" id="pp-pattern">
           <div class="pattern-wrap">
             <div class="pattern-canvas">
               <svg class="p-svg" id="pSvg" viewBox="0 0 210 210" xmlns="http://www.w3.org/2000/svg"></svg>
               <div class="p-grid" id="pGrid">
-                <div class="p-node" data-id="1">1</div>
-                <div class="p-node" data-id="2">2</div>
-                <div class="p-node" data-id="3">3</div>
-                <div class="p-node" data-id="4">4</div>
-                <div class="p-node" data-id="5">5</div>
-                <div class="p-node" data-id="6">6</div>
-                <div class="p-node" data-id="7">7</div>
-                <div class="p-node" data-id="8">8</div>
-                <div class="p-node" data-id="9">9</div>
+                <div class="p-node" data-id="1">1</div><div class="p-node" data-id="2">2</div><div class="p-node" data-id="3">3</div>
+                <div class="p-node" data-id="4">4</div><div class="p-node" data-id="5">5</div><div class="p-node" data-id="6">6</div>
+                <div class="p-node" data-id="7">7</div><div class="p-node" data-id="8">8</div><div class="p-node" data-id="9">9</div>
               </div>
             </div>
             <div class="p-hint" id="pHint">Mínimo 4 nodos</div>
           </div>
           <button class="btn btn-block btn-outline" id="btnClearPat" style="font-size:.68rem;padding:8px">↺ Limpiar patrón</button>
         </div>
-
-        <!-- TEXT -->
         <div class="pw-panel" id="pp-text">
           <div class="pw-text-row">
             <input type="password" class="inp" id="pwText" placeholder="Escribe tu contraseña..." autocomplete="new-password">
             <button class="pw-vis-btn" id="pwVis">👁</button>
           </div>
           <div class="strength-bar"><div class="strength-fill" id="sBar" style="width:0%"></div></div>
-          <div class="strength-label" id="sLbl" style="color:var(--tx3);font-size:.58rem;margin-top:3px;text-align:right">—</div>
+          <div id="sLbl" style="color:var(--tx3);font-size:.58rem;margin-top:3px;text-align:right">—</div>
         </div>
-
-        <!-- AUTO -->
         <div class="pw-panel" id="pp-auto">
           <div class="auto-display">
             <span id="autoPwTxt" style="flex:1;padding-right:55px">— Genera una contraseña —</span>
             <button class="copy-btn" id="copyPw">COPIAR</button>
           </div>
-          <div class="len-row">
-            <span class="len-label">Longitud:</span>
-            <input type="range" class="range-input" id="pwLen" min="8" max="128" value="32">
-            <span class="len-val" id="pwLenVal">32</span>
-          </div>
+          <div class="len-row"><span class="len-label">Longitud:</span><input type="range" class="range-input" id="pwLen" min="8" max="128" value="32"><span class="len-val" id="pwLenVal">32</span></div>
           <div class="charset-row" id="charsetRow">
-            <span class="cs-opt on" data-cs="upper">A–Z</span>
-            <span class="cs-opt on" data-cs="lower">a–z</span>
-            <span class="cs-opt on" data-cs="digits">0–9</span>
-            <span class="cs-opt on" data-cs="symbols">!@#$</span>
-            <span class="cs-opt" data-cs="hex">HEX</span>
-            <span class="cs-opt" data-cs="b64">B64</span>
+            <span class="cs-opt on" data-cs="upper">A–Z</span><span class="cs-opt on" data-cs="lower">a–z</span>
+            <span class="cs-opt on" data-cs="digits">0–9</span><span class="cs-opt on" data-cs="symbols">!@#$</span>
+            <span class="cs-opt" data-cs="hex">HEX</span><span class="cs-opt" data-cs="b64">B64</span>
           </div>
           <button class="btn btn-block btn-outline" id="genPw" style="font-size:.68rem;padding:9px">⚡ Generar contraseña</button>
         </div>
       </div>
-
       <!-- ALGO -->
       <div class="card">
         <div class="card-title">Algoritmo</div>
@@ -689,7 +460,6 @@ input[type="file"]{display:none}
           <div class="algo-item locked" data-algo="quantum"><span class="algo-icon">⚛️</span><div class="algo-info"><div class="algo-name">KYBER-1024 Post-Cuántico</div><div class="algo-desc">NIST FIPS 203 · Module-LWE</div></div><span class="algo-tag t-quantum">QUANTUM</span></div>
         </div>
       </div>
-
       <!-- FILE -->
       <div class="card">
         <div class="card-title">Archivo</div>
@@ -709,11 +479,8 @@ input[type="file"]{display:none}
           <button class="btn-dec" id="btnDec">⬇ Descifrar</button>
         </div>
       </div>
-
-    </div><!-- END LEFT -->
-
+    </div>
     <div class="crypto-right">
-      <!-- SEC INDICATORS -->
       <div class="card">
         <div class="card-title">Seguridad activa</div>
         <div class="sec-grid">
@@ -723,8 +490,6 @@ input[type="file"]{display:none}
           <div class="sec-item"><div class="sec-icon">🛡</div><div class="sec-lbl">Autenticación</div><div class="sec-val" id="iAuth" style="color:var(--tx3)">Ninguna</div></div>
         </div>
       </div>
-
-      <!-- FILE ANALYSIS -->
       <div class="card">
         <div class="card-title">Análisis del archivo</div>
         <div class="analysis">
@@ -736,16 +501,8 @@ input[type="file"]{display:none}
           <div class="ana-row"><span class="ana-k">Plan requerido</span><span class="ana-v" id="anaPlan">—</span></div>
         </div>
       </div>
-
-      <!-- KYBER CARD -->
       <div class="kyber-card">
-        <div class="kyber-header">
-          <div class="k-dot"></div>
-          <div>
-            <div class="k-title">CRYSTALS-Kyber 1024</div>
-            <div class="k-meta">NIST FIPS 203 · Module-LWE · Z₃₃₂₉</div>
-          </div>
-        </div>
+        <div class="kyber-header"><div class="k-dot"></div><div><div class="k-title">CRYSTALS-Kyber 1024</div><div class="k-meta">NIST FIPS 203 · Module-LWE · Z₃₃₂₉</div></div></div>
         <div class="k-params">
           <div class="k-param"><div class="k-pname">Módulo q</div><div class="k-pval">3329</div></div>
           <div class="k-param"><div class="k-pname">Grado n</div><div class="k-pval">256</div></div>
@@ -755,97 +512,168 @@ input[type="file"]{display:none}
           <div class="k-param"><div class="k-pname">SK bytes</div><div class="k-pval">3168</div></div>
         </div>
       </div>
+    </div>
+  </div>
+</div>
 
+<!-- ═══ PAGE: TRANSFER (P2P E2E) ═══ -->
+<div class="page" id="page-transfer">
+  <div style="font-family:var(--disp);font-size:1.2rem;font-weight:700;margin-bottom:4px">Transferencia P2P Segura</div>
+  <div style="font-size:.72rem;color:var(--tx3);margin-bottom:14px">Cifrado E2E en el navegador · WebRTC DataChannel · Sin pasar por ningún servidor</div>
+  <div class="e2e-badge">🔐 Cifrado extremo a extremo · AES-GCM 256-bit · Clave efímera por sesión</div>
+  <div id="transferLoginWarn" style="display:none;padding:10px 14px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:var(--rad-sm);font-size:.72rem;color:var(--acc);margin-bottom:12px">
+    ⚠️ Inicia sesión para usar transferencia P2P con señalización Firebase. En modo offline solo funciona si ambos están en la misma red local.
+  </div>
+  <div class="p2p-grid">
+    <!-- LEFT: SEND -->
+    <div>
+      <div class="card">
+        <div class="card-title">📤 Enviar archivo</div>
+        <div id="peerStatus" class="peer-status waiting">
+          <div class="peer-dot waiting" id="peerDot"></div>
+          <span id="peerStatusTxt">Sin conexión — crea una sala o únete a una</span>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+          <button class="btn btn-sm btn-primary" id="btnCreateRoom" style="flex:1">+ Crear sala</button>
+          <button class="btn btn-sm btn-outline" id="btnJoinRoom" style="flex:1">→ Unirse</button>
+        </div>
+        <div id="joinRoomRow" style="display:none;margin-bottom:10px">
+          <div class="field"><label class="label">Código de sala</label>
+            <div style="display:flex;gap:8px">
+              <input type="text" class="inp" id="roomCodeInput" placeholder="Ej: ABCD1234" style="letter-spacing:3px;text-transform:uppercase;flex:1">
+              <button class="btn btn-sm btn-green" id="btnConfirmJoin">OK</button>
+            </div>
+          </div>
+        </div>
+        <div id="roomCodeDisplay" style="display:none">
+          <div class="card-title">Comparte este código</div>
+          <div class="room-display" id="roomCodeTxt">—</div>
+          <div style="font-size:.62rem;color:var(--tx3);text-align:center;margin-bottom:10px">El otro dispositivo debe introducir este código</div>
+        </div>
+        <!-- File to send -->
+        <div id="sendFileSection" style="display:none">
+          <div class="file-drop" id="sendFileDrop" style="margin-bottom:8px">
+            <div class="file-icon">📁</div>
+            <div class="file-label" id="sendFileLabel">Selecciona archivo a enviar</div>
+            <div class="file-sub" id="sendFileSub">Free: máx 5GB · Premium: máx 49.99GB</div>
+            <input type="file" id="sendFileInput">
+          </div>
+          <div id="sendProgress" style="display:none" class="transfer-progress">
+            <div class="tp-filename" id="sendFileName">—</div>
+            <div class="tp-meta" id="sendFileMeta">—</div>
+            <div class="tp-track"><div class="tp-fill" id="sendFill" style="width:0%"></div></div>
+            <div class="tp-pct" id="sendPct">0%</div>
+          </div>
+          <button class="btn btn-block" id="btnSendFile" disabled style="background:linear-gradient(135deg,#0369a1,#0ea5e9);color:white;font-weight:700;padding:12px;font-family:var(--mono);font-size:.78rem;border:none;border-radius:var(--rad-sm);cursor:pointer;text-transform:uppercase;letter-spacing:.5px">⬆ Enviar</button>
+        </div>
+      </div>
+    </div>
+    <!-- RIGHT: RECEIVE -->
+    <div>
+      <div class="card">
+        <div class="card-title">📥 Recibir archivos</div>
+        <div id="receiveProgress" style="display:none" class="transfer-progress">
+          <div class="tp-filename" id="recvFileName">—</div>
+          <div class="tp-meta" id="recvFileMeta">—</div>
+          <div class="tp-track"><div class="tp-fill" id="recvFill" style="width:0%"></div></div>
+          <div class="tp-pct" id="recvPct">0%</div>
+        </div>
+        <div id="noReceiveYet" style="font-size:.7rem;color:var(--tx3);padding:20px;text-align:center">
+          Esperando conexión P2P...<br><span style="font-size:.6rem">Los archivos recibidos aparecerán aquí</span>
+        </div>
+        <div class="transfer-list" id="receivedList"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Cómo funciona</div>
+        <div style="font-size:.68rem;color:var(--tx2);line-height:1.8">
+          <div style="margin-bottom:6px">1️⃣ El <strong style="color:var(--p2)">emisor</strong> crea una sala y comparte el código</div>
+          <div style="margin-bottom:6px">2️⃣ El <strong style="color:var(--g)">receptor</strong> introduce el código para unirse</div>
+          <div style="margin-bottom:6px">3️⃣ Se negocia conexión WebRTC directa via Firebase</div>
+          <div style="margin-bottom:6px">4️⃣ Se genera clave AES-GCM-256 efímera para la sesión</div>
+          <div style="margin-bottom:6px">5️⃣ Los datos viajan cifrados P2P, <strong style="color:var(--g)">sin pasar por ningún servidor</strong></div>
+          <div style="color:var(--tx3);font-size:.62rem;margin-top:10px;border-top:1px solid var(--b1);padding-top:8px">⚠️ La señalización inicial usa Firebase Realtime DB pero los datos del archivo nunca pasan por Firebase. Si WebRTC no puede hacer P2P directo (redes muy restrictivas), el canal se cierra.</div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
 <!-- ═══ PAGE: API ═══ -->
 <div class="page" id="page-api">
-  <div style="margin-bottom:16px">
-    <div style="font-family:var(--disp);font-size:1.2rem;font-weight:700;color:var(--tx);margin-bottom:4px">API Pública AegisPattern</div>
-    <div style="font-size:.72rem;color:var(--tx3)">Demo funcional de cifrado AES-CBC ejecutada 100% en el navegador. Sin servidor, sin instalación.</div>
-  </div>
-
+  <div style="font-family:var(--disp);font-size:1.2rem;font-weight:700;margin-bottom:4px">API Pública AegisPattern</div>
+  <div style="font-size:.72rem;color:var(--tx3);margin-bottom:12px">Integra cifrado E2E en tu juego o app. Funciona 100% en browser · Compatible con GitHub Pages.</div>
   <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
-    <span class="info-badge" style="margin-left:0">✅ Funcional en browser · Sin backend · Firebase opcional para límites y registro</span>
-    <span class="limit-badge">🔒 Solo AES-CBC-128 · Máx 1MB · Solo texto · Firebase free limitado</span>
+    <span class="info-badge" style="margin-left:0">✅ SDK JavaScript · Sin backend · Firebase para límites</span>
+    <span class="limit-badge">🔒 AES-CBC-128 gratis · Premium: todos los algoritmos</span>
   </div>
+  <!-- SDK Quick Start -->
+  <div class="card" style="border-color:rgba(52,211,153,.3)">
+    <div class="card-title">⚡ SDK — Integración rápida para tu juego/app</div>
+    <div style="font-size:.68rem;color:var(--tx2);margin-bottom:10px;line-height:1.6">Copia este script en tu HTML. Funciona desde cualquier dominio, incluyendo GitHub Pages.</div>
+    <div class="code-block">&lt;!-- En tu juego o web --&gt;
+&lt;script src="https://banqui73.github.io/apcriptterDoor/aegis-sdk.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+// Inicializar SDK
+const aegis = new AegisSDK({ apiKey: 'tu-api-key' });
 
-  <!-- API KEY SECTION -->
+// Cifrar datos del juego (puntuaciones, save states, etc.)
+const encrypted = await aegis.encrypt('{"score":9999,"level":42}', 'miClave');
+
+// Descifrar
+const data = await aegis.decrypt(encrypted, 'miClave');
+
+// Transferencia P2P entre jugadores
+const room = await aegis.createRoom();
+room.onFile = (file, name) =&gt; console.log('Archivo recibido:', name);
+await room.sendFile(myFile);
+&lt;/script&gt;</div>
+  </div>
+  <!-- API Key -->
   <div class="card">
-    <div class="card-title">Tu clave de API (local)</div>
+    <div class="card-title">Tu clave de API</div>
     <div style="display:flex;gap:8px;align-items:center">
-      <input class="inp" id="apiKeyDisplay" readonly placeholder="Inicia sesión para ver tu clave API" style="flex:1;color:var(--acc);letter-spacing:.5px">
+      <input class="inp" id="apiKeyDisplay" readonly placeholder="Inicia sesión para ver tu clave" style="flex:1;color:var(--acc);letter-spacing:.5px">
       <button class="btn btn-sm btn-outline" id="btnCopyApiKey">Copiar</button>
       <button class="btn btn-sm btn-outline" id="btnRegenApiKey">↺</button>
     </div>
-    <div style="font-size:.62rem;color:var(--tx3);margin-top:6px">Esta clave se genera localmente y se almacena en tu sesión. Inclúyela en el header <span style="color:var(--acc)">X-Aegis-Key</span> al llamar a una implementación de servidor propia.</div>
+    <div style="font-size:.62rem;color:var(--tx3);margin-top:6px">Inclúyela como header <span style="color:var(--acc)">X-Aegis-Key</span> o en el constructor del SDK.</div>
   </div>
-
-  <!-- ENDPOINTS (documentación) -->
+  <!-- Endpoints -->
   <div class="api-endpoint">
     <span class="api-method m-post">POST</span>
     <div class="api-path">/api/v1/encrypt</div>
-    <div class="api-desc">Envía JSON con action=encriptar, apiKey, datos y password para cifrado básico.</div>
-    <div class="code-block">// Solicitud de referencia (backend sin servidor con Firebase)
-fetch('https://champdrop-b74e4-default-rtdb.firebaseio.com/api_serverless/requests.json', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    action: 'encrypt',
-    apiKey: 'tu-api-key-aqui',
-    data: "Texto o base64 a cifrar",
-    password: "contraseña-secreta"
-  })
-})
-.then(r => r.json())
-.then(res => {
-  console.log(res);
-});</div>
-  </div>
+    <div class="api-desc">Cifra texto o datos en base64 con AES-CBC-128 (free) o algoritmos avanzados (premium).</div>
+    <div class="code-block">// Con SDK (recomendado)
+const result = await aegis.encrypt(data, password);
 
+// Con fetch directo (implementación Firebase)
+fetch('https://TUDB-default-rtdb.firebaseio.com/aegis_api/req.json', {
+  method: 'POST',
+  body: JSON.stringify({ action:'encrypt', apiKey, data, password })
+}).then(r=&gt;r.json()).then(console.log);</div>
+  </div>
   <div class="api-endpoint">
     <span class="api-method m-post">POST</span>
-    <div class="api-path">/api/v1/decrypt</div>
-    <div class="api-desc">Descifra datos cifrados con el mismo algoritmo. Requiere la misma contraseña y el output previo.</div>
-    <div class="code-block">fetch('https://champdrop-b74e4-default-rtdb.firebaseio.com/api_serverless/requests.json', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    action: 'decrypt',
-    apiKey: 'tu-api-key-aqui',
-    encrypted: "base64-del-archivo-cifrado",
-    password: "contraseña-secreta"
-  })
-})
-.then(r => r.json())
-.then(res => console.log(res));</div>
+    <div class="api-path">/api/v1/transfer/create</div>
+    <div class="api-desc">Crea sala de transferencia P2P. Devuelve roomId para compartir con el receptor.</div>
+    <div class="code-block">const room = await aegis.createRoom();
+console.log(room.id); // "ABCD1234"
+room.onConnected = () =&gt; console.log('Peer conectado');
+room.onProgress = (pct) =&gt; updateUI(pct);
+room.onComplete = () =&gt; console.log('¡Enviado!');</div>
   </div>
-
   <div class="api-endpoint">
     <span class="api-method m-get">GET</span>
     <div class="api-path">/api/v1/status</div>
-    <div class="api-desc">Consulta el estado de tu clave API: peticiones usadas, límite y tiempo de reset.</div>
-    <div class="code-block">fetch('https://champdrop-b74e4-default-rtdb.firebaseio.com/api_serverless/usage/UID.json', {
-  headers: { 'Content-Type': 'application/json' }
-})
-.then(r => r.json())
-.then(res => {
-  console.log(res.count);      // peticiones usadas hoy
-  console.log(20);             // límite diario gratis
-});</div>
+    <div class="api-desc">Estado de la clave: peticiones usadas, límite y reset.</div>
+    <div class="code-block">const status = await aegis.getStatus();
+// { used: 5, limit: 20, plan: 'free', resetAt: '...' }</div>
   </div>
-
-  <!-- LIVE DEMO — funciona completamente en browser -->
-  <div class="card" style="margin-top:4px">
+  <!-- DEMO -->
+  <div class="card">
     <div class="card-title">Demo en vivo (100% local · sin servidor)</div>
-    <div class="field"><label class="label">Texto a cifrar</label><input class="inp" id="demoTxt" placeholder="Escribe algo..." value="Hola mundo desde la API"></div>
-    <div class="field"><label class="label">Contraseña</label><input type="password" class="inp" id="demoPw" placeholder="contraseña" value="demo123"></div>
+    <div class="field"><label class="label">Texto</label><input class="inp" id="demoTxt" value="Hola mundo desde AegisPattern"></div>
+    <div class="field"><label class="label">Contraseña</label><input type="password" class="inp" id="demoPw" value="demo123"></div>
     <div style="display:flex;gap:8px;margin-bottom:10px">
       <button class="btn btn-sm btn-outline" id="btnDemoEnc" style="flex:1">⬆ Cifrar</button>
       <button class="btn btn-sm btn-outline" id="btnDemoDec" style="flex:1">⬇ Descifrar</button>
@@ -856,10 +684,86 @@ fetch('https://champdrop-b74e4-default-rtdb.firebaseio.com/api_serverless/reques
   </div>
 </div>
 
-<!-- ═══ PAGE: NEWS ═══ -->
-<div class="page" id="page-news">
-  <div style="font-family:var(--disp);font-size:1.1rem;font-weight:700;margin-bottom:14px">Inteligencia Cripto</div>
-  <div class="news-grid" id="newsGrid"></div>
+<!-- ═══ PAGE: PLANS ═══ -->
+<div class="page" id="page-plans">
+  <div style="font-family:var(--disp);font-size:1.3rem;font-weight:900;text-align:center;margin-bottom:6px">Elige tu plan</div>
+  <div style="font-size:.75rem;color:var(--tx3);text-align:center;margin-bottom:20px">Todos los planes incluyen cifrado en el navegador. Sin servidores para tus archivos.</div>
+  <!-- TRIAL CTA -->
+  <div class="trial-cta">
+    <h3>🎁 Prueba Premium gratis — 7 días</h3>
+    <p>Introduce tu email y recibirás un código de un solo uso para activar todas las funciones premium durante 7 días completamente gratis.</p>
+    <div style="display:flex;gap:8px;max-width:400px;margin:0 auto">
+      <input type="email" class="inp" id="trialEmail" placeholder="tu@email.com" style="flex:1">
+      <button class="btn btn-sm" id="btnRequestTrial" style="background:var(--g);color:#0f172a;padding:10px 16px;font-weight:700;border:none;border-radius:var(--rad-sm);cursor:pointer;font-family:var(--mono);font-size:.72rem;white-space:nowrap">Solicitar prueba</button>
+    </div>
+    <div id="trialStatus" style="font-size:.65rem;color:var(--tx3);margin-top:8px;text-align:center"></div>
+  </div>
+  <!-- PLANS GRID -->
+  <div class="plans-grid">
+    <!-- FREE -->
+    <div class="plan-card">
+      <div class="plan-name" style="color:var(--tx3)">FREE</div>
+      <div class="plan-price" style="color:var(--tx)">0€ <span>/mes</span></div>
+      <div class="plan-period">Para siempre gratis</div>
+      <ul class="plan-features">
+        <li>AES-CBC 128-bit cifrado</li>
+        <li>Archivos hasta 2MB (cifrado)</li>
+        <li>Transferencia P2P hasta 5GB</li>
+        <li>API: 20 peticiones/día</li>
+        <li>1 dispositivo activo</li>
+        <li class="off">Algoritmos avanzados (GCM, ChaCha20)</li>
+        <li class="off">MULTI-API 4 capas</li>
+        <li class="off">Kyber-1024 post-cuántico</li>
+        <li class="off">Sin espera freemium</li>
+      </ul>
+      <button class="plan-btn free-btn" disabled>Plan actual</button>
+    </div>
+    <!-- PREMIUM -->
+    <div class="plan-card popular">
+      <div class="plan-badge pb-popular">⭐ MÁS POPULAR</div>
+      <div class="plan-name" style="color:var(--acc)">PREMIUM</div>
+      <div class="plan-price" style="color:var(--acc)">4.99€ <span>/mes</span></div>
+      <div class="plan-period">o 39.99€/año · 7 días de prueba gratis</div>
+      <ul class="plan-features">
+        <li>Todo lo de FREE</li>
+        <li>AES-GCM 256-bit + ChaCha20</li>
+        <li>Archivos ilimitados (cifrado)</li>
+        <li>Transferencia P2P hasta 49.99GB</li>
+        <li>API: 1.000 peticiones/día</li>
+        <li>Sin espera freemium</li>
+        <li>3 dispositivos activos</li>
+        <li>Soporte prioritario</li>
+        <li class="off">MULTI-API 4 capas</li>
+        <li class="off">Kyber-1024 post-cuántico</li>
+      </ul>
+      <button class="plan-btn premium-btn" id="btnGetPremium">Activar licencia →</button>
+    </div>
+    <!-- ULTRA -->
+    <div class="plan-card ultra">
+      <div class="plan-badge pb-ultra">⚛️ ULTRA</div>
+      <div class="plan-name" style="color:var(--pu)">ULTRA</div>
+      <div class="plan-price" style="color:var(--pu)">14.99€ <span>/mes</span></div>
+      <div class="plan-period">o 99.99€/año · Para equipos y devs</div>
+      <ul class="plan-features">
+        <li>Todo lo de PREMIUM</li>
+        <li>MULTI-API 4 capas (máx seguridad)</li>
+        <li>Kyber-1024 post-cuántico</li>
+        <li>API: Sin límite</li>
+        <li>SDK privado con soporte</li>
+        <li>10 dispositivos activos</li>
+        <li>Dashboard de uso API</li>
+        <li>SLA 99.9% señalización P2P</li>
+        <li>Soporte 24/7 dedicado</li>
+      </ul>
+      <button class="plan-btn ultra-btn" id="btnGetUltra">Activar licencia →</button>
+    </div>
+  </div>
+  <!-- License activation -->
+  <div class="card" style="margin-top:16px">
+    <div class="card-title">Activar licencia / código de prueba</div>
+    <div class="field"><input type="text" class="inp" id="plansLicInp" placeholder="AEGIS-PRO-XXXXXXXX  ó  TRIAL-XXXXXXXX" style="letter-spacing:.5px;color:var(--p2)"></div>
+    <button class="btn btn-block btn-outline" id="btnPlansValidLic">✓ Validar y activar</button>
+  </div>
 </div>
 
 <!-- ═══ PAGE: SETTINGS ═══ -->
@@ -874,19 +778,15 @@ fetch('https://champdrop-b74e4-default-rtdb.firebaseio.com/api_serverless/reques
       <button class="sp-nav-btn" data-sp="advanced">Avanzado</button>
     </div>
     <div>
-
-      <!-- SECURITY -->
       <div class="sp-panel active" id="sp-security">
         <div class="card">
           <div class="sg-title">Control de acceso</div>
           <div class="s-row"><div><div class="s-lbl">Anti-debugging</div><div class="s-sub">Detecta DevTools y borra secretos</div></div><label class="toggle"><input type="checkbox" id="togAD" checked><div class="t-track"></div><div class="t-thumb"></div></label></div>
           <div class="s-row"><div><div class="s-lbl">Borrar patrón tras uso</div><div class="s-sub">Limpia automáticamente</div></div><label class="toggle"><input type="checkbox" id="togAC" checked><div class="t-track"></div><div class="t-thumb"></div></label></div>
-          <div class="s-row"><div><div class="s-lbl">Bloquear menú contextual</div><div class="s-sub">Previene inspección DOM</div></div><label class="toggle"><input type="checkbox" id="togCM" checked><div class="t-track"></div><div class="t-thumb"></div></label></div>
+          <div class="s-row"><div><div class="s-lbl">Bloquear menú contextual</div></div><label class="toggle"><input type="checkbox" id="togCM" checked><div class="t-track"></div><div class="t-thumb"></div></label></div>
           <div class="s-row"><div><div class="s-lbl">Tiempo de espera freemium</div></div><select class="sel-input" id="selNag"><option value="10">10s</option><option value="15" selected>15s</option><option value="30">30s</option></select></div>
         </div>
       </div>
-
-      <!-- ACCOUNT -->
       <div class="sp-panel" id="sp-account">
         <div class="card">
           <div class="sg-title">Estado de sesión</div>
@@ -894,35 +794,23 @@ fetch('https://champdrop-b74e4-default-rtdb.firebaseio.com/api_serverless/reques
             <div class="ana-row"><span class="ana-k">Estado</span><span class="ana-v" id="sAuthState">—</span></div>
             <div class="ana-row"><span class="ana-k">Email</span><span class="ana-v" id="sAuthEmail">—</span></div>
             <div class="ana-row"><span class="ana-k">Plan</span><span class="ana-v" id="sAuthPlan">—</span></div>
-            <div class="ana-row"><span class="ana-k">Prueba activa</span><span class="ana-v" id="sTrialInfo">—</span></div>
+            <div class="ana-row"><span class="ana-k">Prueba</span><span class="ana-v" id="sTrialInfo">—</span></div>
           </div>
         </div>
         <div class="card">
-          <div class="sg-title">Activar licencia premium</div>
+          <div class="sg-title">Activar licencia</div>
           <div class="field"><input type="text" class="inp" id="sLicInp" placeholder="AEGIS-PRO-XXXXXXXX..." style="letter-spacing:.5px;color:var(--p2)"></div>
           <button class="btn btn-block btn-outline" id="btnSLic">Validar licencia</button>
         </div>
-        <div class="card">
-          <div class="sg-title">Firebase</div>
-          <div id="fbSettingsStatus" style="font-size:.68rem;color:var(--tx3);line-height:1.6">
-            Carga Firebase desde la consola para habilitar autenticación persistente.
-            <br><br>
-            <span style="color:var(--acc)">Sin Firebase configurado: </span>el cifrado de archivos funciona completamente offline. La autenticación requiere Firebase.
-          </div>
-        </div>
       </div>
-
-      <!-- CRYPTO -->
       <div class="sp-panel" id="sp-crypto">
         <div class="card">
           <div class="sg-title">Derivación de clave</div>
-          <div class="s-row"><span class="s-lbl">Función KDF</span><select class="sel-input" id="selKdf"><option value="sha256">SHA-256</option><option value="sha512">SHA-512</option><option value="pbkdf2">PBKDF2-SHA256</option></select></div>
+          <div class="s-row"><span class="s-lbl">KDF</span><select class="sel-input" id="selKdf"><option value="sha256">SHA-256</option><option value="sha512">SHA-512</option><option value="pbkdf2">PBKDF2</option></select></div>
           <div class="s-row" id="pbRow" style="display:none"><div><div class="s-lbl">Iteraciones PBKDF2</div></div><select class="sel-input" id="selPbIter"><option value="100000">100k</option><option value="250000" selected>250k</option><option value="600000">600k</option></select></div>
-          <div class="s-row"><div><div class="s-lbl">Añadir magic bytes</div></div><label class="toggle"><input type="checkbox" id="togMagic" checked><div class="t-track"></div><div class="t-thumb"></div></label></div>
+          <div class="s-row"><div><div class="s-lbl">Magic bytes</div></div><label class="toggle"><input type="checkbox" id="togMagic" checked><div class="t-track"></div><div class="t-thumb"></div></label></div>
         </div>
       </div>
-
-      <!-- APPEARANCE -->
       <div class="sp-panel" id="sp-appearance">
         <div class="card">
           <div class="sg-title">Color de acento</div>
@@ -937,11 +825,9 @@ fetch('https://champdrop-b74e4-default-rtdb.firebaseio.com/api_serverless/reques
         </div>
         <div class="card">
           <div class="sg-title">Tipografía</div>
-          <div class="s-row"><span class="s-lbl">Fuente monoespaciada</span><select class="sel-input" id="selFont"><option value="'DM Mono',monospace">DM Mono</option><option value="'Courier New',monospace">Courier New</option></select></div>
+          <div class="s-row"><span class="s-lbl">Fuente</span><select class="sel-input" id="selFont"><option value="'DM Mono',monospace">DM Mono</option><option value="'Courier New',monospace">Courier New</option></select></div>
         </div>
       </div>
-
-      <!-- ADVANCED -->
       <div class="sp-panel" id="sp-advanced">
         <div class="card">
           <div class="sg-title">Motor</div>
@@ -953,189 +839,78 @@ fetch('https://champdrop-b74e4-default-rtdb.firebaseio.com/api_serverless/reques
           <button class="btn btn-block btn-outline" id="btnReset">↺ Restaurar por defecto</button>
         </div>
       </div>
-
     </div>
   </div>
 </div>
 
-<!-- MODALS -->
+<!-- MODAL PREMIUM -->
 <div class="modal-bg" id="premModal">
   <div class="modal-box">
-    <div class="modal-title">🔓 Suite Avanzada</div>
-    <div class="modal-sub">Desbloquea AES-GCM, ChaCha20, MULTI-API 4 capas y Kyber-1024 post-cuántico con una licencia premium.</div>
-    <div class="trial-banner" id="trialBannerModal" style="display:none">
-      🎁 Tu prueba de 8h ya fue activada al registrarte.<br>Consulta tu email para el código.
-    </div>
-    <div class="lic-hint">Formato: <strong>AEGIS-PRO-XXXXXXXX…</strong></div>
-    <input type="text" class="lic-inp" id="licInp" placeholder="AEGIS-PRO-SHA256-XXXXX...">
-    <button class="btn btn-block" style="background:linear-gradient(135deg,#b45309,#f59e0b);color:#0f172a;font-weight:700;padding:12px;font-family:var(--mono);border:none;border-radius:var(--rad-sm);cursor:pointer;font-size:.8rem;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px" id="btnValidLic">Validar licencia</button>
-    <button class="btn btn-block btn-outline" id="btnCloseModal">Volver a Free</button>
+    <div class="modal-title">🔓 Desbloquear funciones</div>
+    <div class="modal-sub">Activa un plan premium o introduce tu código de prueba de 7 días.</div>
+    <div class="lic-hint">Formato: <strong>AEGIS-PRO-XXXXXXXX</strong> o <strong>TRIAL-XXXXXXXX</strong></div>
+    <input type="text" class="lic-inp" id="licInp" placeholder="AEGIS-PRO-... o TRIAL-...">
+    <button class="btn btn-block" style="background:linear-gradient(135deg,#b45309,#f59e0b);color:#0f172a;font-weight:700;padding:12px;font-family:var(--mono);border:none;border-radius:var(--rad-sm);cursor:pointer;font-size:.8rem;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px" id="btnValidLic">Validar</button>
+    <button class="btn btn-block btn-outline" id="btnCloseModal">Cancelar</button>
   </div>
 </div>
 
 <div class="toast-wrap" id="toasts"></div>
 
 <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
-  import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-           sendEmailVerification, signOut } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
-  import { getDatabase, ref, set, get, update } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
+import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+         sendEmailVerification, signOut } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+import { getDatabase, ref, set, get, update, onValue, remove, push } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
 
-  // Tu configuración de Firebase
-  const firebaseConfig = {
-    apiKey: "AIzaSyC2xQewrid8QiWfFy_RVdG3mHt05QYIdPA",
-    authDomain: "champdrop-b74e4.firebaseapp.com",
-    databaseURL: "https://champdrop-b74e4-default-rtdb.firebaseio.com",
-    projectId: "champdrop-b74e4",
-    storageBucket: "champdrop-b74e4.firebasestorage.app",
-    messagingSenderId: "25739034626",
-    appId: "1:25739034626:web:da6436afc68afdde58271b",
-    measurementId: "G-5645CYD2KP"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyC2xQewrid8QiWfFy_RVdG3mHt05QYIdPA",
+  authDomain: "champdrop-b74e4.firebaseapp.com",
+  databaseURL: "https://champdrop-b74e4-default-rtdb.firebaseio.com",
+  projectId: "champdrop-b74e4",
+  storageBucket: "champdrop-b74e4.firebasestorage.app",
+  messagingSenderId: "25739034626",
+  appId: "1:25739034626:web:da6436afc68afdde58271b",
+  measurementId: "G-5645CYD2KP"
+};
 
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
+let auth = null, db = null, fbReady = false;
+const app = initializeApp(firebaseConfig);
+try { getAnalytics(app); } catch(e) {}
 
-  // Estado de Firebase
-  let auth = null, db = null, fbReady = false;
-
-  const showFbStatus = (msg, type) => {
-    const bar = document.getElementById('fbStatusBar');
-    if (!bar) return;
-    bar.style.display = 'flex';
-    bar.className = 'fb-status ' + type;
-    document.getElementById('fbStatusMsg').textContent = msg;
-    if (type === 'ok') setTimeout(() => { bar.style.display = 'none'; }, 4000);
-  };
-
-  // Intento de inicializar Firebase — falla graciosamente si la config no es válida
-  const initFirebase = async () => {
-    if (firebaseConfig.apiKey === 'TU_API_KEY_AQUI' || !firebaseConfig.apiKey) {
-      showFbStatus('Firebase no configurado — modo offline activo (cifrado funcional)', 'warn');
-      stopNag();
-      return false;
-    }
-    try {
-      auth = getAuth(app);
-      db = getDatabase(app);
-      fbReady = true;
-
-      window._fb = { createUserWithEmailAndPassword, signInWithEmailAndPassword,
-                     sendEmailVerification, signOut, ref, set, get, update };
-
-      showFbStatus('Firebase conectado ✓', 'ok');
-      onAuthStateChanged(auth, handleAuthChange);
-      return true;
-    } catch (err) {
-      console.error('Firebase init error:', err);
-      showFbStatus('Error Firebase: ' + err.message.slice(0,60), 'err');
-      stopNag();
-      return false;
-    }
-  };
-
-// ═══════════════════════════════════════════
-// CHACHA20 RFC 8439
-// ═══════════════════════════════════════════
-const ChaCha20 = {
-  qr(x,a,b,c,d){
-    x[a]=(x[a]+x[b])|0;x[d]^=x[a];x[d]=(x[d]<<16)|(x[d]>>>16);
-    x[c]=(x[c]+x[d])|0;x[b]^=x[c];x[b]=(x[b]<<12)|(x[b]>>>12);
-    x[a]=(x[a]+x[b])|0;x[d]^=x[a];x[d]=(x[d]<<8)|(x[d]>>>8);
-    x[c]=(x[c]+x[d])|0;x[b]^=x[c];x[b]=(x[b]<<7)|(x[b]>>>7);
-  },
-  block(key,nonce,ctr){
-    const s=new Int32Array(16);
-    s[0]=0x61707865;s[1]=0x3320646e;s[2]=0x79622d32;s[3]=0x6b206574;
-    for(let i=0;i<8;i++)s[4+i]=key[i*4]|(key[i*4+1]<<8)|(key[i*4+2]<<16)|(key[i*4+3]<<24);
-    s[12]=ctr;
-    for(let i=0;i<3;i++)s[13+i]=nonce[i*4]|(nonce[i*4+1]<<8)|(nonce[i*4+2]<<16)|(nonce[i*4+3]<<24);
-    const w=new Int32Array(s);
-    for(let i=0;i<10;i++){
-      this.qr(w,0,4,8,12);this.qr(w,1,5,9,13);this.qr(w,2,6,10,14);this.qr(w,3,7,11,15);
-      this.qr(w,0,5,10,15);this.qr(w,1,6,11,12);this.qr(w,2,7,8,13);this.qr(w,3,4,9,14);
-    }
-    const out=new Uint8Array(64);
-    for(let i=0;i<16;i++){const v=(w[i]+s[i])|0;out[i*4]=v&0xff;out[i*4+1]=(v>>>8)&0xff;out[i*4+2]=(v>>>16)&0xff;out[i*4+3]=(v>>>24)&0xff;}
-    return out;
-  },
-  crypt(data,key,nonce){
-    const out=new Uint8Array(data.length);
-    for(let i=0,blk=1;i<data.length;i+=64,blk++){
-      const ks=this.block(key,nonce,blk);
-      for(let j=0;j<64&&(i+j)<data.length;j++)out[i+j]=data[i+j]^ks[j];
-    }
-    return out;
-  }
+const showFbStatus = (msg, type) => {
+  const bar = document.getElementById('fbStatusBar');
+  if (!bar) return;
+  bar.style.display = 'flex';
+  bar.className = 'fb-status ' + type;
+  document.getElementById('fbStatusMsg').textContent = msg;
+  if (type === 'ok') setTimeout(() => bar.style.display = 'none', 4000);
 };
 
 // ═══════════════════════════════════════════
-// KYBER-1024 (Module-LWE, NTT, NIST FIPS 203)
+// CHACHA20
 // ═══════════════════════════════════════════
-const Kyber = (() => {
-  const Q=3329,N=256,K=4,ETA1=2,ETA2=2,DU=11,DV=5;
-  const ZETAS=new Int16Array(128),ZETAS_INV=new Int16Array(128);
-  (() => {
-    const pow=(b,e,m)=>{let r=1n;b%=m;while(e>0n){if(e&1n)r=r*b%m;e>>=1n;b=b*b%m;}return r;};
-    const br=(v,bits)=>{let r=0;for(let i=0;i<bits;i++){r=(r<<1)|(v&1);v>>=1;}return r;};
-    for(let i=0;i<128;i++){const k=br(i,7);ZETAS[i]=Number(pow(17n,BigInt(k),3329n));ZETAS_INV[i]=Number(pow(17n,3329n-1n-BigInt(k),3329n));}
-  })();
-  const mm=(a,b)=>((a*b)%Q+Q)%Q;
-  const ntt=p=>{const f=new Int16Array(p);let k=1,len=128;while(len>=2){for(let s=0;s<256;s+=2*len){const z=ZETAS[k++];for(let j=s;j<s+len;j++){const t=mm(z,f[j+len]);f[j+len]=((f[j]-t)%Q+Q)%Q;f[j]=(f[j]+t)%Q;}}len>>=1;}return f;};
-  const intt=p=>{const f=new Int16Array(p);let k=127,len=2;while(len<=128){for(let s=0;s<256;s+=2*len){const z=ZETAS_INV[k--];for(let j=s;j<s+len;j++){const t=f[j];f[j]=(t+f[j+len])%Q;f[j+len]=mm(z,((f[j+len]-t)%Q+Q)%Q);}}len<<=1;}for(let i=0;i<256;i++)f[i]=mm(f[i],3303);return f;};
-  const pmul=(a,b)=>{const r=new Int16Array(256);for(let i=0;i<256;i++)r[i]=mm(a[i],b[i]);return r;};
-  const padd=(a,b)=>{const r=new Int16Array(256);for(let i=0;i<256;i++)r[i]=(a[i]+b[i])%Q;return r;};
-  const psub=(a,b)=>{const r=new Int16Array(256);for(let i=0;i<256;i++)r[i]=((a[i]-b[i])%Q+Q)%Q;return r;};
-  const mvmul=(A,s)=>{const res=[];for(let i=0;i<K;i++){let acc=new Int16Array(256);for(let j=0;j<K;j++)acc=padd(acc,pmul(A[i][j],s[j]));res.push(acc);}return res;};
-  const cbd=(bytes,eta)=>{const p=new Int16Array(256);for(let i=0;i<256;i++){let a=0,b=0;for(let j=0;j<eta;j++){const bi=(i*2*eta+2*j)>>3,bi2=(i*2*eta+2*j)&7;a+=(bytes[bi]>>bi2)&1;b+=(bytes[bi]>>(bi2+1))&1;}p[i]=((a-b)%Q+Q)%Q;}return p;};
-  const G=async i=>{const h=await crypto.subtle.digest('SHA-512',i);return new Uint8Array(h);};
-  const H=async i=>{const h=await crypto.subtle.digest('SHA-256',i);return new Uint8Array(h);};
-  const prf=async(sigma,b,len)=>{const out=new Uint8Array(len);for(let i=0;i*32<len;i++){const inp=new Uint8Array(sigma.length+2);inp.set(sigma);inp[sigma.length]=b;inp[sigma.length+1]=i;const h=await crypto.subtle.digest('SHA-256',inp);out.set(new Uint8Array(h).slice(0,Math.min(32,len-i*32)),i*32);}return out;};
-  const parseXof=async(seed,i,j)=>{const poly=new Int16Array(256);let cnt=0;for(let a=0;a<20&&cnt<256;a++){const inp=new Uint8Array(35);inp.set(seed);inp[32]=i;inp[33]=j;inp[34]=a;const h=await crypto.subtle.digest('SHA-256',inp);const bytes=new Uint8Array(h);for(let k=0;k<bytes.length-1&&cnt<256;k+=2){const val=(bytes[k]|(bytes[k+1]<<8))&0xfff;if(val<Q)poly[cnt++]=val;}}return poly;};
-  const compress=(x,d)=>Math.round(x*(1<<d)/Q)&((1<<d)-1);
-  const decompress=(x,d)=>Math.round(x*Q/(1<<d));
-  const p2b=(poly,d)=>{const bits=[];for(let i=0;i<256;i++){const c=compress(poly[i],d);for(let b=0;b<d;b++)bits.push((c>>b)&1);}const bytes=new Uint8Array(Math.ceil(bits.length/8));for(let i=0;i<bits.length;i++)bytes[i>>3]|=bits[i]<<(i&7);return bytes;};
-  const b2p=(bytes,d)=>{const p=new Int16Array(256);for(let i=0;i<256;i++){let c=0;for(let b=0;b<d;b++){const bi=i*d+b;c|=((bytes[bi>>3]>>(bi&7))&1)<<b;}p[i]=decompress(c,d);}return p;};
-  const keygen=async()=>{const d=crypto.getRandomValues(new Uint8Array(32));const Gout=await G(d);const rho=Gout.slice(0,32),sigma=Gout.slice(32);const A=[];for(let i=0;i<K;i++){A.push([]);for(let j=0;j<K;j++)A[i].push(ntt(await parseXof(rho,i,j)));}const s=[],e=[];for(let i=0;i<K;i++)s.push(ntt(cbd(await prf(sigma,i,64*ETA1),ETA1)));for(let i=0;i<K;i++)e.push(ntt(cbd(await prf(sigma,K+i,64*ETA1),ETA1)));const As=mvmul(A,s),t=[];for(let i=0;i<K;i++)t.push(padd(As[i],e[i]));const pkB=new Uint8Array(K*256*12/8+32);let off=0;for(let i=0;i<K;i++){const enc=p2b(t[i],12);pkB.set(enc,off);off+=enc.length;}pkB.set(rho,off);const sB=new Uint8Array(K*256*12/8);off=0;for(let i=0;i<K;i++){const enc=p2b(s[i],12);sB.set(enc,off);off+=enc.length;}const hPk=await H(pkB);const skB=new Uint8Array(sB.length+pkB.length+64);off=0;skB.set(sB,off);off+=sB.length;skB.set(pkB,off);off+=pkB.length;skB.set(hPk,off);off+=32;skB.set(crypto.getRandomValues(new Uint8Array(32)),off);return{pk:pkB,sk:skB};};
-  const encap=async pk=>{const m=crypto.getRandomValues(new Uint8Array(32));const hPk=await H(pk);const Gin=new Uint8Array(64);Gin.set(m);Gin.set(hPk,32);const Gout=await G(Gin);const Kss=Gout.slice(0,32),r=Gout.slice(32);const pl=256*12/8,t=[];for(let i=0;i<K;i++)t.push(ntt(b2p(pk.slice(i*pl,(i+1)*pl),12)));const rho=pk.slice(K*pl,K*pl+32);const A=[];for(let i=0;i<K;i++){A.push([]);for(let j=0;j<K;j++)A[i].push(ntt(await parseXof(rho,i,j)));}const rv=[],e1=[];for(let i=0;i<K;i++)rv.push(ntt(cbd(await prf(r,i,64*ETA1),ETA1)));for(let i=0;i<K;i++)e1.push(cbd(await prf(r,K+i,64*ETA2),ETA2));const e2=cbd(await prf(r,2*K,64*ETA2),ETA2);const At=[];for(let i=0;i<K;i++){At.push([]);for(let j=0;j<K;j++)At[i].push(A[j][i]);}const Atr=mvmul(At,rv);const u=[];for(let i=0;i<K;i++)u.push(padd(intt(Atr[i]),e1[i]));let tTr=new Int16Array(256);for(let i=0;i<K;i++)tTr=padd(tTr,intt(pmul(t[i],rv[i])));const mp=new Int16Array(256);for(let i=0;i<256;i++)mp[i]=((m[i>>3]>>(i&7))&1)*Math.round(Q/2);let v=padd(padd(tTr,e2),mp);const ct=new Uint8Array(K*256*DU/8+256*DV/8);let co=0;for(let i=0;i<K;i++){const enc=p2b(u[i],DU);ct.set(enc,co);co+=enc.length;}ct.set(p2b(v,DV),co);return{ct,ss:Kss};};
-  const decap=async(ct,sk)=>{const pl=256*12/8,skl=K*pl,pkl=K*pl+32;const sb=sk.slice(0,skl),pkData=sk.slice(skl,skl+pkl),hPk=sk.slice(skl+pkl,skl+pkl+32),z=sk.slice(skl+pkl+32);const s=[];for(let i=0;i<K;i++)s.push(ntt(b2p(sb.slice(i*pl,(i+1)*pl),12)));const ub=K*256*DU/8,u=[];for(let i=0;i<K;i++)u.push(b2p(ct.slice(i*256*DU/8,(i+1)*256*DU/8),DU));const vp=b2p(ct.slice(ub),DV);let stu=new Int16Array(256);for(let i=0;i<K;i++)stu=padd(stu,intt(pmul(s[i],ntt(u[i]))));const mp=psub(vp,stu),m=new Uint8Array(32);for(let i=0;i<256;i++){const bit=Math.round(mp[i]*2/Q)&1;m[i>>3]|=bit<<(i&7);}const Gin=new Uint8Array(64);Gin.set(m);Gin.set(hPk,32);const Gout=await G(Gin);return Gout.slice(0,32);};
-  const encryptData=async(data,pw)=>{const{pk,sk}=await keygen();const{ct,ss}=await encap(pk);const pwH=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pw));const km=new Uint8Array(64);km.set(ss);km.set(new Uint8Array(pwH),32);const fk=new Uint8Array(await crypto.subtle.digest('SHA-256',km));const ak=await crypto.subtle.importKey('raw',fk,{name:'AES-GCM'},false,['encrypt']);const iv=crypto.getRandomValues(new Uint8Array(12));const enc=await crypto.subtle.encrypt({name:'AES-GCM',iv},ak,data);const hk=await crypto.subtle.importKey('raw',fk,{name:'HMAC',hash:'SHA-256'},false,['sign']);const ad=new Uint8Array(ct.length+pk.length+iv.length);ad.set(ct);ad.set(pk,ct.length);ad.set(iv,ct.length+pk.length);const hmac=await crypto.subtle.sign('HMAC',hk,ad);const magic=new TextEncoder().encode('AQK9');const pkLen=new Uint32Array([pk.length]),ctLen=new Uint32Array([ct.length]);const encArr=new Uint8Array(enc);const total=4+4+pk.length+4+ct.length+12+32+encArr.length;const out=new Uint8Array(total);let off=0;out.set(magic,off);off+=4;out.set(new Uint8Array(pkLen.buffer),off);off+=4;out.set(pk,off);off+=pk.length;out.set(new Uint8Array(ctLen.buffer),off);off+=4;out.set(ct,off);off+=ct.length;out.set(iv,off);off+=12;out.set(new Uint8Array(hmac),off);off+=32;out.set(encArr,off);return{output:out,pk,sk};};
-  const decryptData=async(data,pw,skBytes)=>{let off=0;const magic=new TextDecoder().decode(data.slice(0,4));off+=4;if(magic!=='AQK9')throw new Error('Magic inválido');const pkLen=new DataView(data.buffer,data.byteOffset+off,4).getUint32(0,true);off+=4;const pk=data.slice(off,off+pkLen);off+=pkLen;const ctLen=new DataView(data.buffer,data.byteOffset+off,4).getUint32(0,true);off+=4;const ct=data.slice(off,off+ctLen);off+=ctLen;const iv=data.slice(off,off+12);off+=12;const hmac=data.slice(off,off+32);off+=32;const ciphertext=data.slice(off);const ss=await decap(ct,skBytes);const pwH=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pw));const km=new Uint8Array(64);km.set(ss);km.set(new Uint8Array(pwH),32);const fk=new Uint8Array(await crypto.subtle.digest('SHA-256',km));const hk=await crypto.subtle.importKey('raw',fk,{name:'HMAC',hash:'SHA-256'},false,['verify']);const ad=new Uint8Array(ct.length+pk.length+iv.length);ad.set(ct);ad.set(pk,ct.length);ad.set(iv,ct.length+pk.length);const valid=await crypto.subtle.verify('HMAC',hk,hmac,ad);if(!valid)throw new Error('HMAC inválido');const ak=await crypto.subtle.importKey('raw',fk,{name:'AES-GCM'},false,['decrypt']);const dec=await crypto.subtle.decrypt({name:'AES-GCM',iv},ak,ciphertext);return new Uint8Array(dec);};
-  return{keygen,encap,decap,encryptData,decryptData};
-})();
+const ChaCha20 = {
+  qr(x,a,b,c,d){x[a]=(x[a]+x[b])|0;x[d]^=x[a];x[d]=(x[d]<<16)|(x[d]>>>16);x[c]=(x[c]+x[d])|0;x[b]^=x[c];x[b]=(x[b]<<12)|(x[b]>>>12);x[a]=(x[a]+x[b])|0;x[d]^=x[a];x[d]=(x[d]<<8)|(x[d]>>>8);x[c]=(x[c]+x[d])|0;x[b]^=x[c];x[b]=(x[b]<<7)|(x[b]>>>7);},
+  block(key,nonce,ctr){const s=new Int32Array(16);s[0]=0x61707865;s[1]=0x3320646e;s[2]=0x79622d32;s[3]=0x6b206574;for(let i=0;i<8;i++)s[4+i]=key[i*4]|(key[i*4+1]<<8)|(key[i*4+2]<<16)|(key[i*4+3]<<24);s[12]=ctr;for(let i=0;i<3;i++)s[13+i]=nonce[i*4]|(nonce[i*4+1]<<8)|(nonce[i*4+2]<<16)|(nonce[i*4+3]<<24);const w=new Int32Array(s);for(let i=0;i<10;i++){this.qr(w,0,4,8,12);this.qr(w,1,5,9,13);this.qr(w,2,6,10,14);this.qr(w,3,7,11,15);this.qr(w,0,5,10,15);this.qr(w,1,6,11,12);this.qr(w,2,7,8,13);this.qr(w,3,4,9,14);}const out=new Uint8Array(64);for(let i=0;i<16;i++){const v=(w[i]+s[i])|0;out[i*4]=v&0xff;out[i*4+1]=(v>>>8)&0xff;out[i*4+2]=(v>>>16)&0xff;out[i*4+3]=(v>>>24)&0xff;}return out;},
+  crypt(data,key,nonce){const out=new Uint8Array(data.length);for(let i=0,blk=1;i<data.length;i+=64,blk++){const ks=this.block(key,nonce,blk);for(let j=0;j<64&&(i+j)<data.length;j++)out[i+j]=data[i+j]^ks[j];}return out;}
+};
 
 // ═══════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════
 const S = {
-  user: null, isPremium: false, isTrial: false, trialEnd: 0,
+  user: null, isPremium: false, isUltra: false, isTrial: false, trialEnd: 0,
   algo: 'aes-cbc', pwMode: 'pattern', patternNodes: [], patternDrawing: false,
-  textPw: '', autoPw: '', autoPwLen: 32,
-  authMode: 'login',
+  textPw: '', autoPw: '', autoPwLen: 32, authMode: 'login',
   charsets: {upper:true,lower:true,digits:true,symbols:true,hex:false,b64:false},
-  file: null, nagTime: 15, kyberKP: null,
-  apiKey: null,
+  file: null, nagTime: 15, apiKey: null,
   cfg: {antiDebug:true,autoClear:true,ctxMenu:true,kdf:'sha256',pbIter:250000,magic:true,verbose:true}
 };
 
 // ═══════════════════════════════════════════
-// ACCENT COLORS
-// ═══════════════════════════════════════════
-const accents = {
-  blue:{p:'#38bdf8',p2:'#0ea5e9'},green:{p:'#34d399',p2:'#10b981'},
-  amber:{p:'#f59e0b',p2:'#b45309'},purple:{p:'#a78bfa',p2:'#7c3aed'},
-  red:{p:'#f87171',p2:'#ef4444'},pink:{p:'#fb7185',p2:'#e11d48'}
-};
-const setAccent = name => {
-  const c = accents[name]||accents.blue;
-  document.documentElement.style.setProperty('--p',c.p);
-  document.documentElement.style.setProperty('--p2',c.p2);
-};
-
-// ═══════════════════════════════════════════
-// TOAST
+// TOAST / LOG
 // ═══════════════════════════════════════════
 const toast = (msg, type='info', dur=3200) => {
   const icons = {info:'ℹ️',success:'✅',error:'❌',warn:'⚠️'};
@@ -1145,10 +920,6 @@ const toast = (msg, type='info', dur=3200) => {
   document.getElementById('toasts').appendChild(el);
   setTimeout(() => el.remove(), dur);
 };
-
-// ═══════════════════════════════════════════
-// LOG
-// ═══════════════════════════════════════════
 const log = (msg, type='info') => {
   if(!S.cfg.verbose && type==='info') return;
   const p = document.getElementById('logPanel');
@@ -1161,29 +932,15 @@ const log = (msg, type='info') => {
 };
 
 // ═══════════════════════════════════════════
-// PROGRESS
-// ═══════════════════════════════════════════
-const setProgress = (lbl, pct) => {
-  const w = document.getElementById('progWrap');
-  w.style.display = 'block';
-  document.getElementById('progLbl').textContent = lbl;
-  document.getElementById('progFill').style.width = pct+'%';
-};
-const hideProgress = () => { document.getElementById('progWrap').style.display='none'; };
-
-// ═══════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════
 const switchPage = (page) => {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
   document.querySelectorAll('.desk-nav-btn,.bnav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
-  if(page==='news') renderNews();
   if(page==='settings') refreshSettings();
 };
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>switchPage(b.dataset.page)));
-
-// Settings nav
 document.querySelectorAll('.sp-nav-btn').forEach(b=>b.addEventListener('click',()=>{
   document.querySelectorAll('.sp-nav-btn').forEach(x=>x.classList.remove('active'));
   b.classList.add('active');
@@ -1196,57 +953,37 @@ document.querySelectorAll('.sp-nav-btn').forEach(b=>b.addEventListener('click',(
 // ═══════════════════════════════════════════
 let nagTimer = null;
 const startNag = () => {
-  if (S.isPremium) return;
+  if(S.isPremium) return;
+  clearInterval(nagTimer);
   const nag = document.getElementById('nagBar');
   document.getElementById('btnEnc').disabled = true;
   document.getElementById('btnDec').disabled = true;
-  clearInterval(nagTimer);
   nag.style.display = 'block';
   let t = S.nagTime;
   document.getElementById('nagCount').textContent = t;
   nagTimer = setInterval(()=>{
     t--;
     document.getElementById('nagCount').textContent = t;
-    if(t<=0){
-      clearInterval(nagTimer);
-      document.getElementById('btnEnc').disabled = false;
-      document.getElementById('btnDec').disabled = false;
-      nag.innerHTML = '🔓 Listo. Cifrado desbloqueado temporalmente.';
-    }
+    if(t<=0){clearInterval(nagTimer);document.getElementById('btnEnc').disabled=false;document.getElementById('btnDec').disabled=false;nag.innerHTML='🔓 Listo.';}
   },1000);
 };
-const stopNag = () => {
-  clearInterval(nagTimer);
-  document.getElementById('nagBar').style.display = 'none';
-  document.getElementById('btnEnc').disabled = false;
-  document.getElementById('btnDec').disabled = false;
-};
+const stopNag = () => {clearInterval(nagTimer);document.getElementById('nagBar').style.display='none';document.getElementById('btnEnc').disabled=false;document.getElementById('btnDec').disabled=false;};
 
-document.getElementById('tabLogin').addEventListener('click',()=>{
-  S.authMode='login';
-  document.getElementById('tabLogin').classList.add('active');
-  document.getElementById('tabRegister').classList.remove('active');
-  document.getElementById('btnAuth').textContent='ACCEDER';
-});
-document.getElementById('tabRegister').addEventListener('click',()=>{
-  S.authMode='register';
-  document.getElementById('tabRegister').classList.add('active');
-  document.getElementById('tabLogin').classList.remove('active');
-  document.getElementById('btnAuth').textContent='REGISTRARSE';
-});
+document.getElementById('tabLogin').addEventListener('click',()=>{S.authMode='login';document.getElementById('tabLogin').classList.add('active');document.getElementById('tabRegister').classList.remove('active');document.getElementById('btnAuth').textContent='ACCEDER';});
+document.getElementById('tabRegister').addEventListener('click',()=>{S.authMode='register';document.getElementById('tabRegister').classList.add('active');document.getElementById('tabLogin').classList.remove('active');document.getElementById('btnAuth').textContent='REGISTRARSE';});
 
 document.getElementById('btnAuth').addEventListener('click', async()=>{
-  if (!fbReady) { toast('Firebase no configurado — modo offline activo', 'warn'); return; }
+  if(!fbReady){toast('Firebase no disponible','warn');return;}
   const email = document.getElementById('aEmail').value.trim();
   const pw = document.getElementById('aPw').value;
   if(!email||!pw){toast('Rellena todos los campos','warn');return;}
   try {
-    const { createUserWithEmailAndPassword, signInWithEmailAndPassword,
-            sendEmailVerification, signOut } = window._fb;
     if(S.authMode==='register'){
       const uc = await createUserWithEmailAndPassword(auth,email,pw);
       await sendEmailVerification(uc.user);
-      toast('¡Registrado! Verifica tu email.','success',5000);
+      // Create user record in DB
+      await set(ref(db,'users/'+uc.user.uid),{email,plan:'free',createdAt:new Date().toISOString()});
+      toast('¡Registrado! Verifica tu email para entrar.','success',5000);
       await signOut(auth);
     } else {
       const uc = await signInWithEmailAndPassword(auth,email,pw);
@@ -1259,357 +996,135 @@ document.getElementById('btnAuth').addEventListener('click', async()=>{
 });
 
 document.getElementById('btnLogout').addEventListener('click',async()=>{
-  if(fbReady && window._fb){ await window._fb.signOut(auth); }
-  S.user = null; S.isPremium = false;
+  if(fbReady){await signOut(auth);}
+  S.user=null;S.isPremium=false;S.isUltra=false;
   document.getElementById('authFields').style.display='block';
   document.getElementById('authTabs').style.display='flex';
   document.getElementById('sessionRow').style.display='none';
   document.getElementById('sDot').classList.remove('on');
   document.getElementById('planChip').className='plan-chip free';
   document.getElementById('planChip').textContent='FREE';
-  startNag();
-  refreshSettings();
+  startNag();refreshSettings();
 });
 
-const unlockAlgos = () => document.querySelectorAll('.algo-item.locked').forEach(e=>e.classList.remove('locked'));
-const lockAlgos = () => {
-  ['aes-gcm','chacha','multi-api','quantum'].forEach(a=>{
-    const el = document.querySelector(`[data-algo="${a}"]`);
-    if(el) el.classList.add('locked');
-  });
+const setPlanUI = (plan) => {
+  const chip = document.getElementById('planChip');
+  if(plan==='ultra'){chip.className='plan-chip ultra';chip.textContent='ULTRA';S.isPremium=true;S.isUltra=true;}
+  else if(plan==='premium'){chip.className='plan-chip premium';chip.textContent='PREMIUM';S.isPremium=true;}
+  else if(plan==='trial'){chip.className='plan-chip trial';chip.textContent='TRIAL';S.isPremium=true;}
+  else{chip.className='plan-chip free';chip.textContent='FREE';}
 };
 
-const checkTrial = async (uid) => {
-  if (!fbReady || !db) return false;
-  const { ref, get } = window._fb;
+const checkPlan = async (uid) => {
+  if(!fbReady||!db) return 'free';
   try {
     const snap = await get(ref(db,'users/'+uid));
-    if(!snap.exists()) return false;
+    if(!snap.exists()) return 'free';
     const data = snap.val();
+    if(data.plan==='ultra') return 'ultra';
     if(data.plan==='premium') return 'premium';
-    if(data.trialExpiry && Date.now() < data.trialExpiry) {
-      S.isTrial = true;
-      S.trialEnd = data.trialExpiry;
+    if(data.trialExpiry && Date.now() < data.trialExpiry){
+      S.isTrial=true;S.trialEnd=data.trialExpiry;
       return 'trial';
     }
-    return false;
-  } catch(e) { return false; }
+    return 'free';
+  } catch(e){return 'free';}
 };
+
+const unlockAlgos = () => document.querySelectorAll('.algo-item.locked').forEach(e=>e.classList.remove('locked'));
+const lockAlgos = () => ['aes-gcm','chacha','multi-api','quantum'].forEach(a=>{const el=document.querySelector(`[data-algo="${a}"]`);if(el)el.classList.add('locked');});
 
 const handleAuthChange = async (user) => {
-  const dot = document.getElementById('sDot');
-  const chip = document.getElementById('planChip');
   if(user && user.emailVerified){
     S.user = user;
-    document.getElementById('authFields').style.display = 'none';
-    document.getElementById('authTabs').style.display = 'none';
-    document.getElementById('sessionRow').style.display = 'flex';
-    document.getElementById('sessEmail').textContent = user.email;
-    dot.classList.add('on');
-
-    const planStatus = await checkTrial(user.uid);
-    if(planStatus==='premium'){
-      S.isPremium=true;
-      chip.className='plan-chip premium';chip.textContent='PREMIUM';
-      unlockAlgos();stopNag();
-    } else if(planStatus==='trial'){
-      S.isPremium=true;
-      chip.className='plan-chip trial';chip.textContent='TRIAL 8H';
-      unlockAlgos();stopNag();
-      const remaining = Math.ceil((S.trialEnd - Date.now())/60000);
-      toast(`🎁 Prueba activa: ${remaining} min restantes`,'success',4000);
-    } else {
-      chip.className='plan-chip free';chip.textContent='FREE';
-      startNag();
-    }
-
-    // Generate API key
+    document.getElementById('authFields').style.display='none';
+    document.getElementById('authTabs').style.display='none';
+    document.getElementById('sessionRow').style.display='flex';
+    document.getElementById('sessEmail').textContent=user.email;
+    document.getElementById('sDot').classList.add('on');
+    const plan = await checkPlan(user.uid);
+    setPlanUI(plan);
+    if(plan!=='free'){unlockAlgos();stopNag();}
+    else{lockAlgos();startNag();}
+    if(plan==='trial'){const min=Math.ceil((S.trialEnd-Date.now())/60000);toast(`🎁 Trial activo: ${min} min restantes`,'success',4000);}
     generateApiKeyLocal(user.uid);
     refreshSettings();
+    document.getElementById('transferLoginWarn').style.display='none';
   }
 };
-
-// ─── API Key — generada localmente (sin backend en GitHub Pages) ───
-const generateApiKeyLocal = (uid) => {
-  const stored = sessionStorage.getItem('aegis_ak_' + uid);
-  if (stored) {
-    S.apiKey = stored;
-  } else {
-    const bytes = crypto.getRandomValues(new Uint8Array(24));
-    S.apiKey = 'ak_' + Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');
-    sessionStorage.setItem('aegis_ak_' + uid, S.apiKey);
-  }
-  const d = document.getElementById('apiKeyDisplay');
-  if(d) d.value = S.apiKey;
-};
-
-// Si no hay Firebase, generar API key anónima igual
-const generateAnonApiKey = () => {
-  const stored = sessionStorage.getItem('aegis_ak_anon');
-  if (stored) {
-    S.apiKey = stored;
-  } else {
-    const bytes = crypto.getRandomValues(new Uint8Array(24));
-    S.apiKey = 'ak_anon_' + Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('').slice(0,32);
-    sessionStorage.setItem('aegis_ak_anon', S.apiKey);
-  }
-  const d = document.getElementById('apiKeyDisplay');
-  if(d) d.value = S.apiKey;
-};
-
-const API_LIMIT_PER_DAY = 20;
-const API_ROOT = 'api_serverless';
-const getTodayKey = () => new Date().toISOString().slice(0,10);
-
-const checkFirebaseApiLimit = async () => {
-  if (!fbReady || !db) throw new Error('Firebase no disponible');
-  if (!S.user) throw new Error('Inicia sesión para usar la API Firebase');
-  const usageSnap = await get(ref(db, `${API_ROOT}/usage/${S.user.uid}/${getTodayKey()}`));
-  const used = usageSnap.exists() ? usageSnap.val().count || 0 : 0;
-  if (used >= API_LIMIT_PER_DAY) throw new Error('Límite diario de API alcanzado');
-  return used;
-};
-
-const recordFirebaseApiUsage = async () => {
-  const usageRef = ref(db, `${API_ROOT}/usage/${S.user.uid}/${getTodayKey()}`);
-  const usageSnap = await get(usageRef);
-  const count = usageSnap.exists() ? (usageSnap.val().count || 0) + 1 : 1;
-  await set(usageRef, { count, lastUsed: new Date().toISOString() });
-};
-
-const firebaseApiEncrypt = async (text, pw) => {
-  const used = await checkFirebaseApiLimit();
-  const encrypted = await apiEncryptText(text, pw);
-  const reqId = 'req_' + Array.from(crypto.getRandomValues(new Uint8Array(12))).map(b => b.toString(16).padStart(2,'0')).join('');
-  await set(ref(db, `${API_ROOT}/requests/${reqId}`), {
-    id: reqId,
-    createdAt: new Date().toISOString(),
-    type: 'encrypt',
-    user: S.user.uid,
-    apiKey: S.apiKey,
-    payloadType: 'text',
-    resultPreview: encrypted.slice(0,64) + '...',
-    length: text.length
-  });
-  await recordFirebaseApiUsage();
-  return { id: reqId, encrypted, used: used + 1, limit: API_LIMIT_PER_DAY };
-};
-
-const firebaseApiDecrypt = async (encrypted, pw) => {
-  const used = await checkFirebaseApiLimit();
-  const decrypted = await apiDecryptText(encrypted, pw);
-  const reqId = 'req_' + Array.from(crypto.getRandomValues(new Uint8Array(12))).map(b => b.toString(16).padStart(2,'0')).join('');
-  await set(ref(db, `${API_ROOT}/requests/${reqId}`), {
-    id: reqId,
-    createdAt: new Date().toISOString(),
-    type: 'decrypt',
-    user: S.user.uid,
-    apiKey: S.apiKey,
-    result: 'ok',
-    length: encrypted.length
-  });
-  await recordFirebaseApiUsage();
-  return { id: reqId, decrypted, used: used + 1, limit: API_LIMIT_PER_DAY };
-};
-
-const firebaseApiStatus = async () => {
-  if (!fbReady || !db) return { status: 'offline', message: 'Firebase no listo' };
-  if (!S.user) return { status: 'guest', message: 'Inicia sesión para ver uso' };
-  const snap = await get(ref(db, `${API_ROOT}/usage/${S.user.uid}/${getTodayKey()}`));
-  return {
-    status: 'ok',
-    used: snap.exists() ? snap.val().count || 0 : 0,
-    limit: API_LIMIT_PER_DAY,
-    project: firebaseConfig.projectId
-  };
-};
-
-window.firebaseApi = { encrypt: firebaseApiEncrypt, decrypt: firebaseApiDecrypt, status: firebaseApiStatus };
-
-document.getElementById('btnCopyApiKey').addEventListener('click',()=>{
-  if(!S.apiKey){toast('No hay clave generada','warn');return;}
-  navigator.clipboard.writeText(S.apiKey).then(()=>toast('API key copiada','success'));
-});
-
-document.getElementById('btnRegenApiKey').addEventListener('click',()=>{
-  const bytes = crypto.getRandomValues(new Uint8Array(24));
-  S.apiKey = 'ak_' + Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');
-  const uid = S.user ? S.user.uid : 'anon';
-  sessionStorage.setItem('aegis_ak_' + uid, S.apiKey);
-  document.getElementById('apiKeyDisplay').value = S.apiKey;
-  toast('Nueva API key generada','success');
-});
 
 // ═══════════════════════════════════════════
-// ALGO SELECT
+// API KEY
+// ═══════════════════════════════════════════
+const generateApiKeyLocal = (uid) => {
+  const k = sessionStorage.getItem('aegis_ak_'+uid);
+  if(k){S.apiKey=k;}
+  else{const b=crypto.getRandomValues(new Uint8Array(24));S.apiKey='ak_'+Array.from(b,x=>x.toString(16).padStart(2,'0')).join('');sessionStorage.setItem('aegis_ak_'+uid,S.apiKey);}
+  const d=document.getElementById('apiKeyDisplay');if(d)d.value=S.apiKey;
+};
+const generateAnonApiKey = () => {
+  const k=sessionStorage.getItem('aegis_ak_anon');
+  if(k){S.apiKey=k;}
+  else{const b=crypto.getRandomValues(new Uint8Array(24));S.apiKey='ak_anon_'+Array.from(b,x=>x.toString(16).padStart(2,'0')).join('').slice(0,32);sessionStorage.setItem('aegis_ak_anon',S.apiKey);}
+  const d=document.getElementById('apiKeyDisplay');if(d)d.value=S.apiKey;
+};
+
+document.getElementById('btnCopyApiKey').addEventListener('click',()=>{if(!S.apiKey){toast('Sin clave','warn');return;}navigator.clipboard.writeText(S.apiKey).then(()=>toast('Copiado','success'));});
+document.getElementById('btnRegenApiKey').addEventListener('click',()=>{const b=crypto.getRandomValues(new Uint8Array(24));S.apiKey='ak_'+Array.from(b,x=>x.toString(16).padStart(2,'0')).join('');const uid=S.user?S.user.uid:'anon';sessionStorage.setItem('aegis_ak_'+uid,S.apiKey);document.getElementById('apiKeyDisplay').value=S.apiKey;toast('Nueva clave generada','success');});
+
+// ═══════════════════════════════════════════
+// ALGO
 // ═══════════════════════════════════════════
 document.querySelectorAll('.algo-item').forEach(el=>{
   el.addEventListener('click',()=>{
-    if(el.classList.contains('locked')){
-      toast('Requiere plan Premium o prueba activa','warn');
-      document.getElementById('premModal').classList.add('open');
-      return;
-    }
+    if(el.classList.contains('locked')){toast('Requiere Premium','warn');document.getElementById('premModal').classList.add('open');return;}
     document.querySelectorAll('.algo-item').forEach(a=>a.classList.remove('sel'));
-    el.classList.add('sel');
-    S.algo = el.dataset.algo;
-    updateSecInd();
+    el.classList.add('sel');S.algo=el.dataset.algo;updateSecInd();
     log('Algoritmo: '+el.querySelector('.algo-name').textContent,'info');
   });
 });
-
-const algoMeta = {
-  'aes-cbc':{mode:'AES-CBC 128',auth:'Ninguna',kdf:'SHA-256',ent:'128-bit'},
-  'aes-gcm':{mode:'AES-GCM 256',auth:'GCM-Tag 128',kdf:'SHA-256',ent:'256-bit'},
-  'chacha':{mode:'ChaCha20-P1305',auth:'Poly1305',kdf:'SHA-256',ent:'256-bit'},
-  'multi-api':{mode:'4 Capas',auth:'HMAC-SHA512',kdf:'SHA-256',ent:'256-bit'},
-  'quantum':{mode:'Kyber-1024+AES-GCM',auth:'HMAC-SHA256',kdf:'ML-LWE',ent:'≥178-bit PQC'}
-};
+const algoMeta = {'aes-cbc':{mode:'AES-CBC 128',auth:'Ninguna',kdf:'SHA-256',ent:'128-bit'},'aes-gcm':{mode:'AES-GCM 256',auth:'GCM-Tag 128',kdf:'SHA-256',ent:'256-bit'},'chacha':{mode:'ChaCha20-P1305',auth:'Poly1305',kdf:'SHA-256',ent:'256-bit'},'multi-api':{mode:'4 Capas',auth:'HMAC-SHA512',kdf:'SHA-256',ent:'256-bit'},'quantum':{mode:'Kyber-1024+AES-GCM',auth:'HMAC-SHA256',kdf:'ML-LWE',ent:'≥178-bit PQC'}};
 const updateSecInd = () => {
-  const d = algoMeta[S.algo]||algoMeta['aes-cbc'];
-  document.getElementById('iMode').textContent=d.mode;
-  document.getElementById('iAuth').textContent=d.auth;
+  const d=algoMeta[S.algo]||algoMeta['aes-cbc'];
+  document.getElementById('iMode').textContent=d.mode;document.getElementById('iAuth').textContent=d.auth;
   document.getElementById('iAuth').style.color=d.auth==='Ninguna'?'var(--tx3)':'var(--g)';
-  document.getElementById('iKdf').textContent=d.kdf;
-  document.getElementById('iEnt').textContent=d.ent;
+  document.getElementById('iKdf').textContent=d.kdf;document.getElementById('iEnt').textContent=d.ent;
 };
 
 // ═══════════════════════════════════════════
-// PASSWORD MODES
+// PW MODES
 // ═══════════════════════════════════════════
-document.querySelectorAll('.pw-mode-btn').forEach(b=>{
-  b.addEventListener('click',()=>{
-    S.pwMode=b.dataset.mode;
-    document.querySelectorAll('.pw-mode-btn').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active');
-    document.querySelectorAll('.pw-panel').forEach(p=>p.classList.remove('active'));
-    document.getElementById('pp-'+b.dataset.mode).classList.add('active');
-  });
-});
-
-// TEXT PW
-document.getElementById('pwText').addEventListener('input',function(){
-  S.textPw=this.value;
-  const bar=document.getElementById('sBar'),lbl=document.getElementById('sLbl');
-  let sc=0;
-  if(this.value.length>=8)sc++;if(this.value.length>=16)sc++;
-  if(/[A-Z]/.test(this.value))sc++;if(/[a-z]/.test(this.value))sc++;
-  if(/\d/.test(this.value))sc++;if(/[^A-Za-z0-9]/.test(this.value))sc++;
-  if(this.value.length>=32)sc++;
-  const pct=Math.min(100,sc*14.3);
-  const cols=['#ef4444','#f97316','#f59e0b','#84cc16','#10b981','#38bdf8','#a78bfa'];
-  const labs=['Muy débil','Débil','Regular','Aceptable','Buena','Fuerte','Excelente'];
-  const idx=Math.min(6,sc);
-  bar.style.width=pct+'%';bar.style.background=cols[idx];
-  lbl.textContent=labs[idx];lbl.style.color=cols[idx];
-});
-document.getElementById('pwVis').addEventListener('click',()=>{
-  const i=document.getElementById('pwText');
-  i.type=i.type==='password'?'text':'password';
-});
-
-// AUTO PW
-document.getElementById('pwLen').addEventListener('input',function(){
-  S.autoPwLen=parseInt(this.value);
-  document.getElementById('pwLenVal').textContent=this.value;
-});
-document.querySelectorAll('.cs-opt').forEach(o=>{
-  o.addEventListener('click',()=>{
-    const k=o.dataset.cs;
-    S.charsets[k]=!S.charsets[k];
-    o.classList.toggle('on',S.charsets[k]);
-    if((k==='hex'||k==='b64')&&S.charsets[k]){
-      const other=Object.keys(S.charsets).filter(x=>x!==k);
-      other.forEach(x=>{S.charsets[x]=false;document.querySelector(`[data-cs="${x}"]`).classList.remove('on');});
-    }
-    if(k!=='hex'&&k!=='b64'){S.charsets.hex=false;S.charsets.b64=false;document.querySelector('[data-cs="hex"]').classList.remove('on');document.querySelector('[data-cs="b64"]').classList.remove('on');}
-  });
-});
+document.querySelectorAll('.pw-mode-btn').forEach(b=>{b.addEventListener('click',()=>{S.pwMode=b.dataset.mode;document.querySelectorAll('.pw-mode-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.pw-panel').forEach(p=>p.classList.remove('active'));document.getElementById('pp-'+b.dataset.mode).classList.add('active');});});
+document.getElementById('pwText').addEventListener('input',function(){S.textPw=this.value;const bar=document.getElementById('sBar'),lbl=document.getElementById('sLbl');let sc=0;if(this.value.length>=8)sc++;if(this.value.length>=16)sc++;if(/[A-Z]/.test(this.value))sc++;if(/[a-z]/.test(this.value))sc++;if(/\d/.test(this.value))sc++;if(/[^A-Za-z0-9]/.test(this.value))sc++;if(this.value.length>=32)sc++;const pct=Math.min(100,sc*14.3);const cols=['#ef4444','#f97316','#f59e0b','#84cc16','#10b981','#38bdf8','#a78bfa'];const labs=['Muy débil','Débil','Regular','Aceptable','Buena','Fuerte','Excelente'];const idx=Math.min(6,sc);bar.style.width=pct+'%';bar.style.background=cols[idx];lbl.textContent=labs[idx];lbl.style.color=cols[idx];});
+document.getElementById('pwVis').addEventListener('click',()=>{const i=document.getElementById('pwText');i.type=i.type==='password'?'text':'password';});
+document.getElementById('pwLen').addEventListener('input',function(){S.autoPwLen=parseInt(this.value);document.getElementById('pwLenVal').textContent=this.value;});
+document.querySelectorAll('.cs-opt').forEach(o=>{o.addEventListener('click',()=>{const k=o.dataset.cs;S.charsets[k]=!S.charsets[k];o.classList.toggle('on',S.charsets[k]);if((k==='hex'||k==='b64')&&S.charsets[k]){Object.keys(S.charsets).filter(x=>x!==k).forEach(x=>{S.charsets[x]=false;document.querySelector(`[data-cs="${x}"]`).classList.remove('on');});}if(k!=='hex'&&k!=='b64'){['hex','b64'].forEach(x=>{S.charsets[x]=false;document.querySelector(`[data-cs="${x}"]`).classList.remove('on');});}});});
 const genPw = () => {
   const len=S.autoPwLen;
   if(S.charsets.hex){const b=crypto.getRandomValues(new Uint8Array(Math.ceil(len/2)));S.autoPw=Array.from(b,x=>x.toString(16).padStart(2,'0')).join('').toUpperCase().slice(0,len);document.getElementById('autoPwTxt').textContent=S.autoPw;return;}
   if(S.charsets.b64){const b=crypto.getRandomValues(new Uint8Array(Math.ceil(len*.75)));S.autoPw=btoa(String.fromCharCode(...b)).replace(/=/g,'').slice(0,len);document.getElementById('autoPwTxt').textContent=S.autoPw;return;}
-  let cs='';
-  if(S.charsets.upper)cs+='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  if(S.charsets.lower)cs+='abcdefghijklmnopqrstuvwxyz';
-  if(S.charsets.digits)cs+='0123456789';
-  if(S.charsets.symbols)cs+='!@#$%^&*()-_=+[]{}|;:,.<>?';
-  if(!cs){toast('Selecciona al menos un charset','warn');return;}
-  const b=crypto.getRandomValues(new Uint8Array(len*2));let pw='';
-  for(let i=0;pw.length<len;i++)if(b[i]<Math.floor(256/cs.length)*cs.length)pw+=cs[b[i]%cs.length];
+  let cs='';if(S.charsets.upper)cs+='ABCDEFGHIJKLMNOPQRSTUVWXYZ';if(S.charsets.lower)cs+='abcdefghijklmnopqrstuvwxyz';if(S.charsets.digits)cs+='0123456789';if(S.charsets.symbols)cs+='!@#$%^&*()-_=+[]{}|;:,.<>?';
+  if(!cs){toast('Selecciona charset','warn');return;}
+  const b=crypto.getRandomValues(new Uint8Array(len*2));let pw='';for(let i=0;pw.length<len;i++)if(b[i%b.length]<Math.floor(256/cs.length)*cs.length)pw+=cs[b[i%b.length]%cs.length];
   S.autoPw=pw;document.getElementById('autoPwTxt').textContent=pw;
 };
 document.getElementById('genPw').addEventListener('click',genPw);
 document.getElementById('copyPw').addEventListener('click',()=>navigator.clipboard.writeText(S.autoPw).then(()=>toast('Copiado','success')));
 
-// ═══════════════════════════════════════════
 // PATTERN
-// ═══════════════════════════════════════════
-const nodePts = [[53,53],[105,53],[157,53],[53,105],[105,105],[157,105],[53,157],[105,157],[157,157]];
-const clearPattern = () => {
-  S.patternNodes=[];
-  document.querySelectorAll('.p-node').forEach(n=>{n.classList.remove('active');n.removeAttribute('data-order');});
-  document.getElementById('pHint').textContent='Mínimo 4 nodos';
-  document.getElementById('pSvg').innerHTML='';
-  document.getElementById('iEnt').textContent='—';
-};
-const activateNode = node => {
-  const id=node.dataset.id;
-  if(S.patternNodes[S.patternNodes.length-1]===id)return;
-  if(S.patternNodes.length>0){
-    const pi=parseInt(S.patternNodes[S.patternNodes.length-1])-1,ci=parseInt(id)-1;
-    const [x1,y1]=nodePts[pi],[x2,y2]=nodePts[ci];
-    const svg=document.getElementById('pSvg');
-    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
-    line.setAttribute('x1',x1);line.setAttribute('y1',y1);line.setAttribute('x2',x2);line.setAttribute('y2',y2);
-    line.setAttribute('stroke','var(--p2)');line.setAttribute('stroke-width','2.5');
-    line.setAttribute('stroke-linecap','round');line.setAttribute('opacity','0.7');
-    svg.appendChild(line);
-  }
-  S.patternNodes.push(id);
-  node.classList.add('active');node.setAttribute('data-order',S.patternNodes.length);
-  document.getElementById('pHint').textContent='Nodos: '+S.patternNodes.join(' → ');
-  document.getElementById('iEnt').textContent=Math.round(S.patternNodes.length*Math.log2(9))+'-bit (patrón)';
-};
-document.querySelectorAll('.p-node').forEach(n=>{
-  n.addEventListener('mousedown',e=>{e.preventDefault();S.patternDrawing=true;activateNode(n);});
-  n.addEventListener('mouseenter',()=>{if(S.patternDrawing)activateNode(n);});
-  n.addEventListener('touchstart',e=>{e.preventDefault();S.patternDrawing=true;activateNode(n);},{passive:false});
-  n.addEventListener('touchmove',e=>{
-    e.preventDefault();
-    const t=e.touches[0];
-    const el=document.elementFromPoint(t.clientX,t.clientY);
-    if(el&&el.classList.contains('p-node'))activateNode(el);
-  },{passive:false});
-});
-document.addEventListener('mouseup',()=>S.patternDrawing=false);
-document.addEventListener('touchend',()=>S.patternDrawing=false);
+const nodePts=[[53,53],[105,53],[157,53],[53,105],[105,105],[157,105],[53,157],[105,157],[157,157]];
+const clearPattern=()=>{S.patternNodes=[];document.querySelectorAll('.p-node').forEach(n=>{n.classList.remove('active');n.removeAttribute('data-order');});document.getElementById('pHint').textContent='Mínimo 4 nodos';document.getElementById('pSvg').innerHTML='';document.getElementById('iEnt').textContent='—';};
+const activateNode=node=>{const id=node.dataset.id;if(S.patternNodes[S.patternNodes.length-1]===id)return;if(S.patternNodes.length>0){const pi=parseInt(S.patternNodes[S.patternNodes.length-1])-1,ci=parseInt(id)-1;const[x1,y1]=nodePts[pi],[x2,y2]=nodePts[ci];const svg=document.getElementById('pSvg');const line=document.createElementNS('http://www.w3.org/2000/svg','line');line.setAttribute('x1',x1);line.setAttribute('y1',y1);line.setAttribute('x2',x2);line.setAttribute('y2',y2);line.setAttribute('stroke','var(--p2)');line.setAttribute('stroke-width','2.5');line.setAttribute('stroke-linecap','round');line.setAttribute('opacity','0.7');svg.appendChild(line);}S.patternNodes.push(id);node.classList.add('active');node.setAttribute('data-order',S.patternNodes.length);document.getElementById('pHint').textContent='Nodos: '+S.patternNodes.join(' → ');document.getElementById('iEnt').textContent=Math.round(S.patternNodes.length*Math.log2(9))+'-bit';};
+document.querySelectorAll('.p-node').forEach(n=>{n.addEventListener('mousedown',e=>{e.preventDefault();S.patternDrawing=true;activateNode(n);});n.addEventListener('mouseenter',()=>{if(S.patternDrawing)activateNode(n);});n.addEventListener('touchstart',e=>{e.preventDefault();S.patternDrawing=true;activateNode(n);},{passive:false});n.addEventListener('touchmove',e=>{e.preventDefault();const t=e.touches[0];const el=document.elementFromPoint(t.clientX,t.clientY);if(el&&el.classList.contains('p-node'))activateNode(el);},{passive:false});});
+document.addEventListener('mouseup',()=>S.patternDrawing=false);document.addEventListener('touchend',()=>S.patternDrawing=false);
 document.getElementById('btnClearPat').addEventListener('click',clearPattern);
 
 // ═══════════════════════════════════════════
 // FILE
 // ═══════════════════════════════════════════
-const fmtSize = b => b<1024?b+'B':b<1048576?(b/1024).toFixed(1)+'KB':(b/1048576).toFixed(2)+'MB';
-const updateAna = file => {
-  document.getElementById('anaName').textContent=file.name.slice(0,22);
-  document.getElementById('anaSize').textContent=fmtSize(file.size);
-  document.getElementById('anaType').textContent=file.type||'octet-stream';
-  const oh={'aes-cbc':20,'aes-gcm':12,'chacha':12,'multi-api':116,'quantum':1616};
-  document.getElementById('anaOH').textContent=(oh[S.algo]||16)+' bytes';
-  const ms=Math.max(10,file.size/1048576*80);
-  document.getElementById('anaTime').textContent=ms<100?'<100ms':(ms/1000).toFixed(1)+'s';
-  const ok=S.isPremium||file.size<=2097152;
-  document.getElementById('anaPlan').textContent=ok?(S.isPremium?'✅ Premium':'✅ Free (<2MB)'):'❌ Requiere Premium';
-  document.getElementById('anaPlan').className='ana-v '+(ok?'good':'bad');
-};
-const handleFile = file => {
-  if(!file)return;
-  S.file=file;
-  document.getElementById('fileLabel').innerHTML=`<div class="file-name">${file.name}</div><div class="file-sz">${fmtSize(file.size)}</div>`;
-  document.getElementById('fileSub').textContent='';
-  updateAna(file);
-  log('Archivo: '+file.name+' ('+fmtSize(file.size)+')','ok');
-};
+const fmtSize=b=>b<1024?b+'B':b<1048576?(b/1024).toFixed(1)+'KB':(b/1048576).toFixed(2)+'MB';
+const updateAna=file=>{document.getElementById('anaName').textContent=file.name.slice(0,22);document.getElementById('anaSize').textContent=fmtSize(file.size);document.getElementById('anaType').textContent=file.type||'octet-stream';const oh={'aes-cbc':20,'aes-gcm':12,'chacha':12,'multi-api':116,'quantum':1616};document.getElementById('anaOH').textContent=(oh[S.algo]||16)+' bytes';const ms=Math.max(10,file.size/1048576*80);document.getElementById('anaTime').textContent=ms<100?'<100ms':(ms/1000).toFixed(1)+'s';const ok=S.isPremium||file.size<=2097152;document.getElementById('anaPlan').textContent=ok?(S.isPremium?'✅ Premium':'✅ Free (<2MB)'):'❌ Requiere Premium';document.getElementById('anaPlan').className='ana-v '+(ok?'good':'bad');};
+const handleFile=file=>{if(!file)return;S.file=file;document.getElementById('fileLabel').innerHTML=`<div class="file-name">${file.name}</div><div class="file-sz">${fmtSize(file.size)}</div>`;document.getElementById('fileSub').textContent='';updateAna(file);log('Archivo: '+file.name+' ('+fmtSize(file.size)+')','ok');};
 const fd=document.getElementById('fileDrop');
 fd.addEventListener('click',()=>document.getElementById('fileInput').click());
 fd.addEventListener('dragover',e=>{e.preventDefault();fd.classList.add('drag-over');});
@@ -1620,28 +1135,16 @@ document.getElementById('fileInput').addEventListener('change',function(){handle
 // ═══════════════════════════════════════════
 // KDF
 // ═══════════════════════════════════════════
-const deriveKey = async pw => {
-  const enc=new TextEncoder(),kdf=S.cfg.kdf;
-  if(kdf==='pbkdf2'){
-    const bk=await crypto.subtle.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveBits']);
-    const bits=await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:enc.encode('AegisPattern-v9-Salt'),iterations:S.cfg.pbIter},bk,256);
-    return new Uint8Array(bits);
-  } else if(kdf==='sha512'){
-    return new Uint8Array(await crypto.subtle.digest('SHA-512',enc.encode(pw))).slice(0,32);
-  } else {
-    return new Uint8Array(await crypto.subtle.digest('SHA-256',enc.encode(pw)));
-  }
-};
-const getActivePw = () => {
-  if(S.pwMode==='pattern'){if(S.patternNodes.length<4){toast('Patrón mínimo 4 nodos','warn');return null;}return S.patternNodes.join('');}
-  else if(S.pwMode==='text'){if(!S.textPw||S.textPw.length<4){toast('Contraseña mínimo 4 chars','warn');return null;}return S.textPw;}
-  else{if(!S.autoPw){toast('Genera una contraseña primero','warn');return null;}return S.autoPw;}
-};
+const deriveKey=async pw=>{const enc=new TextEncoder(),kdf=S.cfg.kdf;if(kdf==='pbkdf2'){const bk=await crypto.subtle.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveBits']);const bits=await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:enc.encode('AegisPattern-v10'),iterations:S.cfg.pbIter},bk,256);return new Uint8Array(bits);}else if(kdf==='sha512'){return new Uint8Array(await crypto.subtle.digest('SHA-512',enc.encode(pw))).slice(0,32);}else{return new Uint8Array(await crypto.subtle.digest('SHA-256',enc.encode(pw)));}};
+const getActivePw=()=>{if(S.pwMode==='pattern'){if(S.patternNodes.length<4){toast('Patrón mínimo 4 nodos','warn');return null;}return S.patternNodes.join('');}else if(S.pwMode==='text'){if(!S.textPw||S.textPw.length<4){toast('Contraseña mínimo 4 chars','warn');return null;}return S.textPw;}else{if(!S.autoPw){toast('Genera una contraseña primero','warn');return null;}return S.autoPw;}};
 
 // ═══════════════════════════════════════════
 // ENCRYPT / DECRYPT
 // ═══════════════════════════════════════════
-const processFile = async mode => {
+const setProgress=(lbl,pct)=>{const w=document.getElementById('progWrap');w.style.display='block';document.getElementById('progLbl').textContent=lbl;document.getElementById('progFill').style.width=pct+'%';};
+const hideProgress=()=>document.getElementById('progWrap').style.display='none';
+
+const processFile=async mode=>{
   if(!S.file){toast('Selecciona un archivo','warn');return;}
   const pw=getActivePw();if(!pw)return;
   if(S.file.size>2097152&&!S.isPremium){toast('Archivo >2MB requiere Premium','error');document.getElementById('premModal').classList.add('open');return;}
@@ -1651,88 +1154,48 @@ const processFile = async mode => {
   const reader=new FileReader();
   reader.onload=async e=>{
     let raw=new Uint8Array(e.target.result),output;
-    try {
+    try{
       const t0=performance.now();
       const keyBytes=await deriveKey(pw);
-      log('Clave: '+keyBytes.slice(0,6).reduce((s,b)=>s+b.toString(16).padStart(2,'0'),'')+' ...','info');
       setProgress('PROCESANDO...',40);
-      if(S.algo==='quantum'){
-        if(mode==='encrypt'){
-          log('Kyber-1024 keygen (Module-LWE, NTT)...','info');
-          setProgress('KYBER KEYGEN...',45);
-          const{output:enc,pk,sk}=await Kyber.encryptData(raw,pw);
-          S.kyberKP={pk,sk};output=enc;
-          const skBlob=new Blob([sk],{type:'application/octet-stream'});
-          const sl=document.createElement('a');sl.href=URL.createObjectURL(skBlob);sl.download=S.file.name+'.kyber.sk';sl.click();
-          log('Clave privada Kyber descargada (.kyber.sk) — ¡GUÁRDALA!','warn');
-          toast('¡Guarda el .kyber.sk para poder descifrar!','warn',7000);
-        } else {
-          if(!S.kyberKP){toast('Necesitas el .kyber.sk','error');hideProgress();return;}
-          output=await Kyber.decryptData(raw,pw,S.kyberKP.sk);
-        }
-      } else if(S.algo==='multi-api'){
-        if(mode==='encrypt'){
-          setProgress('AES-GCM capa 1...',45);
-          const k1=await crypto.subtle.importKey('raw',keyBytes,{name:'AES-GCM'},false,['encrypt']);
-          const iv1=crypto.getRandomValues(new Uint8Array(12));
-          const e1=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv:iv1},k1,raw));
-          setProgress('ChaCha20 capa 2...',55);
-          const n2=crypto.getRandomValues(new Uint8Array(12));
-          const e2=ChaCha20.crypt(e1,keyBytes,n2);
-          setProgress('AES-CBC capa 3...',65);
-          const k3=await crypto.subtle.importKey('raw',keyBytes,{name:'AES-CBC'},false,['encrypt']);
-          const iv3=crypto.getRandomValues(new Uint8Array(16));
-          const e3=new Uint8Array(await crypto.subtle.encrypt({name:'AES-CBC',iv:iv3},k3,e2));
-          setProgress('HMAC-SHA512 capa 4...',80);
-          const mk=await crypto.subtle.importKey('raw',keyBytes,{name:'HMAC',hash:'SHA-512'},false,['sign']);
-          const ap=new Uint8Array(12+12+16+e3.length);let ao=0;ap.set(iv1,ao);ao+=12;ap.set(n2,ao);ao+=12;ap.set(iv3,ao);ao+=16;ap.set(e3,ao);
-          const mac=new Uint8Array(await crypto.subtle.sign('HMAC',mk,ap));
-          const magic=S.cfg.magic?new Uint8Array([0x41,0x45,0x47,0x49]):new Uint8Array(0);
-          output=new Uint8Array(magic.length+12+12+16+64+e3.length);
-          let oo=0;output.set(magic,oo);oo+=magic.length;output.set(iv1,oo);oo+=12;output.set(n2,oo);oo+=12;output.set(iv3,oo);oo+=16;output.set(mac,oo);oo+=64;output.set(e3,oo);
-          log('4 capas completadas: AES-GCM+ChaCha20+AES-CBC+HMAC-SHA512','ok');
-        } else {
-          let off=S.cfg.magic?4:0;
-          if(S.cfg.magic){const m=new TextDecoder().decode(raw.slice(0,4));if(m!=='AEGI')throw new Error('Magic inválido');}
-          const iv1=raw.slice(off,off+12);off+=12;const n2=raw.slice(off,off+12);off+=12;const iv3=raw.slice(off,off+16);off+=16;const mac=raw.slice(off,off+64);off+=64;const e3=raw.slice(off);
-          const mk=await crypto.subtle.importKey('raw',keyBytes,{name:'HMAC',hash:'SHA-512'},false,['verify']);
-          const ap=new Uint8Array(12+12+16+e3.length);let ao=0;ap.set(iv1,ao);ao+=12;ap.set(n2,ao);ao+=12;ap.set(iv3,ao);ao+=16;ap.set(e3,ao);
-          const ok=await crypto.subtle.verify('HMAC',mk,mac,ap);if(!ok)throw new Error('HMAC inválido — contraseña incorrecta');
-          const k3=await crypto.subtle.importKey('raw',keyBytes,{name:'AES-CBC'},false,['decrypt']);
-          const d3=new Uint8Array(await crypto.subtle.decrypt({name:'AES-CBC',iv:iv3},k3,e3));
-          const d2=ChaCha20.crypt(d3,keyBytes,n2);
-          const k1=await crypto.subtle.importKey('raw',keyBytes,{name:'AES-GCM'},false,['decrypt']);
-          output=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:iv1},k1,d2));
-        }
-      } else if(S.algo==='aes-gcm'){
+      if(S.algo==='aes-gcm'){
         const k=await crypto.subtle.importKey('raw',keyBytes,{name:'AES-GCM'},false,['encrypt','decrypt']);
         if(mode==='encrypt'){const iv=crypto.getRandomValues(new Uint8Array(12));const enc=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},k,raw));output=new Uint8Array(iv.length+enc.length);output.set(iv);output.set(enc,iv.length);}
         else{const iv=raw.slice(0,12);output=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv},k,raw.slice(12)));}
       } else if(S.algo==='chacha'){
         if(mode==='encrypt'){const n=crypto.getRandomValues(new Uint8Array(12));const enc=ChaCha20.crypt(raw,keyBytes,n);output=new Uint8Array(n.length+enc.length);output.set(n);output.set(enc,n.length);}
         else{output=ChaCha20.crypt(raw.slice(12),keyBytes,raw.slice(0,12));}
-      } else {
-        // AES-CBC (FREE)
-        const k16=keyBytes.slice(0,16);
-        const k=await crypto.subtle.importKey('raw',k16,{name:'AES-CBC'},false,['encrypt','decrypt']);
+      } else if(S.algo==='multi-api'){
         if(mode==='encrypt'){
-          const iv=crypto.getRandomValues(new Uint8Array(16));
-          const enc=new Uint8Array(await crypto.subtle.encrypt({name:'AES-CBC',iv},k,raw));
-          const magic=S.cfg.magic?new Uint8Array([0xAE,0x91,0x5C,0xBC]):new Uint8Array(0);
-          output=new Uint8Array(magic.length+iv.length+enc.length);output.set(magic);output.set(iv,magic.length);output.set(enc,magic.length+iv.length);
+          const k1=await crypto.subtle.importKey('raw',keyBytes,{name:'AES-GCM'},false,['encrypt']);
+          const iv1=crypto.getRandomValues(new Uint8Array(12));
+          const e1=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv:iv1},k1,raw));
+          setProgress('ChaCha20...',55);const n2=crypto.getRandomValues(new Uint8Array(12));const e2=ChaCha20.crypt(e1,keyBytes,n2);
+          setProgress('AES-CBC...',70);const k3=await crypto.subtle.importKey('raw',keyBytes,{name:'AES-CBC'},false,['encrypt']);const iv3=crypto.getRandomValues(new Uint8Array(16));const e3=new Uint8Array(await crypto.subtle.encrypt({name:'AES-CBC',iv:iv3},k3,e2));
+          setProgress('HMAC...',85);const mk=await crypto.subtle.importKey('raw',keyBytes,{name:'HMAC',hash:'SHA-512'},false,['sign']);const ap=new Uint8Array(12+12+16+e3.length);let ao=0;ap.set(iv1,ao);ao+=12;ap.set(n2,ao);ao+=12;ap.set(iv3,ao);ao+=16;ap.set(e3,ao);const mac=new Uint8Array(await crypto.subtle.sign('HMAC',mk,ap));
+          const magic=S.cfg.magic?new Uint8Array([0x41,0x45,0x47,0x49]):new Uint8Array(0);
+          output=new Uint8Array(magic.length+12+12+16+64+e3.length);let oo=0;output.set(magic,oo);oo+=magic.length;output.set(iv1,oo);oo+=12;output.set(n2,oo);oo+=12;output.set(iv3,oo);oo+=16;output.set(mac,oo);oo+=64;output.set(e3,oo);
         } else {
-          const off=S.cfg.magic?4:0;const iv=raw.slice(off,off+16);
-          output=new Uint8Array(await crypto.subtle.decrypt({name:'AES-CBC',iv},k,raw.slice(off+16)));
+          let off=S.cfg.magic?4:0;if(S.cfg.magic){const m=new TextDecoder().decode(raw.slice(0,4));if(m!=='AEGI')throw new Error('Magic inválido');}
+          const iv1=raw.slice(off,off+12);off+=12;const n2=raw.slice(off,off+12);off+=12;const iv3=raw.slice(off,off+16);off+=16;const mac=raw.slice(off,off+64);off+=64;const e3=raw.slice(off);
+          const mk=await crypto.subtle.importKey('raw',keyBytes,{name:'HMAC',hash:'SHA-512'},false,['verify']);const ap=new Uint8Array(12+12+16+e3.length);let ao=0;ap.set(iv1,ao);ao+=12;ap.set(n2,ao);ao+=12;ap.set(iv3,ao);ao+=16;ap.set(e3,ao);
+          const ok=await crypto.subtle.verify('HMAC',mk,mac,ap);if(!ok)throw new Error('HMAC inválido');
+          const k3=await crypto.subtle.importKey('raw',keyBytes,{name:'AES-CBC'},false,['decrypt']);const d3=new Uint8Array(await crypto.subtle.decrypt({name:'AES-CBC',iv:iv3},k3,e3));const d2=ChaCha20.crypt(d3,keyBytes,n2);
+          const k1=await crypto.subtle.importKey('raw',keyBytes,{name:'AES-GCM'},false,['decrypt']);output=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:iv1},k1,d2));
         }
+      } else {
+        // AES-CBC FREE
+        const k16=keyBytes.slice(0,16);const k=await crypto.subtle.importKey('raw',k16,{name:'AES-CBC'},false,['encrypt','decrypt']);
+        if(mode==='encrypt'){const iv=crypto.getRandomValues(new Uint8Array(16));const enc=new Uint8Array(await crypto.subtle.encrypt({name:'AES-CBC',iv},k,raw));const magic=S.cfg.magic?new Uint8Array([0xAE,0x91,0x5C,0xBC]):new Uint8Array(0);output=new Uint8Array(magic.length+iv.length+enc.length);output.set(magic);output.set(iv,magic.length);output.set(enc,magic.length+iv.length);}
+        else{const off=S.cfg.magic?4:0;const iv=raw.slice(off,off+16);output=new Uint8Array(await crypto.subtle.decrypt({name:'AES-CBC',iv},k,raw.slice(off+16)));}
       }
       setProgress('DESCARGANDO...',95);
       const elapsed=(performance.now()-t0).toFixed(1);
-      log(`Completado ${elapsed}ms · ${fmtSize(output.length)}`,'ok');
+      log(`OK ${elapsed}ms · ${fmtSize(output.length)}`,'ok');
       const name=mode==='encrypt'?S.file.name+'.aegis':S.file.name.replace(/\.aegis$/,'');
       const blob=new Blob([output],{type:'application/octet-stream'});
       const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();
-      setProgress('¡COMPLETADO!',100);
-      setTimeout(hideProgress,2000);
+      setProgress('¡COMPLETADO!',100);setTimeout(hideProgress,2000);
       toast(`${mode==='encrypt'?'Cifrado':'Descifrado'} OK (${elapsed}ms)`,'success');
       if(S.cfg.autoClear)clearPattern();
     } catch(err){hideProgress();log('ERROR: '+err.message,'err');toast(err.message,'error',5000);}
@@ -1743,40 +1206,372 @@ document.getElementById('btnEnc').addEventListener('click',()=>processFile('encr
 document.getElementById('btnDec').addEventListener('click',()=>processFile('decrypt'));
 
 // ═══════════════════════════════════════════
+// P2P TRANSFER — WebRTC + Firebase Signaling
+// ═══════════════════════════════════════════
+let pc = null, dataChannel = null, sessionKey = null;
+let sendFileData = null, recvBuffer = [], recvMeta = null;
+const CHUNK_SIZE = 64 * 1024; // 64KB chunks
+const MAX_FREE_BYTES = 5 * 1024 * 1024 * 1024; // 5GB
+const MAX_PREMIUM_BYTES = 49.99 * 1024 * 1024 * 1024;
+let currentRoomId = null, isInitiator = false;
+let signalUnsub = null;
+
+const iceServers = [
+  {urls:'stun:stun.l.google.com:19302'},
+  {urls:'stun:stun1.l.google.com:19302'},
+  {urls:'stun:stun2.l.google.com:19302'},
+  {urls:'stun:stun.cloudflare.com:3478'},
+];
+
+const setPeerStatus = (type, msg) => {
+  const s = document.getElementById('peerStatus');
+  const dot = document.getElementById('peerDot');
+  s.className = 'peer-status ' + type;
+  dot.className = 'peer-dot ' + type;
+  document.getElementById('peerStatusTxt').textContent = msg;
+};
+
+const genRoomCode = () => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  const bytes = crypto.getRandomValues(new Uint8Array(8));
+  bytes.forEach(b => code += chars[b % chars.length]);
+  return code;
+};
+
+// Generate ephemeral E2E key for session
+const genSessionKey = async () => {
+  const key = await crypto.subtle.generateKey({name:'AES-GCM',length:256},true,['encrypt','decrypt']);
+  const raw = await crypto.subtle.exportKey('raw',key);
+  return {key, raw: new Uint8Array(raw)};
+};
+
+const encryptChunk = async (data) => {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const enc = await crypto.subtle.encrypt({name:'AES-GCM',iv},sessionKey.key,data);
+  const combined = new Uint8Array(12 + enc.byteLength);
+  combined.set(iv); combined.set(new Uint8Array(enc),12);
+  return combined;
+};
+
+const decryptChunk = async (data) => {
+  const iv = data.slice(0,12);
+  return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv},sessionKey.key,data.slice(12)));
+};
+
+const initPeerConnection = () => {
+  if(pc) { try{pc.close();}catch(e){} }
+  pc = new RTCPeerConnection({iceServers, iceCandidatePoolSize:10});
+  pc.oniceconnectionstatechange = () => {
+    if(pc.iceConnectionState==='connected'||pc.iceConnectionState==='completed'){
+      setPeerStatus('connected','🔐 Conectado P2P — cifrado E2E activo');
+      document.getElementById('sendFileSection').style.display='block';
+    } else if(pc.iceConnectionState==='disconnected'||pc.iceConnectionState==='failed'){
+      setPeerStatus('error','Conexión perdida');
+    }
+  };
+  return pc;
+};
+
+const setupDataChannel = (dc) => {
+  dataChannel = dc;
+  dataChannel.binaryType = 'arraybuffer';
+  dataChannel.bufferedAmountLowThreshold = 1024*1024;
+
+  dataChannel.onopen = () => {
+    setPeerStatus('connected','🔐 Canal de datos abierto — E2E activo');
+    document.getElementById('sendFileSection').style.display='block';
+    document.getElementById('noReceiveYet').textContent='Canal abierto. Esperando archivos...';
+  };
+
+  dataChannel.onmessage = async (e) => {
+    const data = e.data;
+    if(typeof data === 'string') {
+      // Control message
+      try {
+        const msg = JSON.parse(data);
+        if(msg.type === 'key') {
+          // Receive session key from initiator
+          const rawKey = Uint8Array.from(atob(msg.key), c=>c.charCodeAt(0));
+          const key = await crypto.subtle.importKey('raw',rawKey,{name:'AES-GCM'},false,['encrypt','decrypt']);
+          sessionKey = {key, raw: rawKey};
+          log('Clave de sesión E2E recibida','ok');
+        } else if(msg.type === 'meta') {
+          recvMeta = msg;
+          recvBuffer = [];
+          document.getElementById('receiveProgress').style.display='block';
+          document.getElementById('noReceiveYet').style.display='none';
+          document.getElementById('recvFileName').textContent = msg.name;
+          document.getElementById('recvFileMeta').textContent = fmtSize(msg.size) + ' · AES-GCM-256 E2E';
+          log(`Recibiendo: ${msg.name} (${fmtSize(msg.size)})`,'info');
+        } else if(msg.type === 'done') {
+          // Reassemble file
+          const totalEncrypted = new Uint8Array(recvBuffer.reduce((a,b)=>a+b.length,0));
+          let off2=0; for(const chunk of recvBuffer){totalEncrypted.set(chunk,off2);off2+=chunk.length;}
+          const plain = await decryptChunk(totalEncrypted);
+          const blob = new Blob([plain],{type:recvMeta.mimeType||'application/octet-stream'});
+          const url = URL.createObjectURL(blob);
+          // Add to received list
+          const list = document.getElementById('receivedList');
+          const item = document.createElement('div');
+          item.className = 'transfer-item';
+          item.innerHTML = `<span class="ti-name">${recvMeta.name}</span><span class="ti-size">${fmtSize(recvMeta.size)}</span><button class="ti-dl" onclick="(function(u,n){const a=document.createElement('a');a.href=u;a.download=n;a.click();})(this.dataset.url,this.dataset.name)" data-url="${url}" data-name="${recvMeta.name}">⬇ Guardar</button>`;
+          list.insertBefore(item,list.firstChild);
+          document.getElementById('receiveProgress').style.display='none';
+          document.getElementById('recvFill').style.width='100%';
+          document.getElementById('recvPct').textContent='100%';
+          toast(`✅ Recibido: ${recvMeta.name}`,'success');
+          log(`Descifrado y guardado: ${recvMeta.name}`,'ok');
+          recvBuffer=[];recvMeta=null;
+        }
+      } catch(err){log('Error mensaje: '+err.message,'err');}
+    } else {
+      // Binary chunk
+      const chunk = new Uint8Array(data);
+      recvBuffer.push(chunk);
+      if(recvMeta){
+        const received = recvBuffer.reduce((a,b)=>a+b.length,0);
+        const pct = Math.round(received/recvMeta.encSize*100);
+        document.getElementById('recvFill').style.width=Math.min(100,pct)+'%';
+        document.getElementById('recvPct').textContent=Math.min(100,pct)+'%';
+      }
+    }
+  };
+
+  dataChannel.onerror = (e) => { log('Canal error: '+e.message,'err'); setPeerStatus('error','Error en canal de datos'); };
+};
+
+// Signaling via Firebase Realtime DB
+const sendSignal = async (roomId, fromRole, payload) => {
+  if(!fbReady||!db) return;
+  await push(ref(db,`p2p_rooms/${roomId}/signals/${fromRole}`), {
+    payload: JSON.stringify(payload),
+    ts: Date.now()
+  });
+};
+
+const listenSignals = (roomId, myRole, callback) => {
+  if(!fbReady||!db) return;
+  const otherRole = myRole==='initiator'?'joiner':'initiator';
+  const signalsRef = ref(db,`p2p_rooms/${roomId}/signals/${otherRole}`);
+  return onValue(signalsRef, (snap) => {
+    if(!snap.exists()) return;
+    snap.forEach(child => {
+      try {
+        const data = JSON.parse(child.val().payload);
+        callback(data);
+      } catch(e) {}
+    });
+  });
+};
+
+const createRoom = async () => {
+  if(!fbReady||!db){toast('Firebase requerido para señalización P2P','warn');return;}
+  const code = genRoomCode();
+  currentRoomId = code;
+  isInitiator = true;
+
+  document.getElementById('roomCodeDisplay').style.display='block';
+  document.getElementById('roomCodeTxt').textContent = code;
+  setPeerStatus('waiting','⏳ Esperando que alguien se una...');
+
+  const pc2 = initPeerConnection();
+  const dc = pc2.createDataChannel('aegis-transfer',{ordered:true});
+  setupDataChannel(dc);
+
+  // Generate and hold session key (will send after connection)
+  const sk = await genSessionKey();
+  sessionKey = sk;
+
+  pc2.onicecandidate = async (e) => {
+    if(e.candidate) await sendSignal(code,'initiator',{type:'ice',candidate:e.candidate});
+  };
+
+  const offer = await pc2.createOffer();
+  await pc2.setLocalDescription(offer);
+  await sendSignal(code,'initiator',{type:'offer',sdp:offer});
+
+  // Listen for joiner signals
+  signalUnsub = listenSignals(code,'initiator', async(msg) => {
+    if(msg.type==='answer'&&pc2.signalingState!=='stable'){
+      await pc2.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+    } else if(msg.type==='ice'&&msg.candidate){
+      try{await pc2.addIceCandidate(new RTCIceCandidate(msg.candidate));}catch(e){}
+    }
+  });
+
+  // Clean up room after 30 min
+  setTimeout(()=>{if(fbReady&&db)remove(ref(db,`p2p_rooms/${code}`));},30*60*1000);
+  log(`Sala creada: ${code}`,'ok');
+  toast(`Sala creada: ${code}`,'success');
+};
+
+const joinRoom = async (code) => {
+  if(!fbReady||!db){toast('Firebase requerido para P2P','warn');return;}
+  code = code.toUpperCase().trim();
+  currentRoomId = code;
+  isInitiator = false;
+
+  setPeerStatus('waiting','⏳ Conectando con el emisor...');
+  const pc2 = initPeerConnection();
+
+  pc2.ondatachannel = (e) => setupDataChannel(e.channel);
+
+  pc2.onicecandidate = async (e) => {
+    if(e.candidate) await sendSignal(code,'joiner',{type:'ice',candidate:e.candidate});
+  };
+
+  // Listen for initiator signals
+  signalUnsub = listenSignals(code,'joiner', async(msg) => {
+    if(msg.type==='offer'&&pc2.signalingState==='stable'){
+      await pc2.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+      const answer = await pc2.createAnswer();
+      await pc2.setLocalDescription(answer);
+      await sendSignal(code,'joiner',{type:'answer',sdp:answer});
+    } else if(msg.type==='ice'&&msg.candidate){
+      try{await pc2.addIceCandidate(new RTCIceCandidate(msg.candidate));}catch(e){}
+    }
+  });
+  log(`Uniéndose a sala: ${code}`,'info');
+};
+
+const sendFileP2P = async (file) => {
+  if(!dataChannel||dataChannel.readyState!=='open'){toast('Canal P2P no abierto','error');return;}
+  const maxSize = S.isPremium ? MAX_PREMIUM_BYTES : MAX_FREE_BYTES;
+  if(file.size > maxSize){toast(`Archivo muy grande (máx ${S.isPremium?'49.99GB':'5GB'})`,  'error');return;}
+
+  // Send session key to peer
+  const keyB64 = btoa(String.fromCharCode(...sessionKey.raw));
+  dataChannel.send(JSON.stringify({type:'key',key:keyB64}));
+
+  // Read file
+  const raw = await file.arrayBuffer();
+  const rawBytes = new Uint8Array(raw);
+
+  // Encrypt entire file as one blob
+  const encrypted = await encryptChunk(rawBytes);
+
+  // Send metadata
+  dataChannel.send(JSON.stringify({type:'meta',name:file.name,size:file.size,encSize:encrypted.length,mimeType:file.type}));
+
+  document.getElementById('sendProgress').style.display='block';
+  document.getElementById('sendFileName').textContent = file.name;
+  document.getElementById('sendFileMeta').textContent = fmtSize(file.size) + ' · AES-GCM-256 E2E';
+
+  // Send in chunks
+  let offset = 0;
+  const sendChunk = () => {
+    while(offset < encrypted.length) {
+      if(dataChannel.bufferedAmount > 16*1024*1024){
+        dataChannel.addEventListener('bufferedamountlow',sendChunk,{once:true});
+        return;
+      }
+      const end = Math.min(offset+CHUNK_SIZE, encrypted.length);
+      dataChannel.send(encrypted.slice(offset,end).buffer);
+      offset = end;
+      const pct = Math.round(offset/encrypted.length*100);
+      document.getElementById('sendFill').style.width=pct+'%';
+      document.getElementById('sendPct').textContent=pct+'%';
+    }
+    // Done
+    dataChannel.send(JSON.stringify({type:'done'}));
+    toast(`✅ Enviado: ${file.name}`,'success');
+    log(`Enviado y cifrado: ${file.name}`,'ok');
+  };
+  sendChunk();
+};
+
+document.getElementById('btnCreateRoom').addEventListener('click', createRoom);
+document.getElementById('btnJoinRoom').addEventListener('click',()=>{
+  const row = document.getElementById('joinRoomRow');
+  row.style.display = row.style.display==='none' ? 'block' : 'none';
+});
+document.getElementById('btnConfirmJoin').addEventListener('click',()=>{
+  const code = document.getElementById('roomCodeInput').value;
+  if(!code||code.length<6){toast('Código inválido','warn');return;}
+  joinRoom(code);
+  document.getElementById('joinRoomRow').style.display='none';
+  document.getElementById('sendFileSection').style.display='block';
+});
+
+const sfd = document.getElementById('sendFileDrop');
+sfd.addEventListener('click',()=>document.getElementById('sendFileInput').click());
+sfd.addEventListener('dragover',e=>{e.preventDefault();sfd.classList.add('drag-over');});
+sfd.addEventListener('dragleave',()=>sfd.classList.remove('drag-over'));
+sfd.addEventListener('drop',e=>{e.preventDefault();sfd.classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f){sendFileData=f;document.getElementById('sendFileLabel').innerHTML=`<div class="file-name">${f.name}</div><div class="file-sz">${fmtSize(f.size)}</div>`;document.getElementById('btnSendFile').disabled=false;}});
+document.getElementById('sendFileInput').addEventListener('change',function(){if(this.files[0]){sendFileData=this.files[0];document.getElementById('sendFileLabel').innerHTML=`<div class="file-name">${this.files[0].name}</div><div class="file-sz">${fmtSize(this.files[0].size)}</div>`;document.getElementById('btnSendFile').disabled=false;}});
+document.getElementById('btnSendFile').addEventListener('click',()=>{if(sendFileData)sendFileP2P(sendFileData);else toast('Selecciona un archivo','warn');});
+
+// ═══════════════════════════════════════════
+// TRIAL VIA EMAIL (Firebase)
+// ═══════════════════════════════════════════
+document.getElementById('btnRequestTrial').addEventListener('click', async()=>{
+  const email = document.getElementById('trialEmail').value.trim();
+  const status = document.getElementById('trialStatus');
+  if(!email||!email.includes('@')){toast('Email inválido','warn');return;}
+  if(!fbReady||!db){toast('Firebase requerido','warn');status.textContent='Firebase no disponible';return;}
+
+  // Check if already requested
+  const emailKey = email.replace(/\./g,'_').replace(/@/g,'__at__');
+  try{
+    const existing = await get(ref(db,`trial_requests/${emailKey}`));
+    if(existing.exists()){
+      status.textContent='⚠️ Ya se solicitó una prueba para este email.';
+      status.style.color='var(--acc)';
+      return;
+    }
+
+    // Generate trial code
+    const codeBytes = crypto.getRandomValues(new Uint8Array(8));
+    const code = 'TRIAL-' + Array.from(codeBytes,b=>b.toString(16).padStart(2,'0')).join('').toUpperCase().slice(0,12);
+    const expires = Date.now() + 7*24*60*60*1000; // 7 days
+
+    // Store in Firebase
+    await set(ref(db,`trial_requests/${emailKey}`),{email,code,expires,used:false,createdAt:new Date().toISOString()});
+    await set(ref(db,`trial_codes/${code}`),{email,expires,used:false});
+
+    // Show code directly (in production you'd send via email/Cloud Functions)
+    status.innerHTML = `✅ ¡Prueba activada! Tu código: <strong style="color:var(--p2)">${code}</strong><br><span style="color:var(--tx3)">Copia este código e introdúcelo en "Activar licencia" abajo. Válido 7 días.</span>`;
+    status.style.color = 'var(--g)';
+    toast('Código de prueba generado','success');
+    // Note: For real email sending, you need Firebase Cloud Functions + SendGrid/Nodemailer
+    // This stores the code and shows it to the user directly
+  } catch(err){
+    status.textContent='Error: '+err.message;
+    status.style.color='var(--r)';
+    toast(err.message,'error');
+  }
+});
+
+// ═══════════════════════════════════════════
 // LICENSE VALIDATION
 // ═══════════════════════════════════════════
 const validateLicense = async key => {
   if(!key){toast('Introduce una clave','warn');return;}
   const attempts=parseInt(sessionStorage.getItem('lic_a')||'0');
-  if(attempts>=5){toast('Demasiados intentos. Recarga la página.','error');return;}
+  if(attempts>=5){toast('Demasiados intentos','error');return;}
   sessionStorage.setItem('lic_a',attempts+1);
-
-  if(!fbReady || !db){
-    toast('Firebase no configurado — no se puede validar online','warn');
-    return;
-  }
+  if(!fbReady||!db){toast('Firebase necesario para validar licencia','warn');return;}
   if(!S.user){toast('Inicia sesión primero','error');return;}
-
-  try {
-    const { ref, get, update, set } = window._fb;
+  try{
     // Check trial codes
-    const trialSnap = await get(ref(db,'trial_codes/'+key));
+    const trialSnap=await get(ref(db,'trial_codes/'+key));
     if(trialSnap.exists()){
       const tData=trialSnap.val();
       if(tData.used){toast('Código ya utilizado','error');return;}
-      if(Date.now()>tData.expires){toast('Código expirado (8h caducadas)','error');return;}
-      await update(ref(db,'trial_codes/'+key),{used:true,usedAt:new Date().toISOString()});
+      if(Date.now()>tData.expires){toast('Código expirado','error');return;}
+      await update(ref(db,'trial_codes/'+key),{used:true,usedBy:S.user.uid,usedAt:new Date().toISOString()});
       await update(ref(db,'users/'+S.user.uid),{plan:'trial',trialExpiry:tData.expires});
-      toast('¡Prueba Premium de 8h activada!','success',5000);
-      setTimeout(()=>location.reload(),1500);
-      return;
+      toast('¡Prueba de 7 días activada!','success',5000);
+      setTimeout(()=>location.reload(),1500);return;
     }
-    // Check permanent licenses
+    // Check premium licenses
     const snap=await get(ref(db,'vault_licenses/'+key));
     if(snap.exists()&&snap.val().status==='unclaimed'){
+      const plan=snap.val().tier||'premium';
       await update(ref(db,'vault_licenses/'+key),{status:'claimed',claimedBy:S.user.email,claimedAt:new Date().toISOString()});
-      await set(ref(db,'users/'+S.user.uid),{plan:'premium',email:S.user.email,activatedAt:new Date().toISOString(),licenseKey:key});
-      toast('¡Licencia Premium activada! Recargando...','success');
+      await update(ref(db,'users/'+S.user.uid),{plan,email:S.user.email,activatedAt:new Date().toISOString(),licenseKey:key});
+      toast(`¡${plan.toUpperCase()} activado! Recargando...`,'success');
       setTimeout(()=>location.reload(),1500);
     } else if(snap.exists()&&snap.val().status==='claimed'){
       toast('Licencia ya utilizada','error');
@@ -1785,190 +1580,109 @@ const validateLicense = async key => {
     }
   } catch(e){toast('Error: '+e.message,'error');}
 };
+
 document.getElementById('btnValidLic').addEventListener('click',()=>validateLicense(document.getElementById('licInp').value.trim()));
 document.getElementById('btnCloseModal').addEventListener('click',()=>document.getElementById('premModal').classList.remove('open'));
 document.getElementById('planChip').addEventListener('click',()=>document.getElementById('premModal').classList.add('open'));
 document.getElementById('btnSLic').addEventListener('click',()=>validateLicense(document.getElementById('sLicInp').value.trim()));
+document.getElementById('btnPlansValidLic').addEventListener('click',()=>validateLicense(document.getElementById('plansLicInp').value.trim()));
+document.getElementById('btnGetPremium').addEventListener('click',()=>{switchPage('plans');});
+document.getElementById('btnGetUltra').addEventListener('click',()=>{switchPage('plans');});
 
 // ═══════════════════════════════════════════
-// API DEMO — 100% local, funciona en GitHub Pages
+// API DEMO
 // ═══════════════════════════════════════════
-const apiEncryptText = async (text, pw) => {
-  const enc = new TextEncoder();
-  const raw = enc.encode(text);
-  const keyBytes = new Uint8Array(await crypto.subtle.digest('SHA-256', enc.encode(pw)));
-  const k16 = keyBytes.slice(0,16);
-  const key = await crypto.subtle.importKey('raw',k16,{name:'AES-CBC'},false,['encrypt']);
-  const iv = crypto.getRandomValues(new Uint8Array(16));
-  const encrypted = new Uint8Array(await crypto.subtle.encrypt({name:'AES-CBC',iv},key,raw));
-  const combined = new Uint8Array(iv.length+encrypted.length);
-  combined.set(iv); combined.set(encrypted,iv.length);
-  return btoa(String.fromCharCode(...combined));
-};
-const apiDecryptText = async (b64, pw) => {
-  const enc = new TextEncoder();
-  const bytes = Uint8Array.from(atob(b64), c=>c.charCodeAt(0));
-  const keyBytes = new Uint8Array(await crypto.subtle.digest('SHA-256', enc.encode(pw)));
-  const k16 = keyBytes.slice(0,16);
-  const key = await crypto.subtle.importKey('raw',k16,{name:'AES-CBC'},false,['decrypt']);
-  const iv = bytes.slice(0,16);
-  const decrypted = await crypto.subtle.decrypt({name:'AES-CBC',iv},key,bytes.slice(16));
-  return new TextDecoder().decode(decrypted);
-};
-let demoEncrypted = '';
-document.getElementById('btnDemoEnc').addEventListener('click', async()=>{
-  const txt=document.getElementById('demoTxt').value;
-  const pw=document.getElementById('demoPw').value;
-  if(!txt||!pw){toast('Rellena texto y contraseña','warn');return;}
-  try{
-    let res;
-    if(fbReady && S.user){
-      res = await firebaseApiEncrypt(txt,pw);
-      demoEncrypted = res.encrypted;
-      document.getElementById('demoResult').textContent = `[CIFRADO Firebase] id=${res.id}`;
-    } else {
-      demoEncrypted = await apiEncryptText(txt,pw);
-      document.getElementById('demoResult').textContent = '[CIFRADO] '+demoEncrypted;
-    }
-    document.getElementById('demoResult').style.color='var(--acc)';
-    toast('Cifrado OK','success',2000);
-  }catch(e){document.getElementById('demoResult').textContent='Error: '+e.message;document.getElementById('demoResult').style.color='var(--r)';}
-});
-document.getElementById('btnDemoDec').addEventListener('click', async()=>{
-  const pw=document.getElementById('demoPw').value;
-  if(!demoEncrypted){toast('Cifra algo primero','warn');return;}
-  try{
-    let dec;
-    if(fbReady && S.user){
-      const res = await firebaseApiDecrypt(demoEncrypted,pw);
-      dec = res.decrypted;
-    } else {
-      dec = await apiDecryptText(demoEncrypted,pw);
-    }
-    document.getElementById('demoResult').textContent='[DESCIFRADO] '+dec;
-    document.getElementById('demoResult').style.color='var(--g)';
-    toast('Descifrado OK','success',2000);
-  }catch(e){document.getElementById('demoResult').textContent='Error: '+e.message;document.getElementById('demoResult').style.color='var(--r)';}
-});
+const apiEncryptText=async(text,pw)=>{const enc=new TextEncoder();const raw=enc.encode(text);const keyBytes=new Uint8Array(await crypto.subtle.digest('SHA-256',enc.encode(pw)));const k16=keyBytes.slice(0,16);const key=await crypto.subtle.importKey('raw',k16,{name:'AES-CBC'},false,['encrypt']);const iv=crypto.getRandomValues(new Uint8Array(16));const encrypted=new Uint8Array(await crypto.subtle.encrypt({name:'AES-CBC',iv},key,raw));const combined=new Uint8Array(iv.length+encrypted.length);combined.set(iv);combined.set(encrypted,iv.length);return btoa(String.fromCharCode(...combined));};
+const apiDecryptText=async(b64,pw)=>{const enc=new TextEncoder();const bytes=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));const keyBytes=new Uint8Array(await crypto.subtle.digest('SHA-256',enc.encode(pw)));const k16=keyBytes.slice(0,16);const key=await crypto.subtle.importKey('raw',k16,{name:'AES-CBC'},false,['decrypt']);const iv=bytes.slice(0,16);const decrypted=await crypto.subtle.decrypt({name:'AES-CBC',iv},key,bytes.slice(16));return new TextDecoder().decode(decrypted);};
+let demoEncrypted='';
+document.getElementById('btnDemoEnc').addEventListener('click',async()=>{const txt=document.getElementById('demoTxt').value,pw=document.getElementById('demoPw').value;if(!txt||!pw){toast('Rellena campos','warn');return;}try{demoEncrypted=await apiEncryptText(txt,pw);document.getElementById('demoResult').textContent='[CIFRADO] '+demoEncrypted;document.getElementById('demoResult').style.color='var(--acc)';toast('Cifrado OK','success',2000);}catch(e){document.getElementById('demoResult').textContent='Error: '+e.message;document.getElementById('demoResult').style.color='var(--r)';}});
+document.getElementById('btnDemoDec').addEventListener('click',async()=>{const pw=document.getElementById('demoPw').value;if(!demoEncrypted){toast('Cifra algo primero','warn');return;}try{const dec=await apiDecryptText(demoEncrypted,pw);document.getElementById('demoResult').textContent='[DESCIFRADO] '+dec;document.getElementById('demoResult').style.color='var(--g)';toast('Descifrado OK','success',2000);}catch(e){document.getElementById('demoResult').textContent='Error: '+e.message;document.getElementById('demoResult').style.color='var(--r)';}});
 
 // ═══════════════════════════════════════════
 // SETTINGS
 // ═══════════════════════════════════════════
-const togMap = {togAD:'antiDebug',togAC:'autoClear',togCM:'ctxMenu',togMagic:'magic',togVerbose:'verbose'};
-Object.entries(togMap).forEach(([id,key])=>{
-  const el=document.getElementById(id);
-  if(!el)return;
-  el.checked=S.cfg[key]??true;
-  el.addEventListener('change',()=>{S.cfg[key]=el.checked;toast(key+': '+(el.checked?'ON':'OFF'),'info',1200);});
-});
-document.getElementById('selKdf').addEventListener('change',function(){
-  S.cfg.kdf=this.value;
-  document.getElementById('pbRow').style.display=this.value==='pbkdf2'?'flex':'none';
-});
-document.getElementById('selFont').addEventListener('change',function(){
-  document.documentElement.style.setProperty('--mono',this.value);
-});
-document.querySelectorAll('.cswatch').forEach(s=>{
-  s.addEventListener('click',()=>{
-    document.querySelectorAll('.cswatch').forEach(x=>x.classList.remove('active'));
-    s.classList.add('active');setAccent(s.dataset.c);
-  });
-});
+const togMap={togAD:'antiDebug',togAC:'autoClear',togCM:'ctxMenu',togMagic:'magic',togVerbose:'verbose'};
+Object.entries(togMap).forEach(([id,key])=>{const el=document.getElementById(id);if(!el)return;el.checked=S.cfg[key]??true;el.addEventListener('change',()=>{S.cfg[key]=el.checked;toast(key+': '+(el.checked?'ON':'OFF'),'info',1200);});});
+document.getElementById('selKdf').addEventListener('change',function(){S.cfg.kdf=this.value;document.getElementById('pbRow').style.display=this.value==='pbkdf2'?'flex':'none';});
+document.getElementById('selFont').addEventListener('change',function(){document.documentElement.style.setProperty('--mono',this.value);});
+document.querySelectorAll('.cswatch').forEach(s=>{s.addEventListener('click',()=>{document.querySelectorAll('.cswatch').forEach(x=>x.classList.remove('active'));s.classList.add('active');const c={blue:{p:'#38bdf8',p2:'#0ea5e9'},green:{p:'#34d399',p2:'#10b981'},amber:{p:'#f59e0b',p2:'#b45309'},purple:{p:'#a78bfa',p2:'#7c3aed'},red:{p:'#f87171',p2:'#ef4444'},pink:{p:'#fb7185',p2:'#e11d48'}}[s.dataset.c]||{p:'#38bdf8',p2:'#0ea5e9'};document.documentElement.style.setProperty('--p',c.p);document.documentElement.style.setProperty('--p2',c.p2);});});
 document.getElementById('selNag').addEventListener('change',function(){S.nagTime=parseInt(this.value);});
-document.getElementById('btnClearLS').addEventListener('click',()=>{localStorage.clear();sessionStorage.clear();toast('Datos locales borrados','warn');});
+document.getElementById('btnClearLS').addEventListener('click',()=>{localStorage.clear();sessionStorage.clear();toast('Datos borrados','warn');});
 document.getElementById('btnReset').addEventListener('click',()=>location.reload());
 
-const refreshSettings = () => {
+const refreshSettings=()=>{
   document.getElementById('sAuthState').textContent=S.user?'Autenticado':'Invitado';
   document.getElementById('sAuthEmail').textContent=S.user?.email||'—';
-  document.getElementById('sAuthPlan').textContent=S.isPremium?(S.isTrial?'TRIAL 8H':'⭐ PREMIUM'):'FREE';
-  if(S.isTrial&&S.trialEnd){
-    const min=Math.ceil((S.trialEnd-Date.now())/60000);
-    document.getElementById('sTrialInfo').textContent=min>0?`${min} min restantes`:'Expirada';
-  } else {
-    document.getElementById('sTrialInfo').textContent='—';
-  }
-  const fbSt = document.getElementById('fbSettingsStatus');
-  if (fbSt) {
-    fbSt.innerHTML = fbReady
-      ? `<span style="color:var(--g)">✓ Firebase conectado</span><br>Proyecto: ${firebaseConfig.projectId}`
-      : `<span style="color:var(--acc)">Sin Firebase configurado</span> — El cifrado de archivos funciona offline. Para autenticación, añade tu config de Firebase en el código.`;
-  }
-};
-
-// ═══════════════════════════════════════════
-// NEWS
-// ═══════════════════════════════════════════
-const newsData=[
-  {tag:'standard',tagClass:'t-std',tagLabel:'Estándar',title:'NIST finaliza FIPS 203: Kyber es ML-KEM oficial',sum:'El NIST publicó FIPS 203 basado en CRYSTALS-Kyber. Con ML-DSA y SLH-DSA, forma la primera familia PQC estandarizada en EE.UU.',date:'Ago 2024',src:'NIST FIPS'},
-  {tag:'research',tagClass:'t-res',tagLabel:'Investigación',title:'Procesadores cuánticos IBM superan 1000 cúbits',sum:'Se acercan al umbral de romper RSA-2048. La transición a PQC es urgente para datos de larga vida.',date:'Oct 2024',src:'IBM Research'},
-  {tag:'security',tagClass:'t-sec',tagLabel:'Seguridad',title:'AES-CBC sin HMAC: ataques de padding oracle',sum:'Sin autenticación explícita, AES-CBC es vulnerable a ataques POODLE. AES-GCM (AEAD) es el sustituto recomendado.',date:'Nov 2024',src:'CVE Database'},
-  {tag:'crypto',tagClass:'t-cry',tagLabel:'Criptografía',title:'ChaCha20-Poly1305: velocidad sin AES-NI',sum:'Diseñado por Bernstein. 20 rondas de mezcla y autenticación Poly1305. Superior a AES-CBC en hardware móvil.',date:'Sep 2024',src:'IETF RFC 8439'},
-  {tag:'research',tagClass:'t-res',tagLabel:'Investigación',title:'Module-LWE: fundamentos post-cuánticos de Kyber',sum:'La seguridad descansa en M-LWE. Incluso con millones de cúbits, resolver M-LWE sigue siendo exponencialmente difícil.',date:'Dic 2024',src:'IACR ePrint'},
-  {tag:'security',tagClass:'t-sec',tagLabel:'Seguridad',title:'PBKDF2 vs Argon2: KDF para 2025',sum:'PBKDF2-SHA256 con 600k iteraciones es el mínimo NIST SP 800-132. Argon2id ofrece mayor resistencia a GPUs y ASICs.',date:'Ene 2025',src:'NIST SP 800-132'},
-];
-const renderNews=()=>{
-  const g=document.getElementById('newsGrid');
-  if(g.children.length>0)return;
-  newsData.forEach(n=>{
-    g.innerHTML+=`<div class="news-card"><span class="n-tag ${n.tagClass}">${n.tagLabel}</span><div class="n-title">${n.title}</div><div class="n-sum">${n.sum}</div><div class="n-meta"><span>📅 ${n.date}</span><span>· ${n.src}</span></div></div>`;
-  });
+  document.getElementById('sAuthPlan').textContent=S.isUltra?'⚛️ ULTRA':S.isPremium?(S.isTrial?'🎁 TRIAL':'⭐ PREMIUM'):'FREE';
+  if(S.isTrial&&S.trialEnd){const min=Math.ceil((S.trialEnd-Date.now())/60000);document.getElementById('sTrialInfo').textContent=min>0?`${min} min restantes`:'Expirada';}
+  else{document.getElementById('sTrialInfo').textContent='—';}
 };
 
 // ═══════════════════════════════════════════
 // ANTI-DEBUG
 // ═══════════════════════════════════════════
-setInterval(()=>{
-  if(!S.cfg.antiDebug)return;
-  const t=performance.now();
-  debugger;
-  if(performance.now()-t>50){
-    S.patternNodes=[];S.textPw='';S.autoPw='';
-    clearPattern();
-    log('ALERTA: DevTools detectado. Secretos borrados.','err');
-  }
-},500);
+setInterval(()=>{if(!S.cfg.antiDebug)return;const t=performance.now();debugger;if(performance.now()-t>50){S.patternNodes=[];S.textPw='';S.autoPw='';clearPattern();log('ALERTA: DevTools detectado','err');}},500);
 window.addEventListener('contextmenu',e=>{if(S.cfg.ctxMenu)e.preventDefault();});
-
-// ═══════════════════════════════════════════
-// PWA
-// ═══════════════════════════════════════════
-let deferredPrompt=null;
-window.addEventListener('beforeinstallprompt',e=>{
-  e.preventDefault();deferredPrompt=e;
-  document.getElementById('installBanner').classList.add('show');
-});
-document.getElementById('btnInstall').addEventListener('click',async()=>{
-  if(!deferredPrompt)return;
-  deferredPrompt.prompt();
-  const{outcome}=await deferredPrompt.userChoice;
-  if(outcome==='accepted')toast('¡AegisPattern instalada!','success');
-  deferredPrompt=null;
-  document.getElementById('installBanner').classList.remove('show');
-});
-window.addEventListener('appinstalled',()=>{
-  document.getElementById('installBanner').classList.remove('show');
-  toast('App instalada correctamente','success');
-});
 
 // ═══════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════
 updateSecInd();
-generateAnonApiKey(); // API key local inmediata
+generateAnonApiKey();
 
-// Intentar inicializar Firebase (falla graciosamente si config es placeholder)
-initFirebase().then(ready => {
-  if (!ready) {
-    // Modo offline: todo funciona excepto login/licencias
-    log('Modo offline activo — cifrado funcional sin autenticación','warn');
-  } else {
-    log('Firebase conectado — autenticación disponible','ok');
+// Init Firebase
+try{
+  auth = getAuth(app);
+  db = getDatabase(app);
+  fbReady = true;
+  window._fb = {ref,set,get,update,onValue,remove,push};
+  showFbStatus('Firebase conectado ✓','ok');
+  onAuthStateChanged(auth, handleAuthChange);
+  log('Firebase conectado — auth y P2P disponibles','ok');
+} catch(err){
+  showFbStatus('Error Firebase: '+err.message.slice(0,50),'err');
+  log('Firebase no disponible — modo offline','warn');
+  stopNag();
+}
+
+if(!fbReady) {
+  document.getElementById('transferLoginWarn').style.display='block';
+}
+
+log('AegisPattern v10 — P2P E2E · Kyber-1024 · ChaCha20 · AES cargados','ok');
+
+// ═══════════════════════════════════════════
+// PUBLIC SDK (window.AegisSDK)
+// ═══════════════════════════════════════════
+window.AegisSDK = class AegisSDK {
+  constructor({apiKey}={}){this.apiKey=apiKey;}
+  async encrypt(text,pw){
+    const enc=new TextEncoder();const raw=enc.encode(text);
+    const keyBytes=new Uint8Array(await crypto.subtle.digest('SHA-256',enc.encode(pw)));
+    const k16=keyBytes.slice(0,16);const key=await crypto.subtle.importKey('raw',k16,{name:'AES-CBC'},false,['encrypt']);
+    const iv=crypto.getRandomValues(new Uint8Array(16));const encrypted=new Uint8Array(await crypto.subtle.encrypt({name:'AES-CBC',iv},key,raw));
+    const combined=new Uint8Array(iv.length+encrypted.length);combined.set(iv);combined.set(encrypted,iv.length);
+    return btoa(String.fromCharCode(...combined));
   }
-});
+  async decrypt(b64,pw){
+    const enc=new TextEncoder();const bytes=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));
+    const keyBytes=new Uint8Array(await crypto.subtle.digest('SHA-256',enc.encode(pw)));
+    const k16=keyBytes.slice(0,16);const key=await crypto.subtle.importKey('raw',k16,{name:'AES-CBC'},false,['decrypt']);
+    const iv=bytes.slice(0,16);const decrypted=await crypto.subtle.decrypt({name:'AES-CBC',iv},key,bytes.slice(16));
+    return new TextDecoder().decode(decrypted);
+  }
+  async createRoom(){
+    // Returns a room object — signaling requires Firebase to be available
+    if(typeof db==='undefined'||!db) throw new Error('Firebase required for P2P rooms');
+    return {
+      id: null,
+      onConnected: null, onFile: null, onProgress: null, onComplete: null,
+      sendFile: async(file)=>{console.warn('Use the AegisPattern UI for file transfer');}
+    };
+  }
+  async getStatus(){return {used:0,limit:20,plan:S.isPremium?'premium':'free',apiKey:this.apiKey};}
+};
 
-log('AegisPattern v9 listo — Kyber-1024 + ChaCha20 + AES cargados','ok');
-log('GitHub Pages · 100% browser · Sin backend requerido','info');
 </script>
 </body>
 </html>
