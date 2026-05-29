@@ -768,8 +768,8 @@ input[type="file"]{display:none}
   </div>
 
   <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
-    <span class="info-badge" style="margin-left:0">✅ Funcional en browser · Sin backend · GitHub Pages compatible</span>
-    <span class="limit-badge">🔒 Solo AES-CBC-128 · Máx 1MB · Solo texto</span>
+    <span class="info-badge" style="margin-left:0">✅ Funcional en browser · Sin backend · Firebase opcional para límites y registro</span>
+    <span class="limit-badge">🔒 Solo AES-CBC-128 · Máx 1MB · Solo texto · Firebase free limitado</span>
   </div>
 
   <!-- API KEY SECTION -->
@@ -787,25 +787,23 @@ input[type="file"]{display:none}
   <div class="api-endpoint">
     <span class="api-method m-post">POST</span>
     <div class="api-path">/api/v1/encrypt</div>
-    <div class="api-desc">Documentación de referencia. Implementa este endpoint en tu propio servidor con la lógica AES-CBC de abajo. GitHub Pages no soporta backends dinámicos.</div>
-    <div class="code-block">// Solicitud de referencia
-fetch('https://TU-SERVIDOR.com/api/v1/encrypt', {
+    <div class="api-desc">Envía JSON con action=encriptar, apiKey, datos y password para cifrado básico.</div>
+    <div class="code-block">// Solicitud de referencia (backend sin servidor con Firebase)
+fetch('https://champdrop-b74e4-default-rtdb.firebaseio.com/api_serverless/requests.json', {
   method: 'POST',
   headers: {
-    'Content-Type': 'application/json',
-    'X-Aegis-Key': 'tu-api-key-aqui'
+    'Content-Type': 'application/json'
   },
   body: JSON.stringify({
+    action: 'encrypt',
+    apiKey: 'tu-api-key-aqui',
     data: "Texto o base64 a cifrar",
-    password: "contraseña-secreta",
-    format: "base64" // "base64" | "hex"
+    password: "contraseña-secreta"
   })
 })
 .then(r => r.json())
 .then(res => {
-  console.log(res.encrypted); // string base64
-  console.log(res.algo);      // "AES-CBC-128"
-  console.log(res.overhead);  // bytes de IV
+  console.log(res);
 });</div>
   </div>
 
@@ -813,33 +811,33 @@ fetch('https://TU-SERVIDOR.com/api/v1/encrypt', {
     <span class="api-method m-post">POST</span>
     <div class="api-path">/api/v1/decrypt</div>
     <div class="api-desc">Descifra datos cifrados con el mismo algoritmo. Requiere la misma contraseña y el output previo.</div>
-    <div class="code-block">fetch('https://TU-SERVIDOR.com/api/v1/decrypt', {
+    <div class="code-block">fetch('https://champdrop-b74e4-default-rtdb.firebaseio.com/api_serverless/requests.json', {
   method: 'POST',
   headers: {
-    'Content-Type': 'application/json',
-    'X-Aegis-Key': 'tu-api-key-aqui'
+    'Content-Type': 'application/json'
   },
   body: JSON.stringify({
+    action: 'decrypt',
+    apiKey: 'tu-api-key-aqui',
     encrypted: "base64-del-archivo-cifrado",
     password: "contraseña-secreta"
   })
 })
 .then(r => r.json())
-.then(res => console.log(res.decrypted));</div>
+.then(res => console.log(res));</div>
   </div>
 
   <div class="api-endpoint">
     <span class="api-method m-get">GET</span>
     <div class="api-path">/api/v1/status</div>
     <div class="api-desc">Consulta el estado de tu clave API: peticiones usadas, límite y tiempo de reset.</div>
-    <div class="code-block">fetch('https://TU-SERVIDOR.com/api/v1/status', {
-  headers: { 'X-Aegis-Key': 'tu-api-key-aqui' }
+    <div class="code-block">fetch('https://champdrop-b74e4-default-rtdb.firebaseio.com/api_serverless/usage/UID.json', {
+  headers: { 'Content-Type': 'application/json' }
 })
 .then(r => r.json())
 .then(res => {
-  console.log(res.used);       // peticiones usadas
-  console.log(res.limit);      // 50
-  console.log(res.reset_in);   // segundos hasta reset
+  console.log(res.count);      // peticiones usadas hoy
+  console.log(20);             // límite diario gratis
 });</div>
   </div>
 
@@ -1359,6 +1357,75 @@ const generateAnonApiKey = () => {
   if(d) d.value = S.apiKey;
 };
 
+const API_LIMIT_PER_DAY = 20;
+const API_ROOT = 'api_serverless';
+const getTodayKey = () => new Date().toISOString().slice(0,10);
+
+const checkFirebaseApiLimit = async () => {
+  if (!fbReady || !db) throw new Error('Firebase no disponible');
+  if (!S.user) throw new Error('Inicia sesión para usar la API Firebase');
+  const usageSnap = await get(ref(db, `${API_ROOT}/usage/${S.user.uid}/${getTodayKey()}`));
+  const used = usageSnap.exists() ? usageSnap.val().count || 0 : 0;
+  if (used >= API_LIMIT_PER_DAY) throw new Error('Límite diario de API alcanzado');
+  return used;
+};
+
+const recordFirebaseApiUsage = async () => {
+  const usageRef = ref(db, `${API_ROOT}/usage/${S.user.uid}/${getTodayKey()}`);
+  const usageSnap = await get(usageRef);
+  const count = usageSnap.exists() ? (usageSnap.val().count || 0) + 1 : 1;
+  await set(usageRef, { count, lastUsed: new Date().toISOString() });
+};
+
+const firebaseApiEncrypt = async (text, pw) => {
+  const used = await checkFirebaseApiLimit();
+  const encrypted = await apiEncryptText(text, pw);
+  const reqId = 'req_' + Array.from(crypto.getRandomValues(new Uint8Array(12))).map(b => b.toString(16).padStart(2,'0')).join('');
+  await set(ref(db, `${API_ROOT}/requests/${reqId}`), {
+    id: reqId,
+    createdAt: new Date().toISOString(),
+    type: 'encrypt',
+    user: S.user.uid,
+    apiKey: S.apiKey,
+    payloadType: 'text',
+    resultPreview: encrypted.slice(0,64) + '...',
+    length: text.length
+  });
+  await recordFirebaseApiUsage();
+  return { id: reqId, encrypted, used: used + 1, limit: API_LIMIT_PER_DAY };
+};
+
+const firebaseApiDecrypt = async (encrypted, pw) => {
+  const used = await checkFirebaseApiLimit();
+  const decrypted = await apiDecryptText(encrypted, pw);
+  const reqId = 'req_' + Array.from(crypto.getRandomValues(new Uint8Array(12))).map(b => b.toString(16).padStart(2,'0')).join('');
+  await set(ref(db, `${API_ROOT}/requests/${reqId}`), {
+    id: reqId,
+    createdAt: new Date().toISOString(),
+    type: 'decrypt',
+    user: S.user.uid,
+    apiKey: S.apiKey,
+    result: 'ok',
+    length: encrypted.length
+  });
+  await recordFirebaseApiUsage();
+  return { id: reqId, decrypted, used: used + 1, limit: API_LIMIT_PER_DAY };
+};
+
+const firebaseApiStatus = async () => {
+  if (!fbReady || !db) return { status: 'offline', message: 'Firebase no listo' };
+  if (!S.user) return { status: 'guest', message: 'Inicia sesión para ver uso' };
+  const snap = await get(ref(db, `${API_ROOT}/usage/${S.user.uid}/${getTodayKey()}`));
+  return {
+    status: 'ok',
+    used: snap.exists() ? snap.val().count || 0 : 0,
+    limit: API_LIMIT_PER_DAY,
+    project: firebaseConfig.projectId
+  };
+};
+
+window.firebaseApi = { encrypt: firebaseApiEncrypt, decrypt: firebaseApiDecrypt, status: firebaseApiStatus };
+
 document.getElementById('btnCopyApiKey').addEventListener('click',()=>{
   if(!S.apiKey){toast('No hay clave generada','warn');return;}
   navigator.clipboard.writeText(S.apiKey).then(()=>toast('API key copiada','success'));
@@ -1754,8 +1821,15 @@ document.getElementById('btnDemoEnc').addEventListener('click', async()=>{
   const pw=document.getElementById('demoPw').value;
   if(!txt||!pw){toast('Rellena texto y contraseña','warn');return;}
   try{
-    demoEncrypted=await apiEncryptText(txt,pw);
-    document.getElementById('demoResult').textContent='[CIFRADO] '+demoEncrypted;
+    let res;
+    if(fbReady && S.user){
+      res = await firebaseApiEncrypt(txt,pw);
+      demoEncrypted = res.encrypted;
+      document.getElementById('demoResult').textContent = `[CIFRADO Firebase] id=${res.id}`;
+    } else {
+      demoEncrypted = await apiEncryptText(txt,pw);
+      document.getElementById('demoResult').textContent = '[CIFRADO] '+demoEncrypted;
+    }
     document.getElementById('demoResult').style.color='var(--acc)';
     toast('Cifrado OK','success',2000);
   }catch(e){document.getElementById('demoResult').textContent='Error: '+e.message;document.getElementById('demoResult').style.color='var(--r)';}
@@ -1764,7 +1838,13 @@ document.getElementById('btnDemoDec').addEventListener('click', async()=>{
   const pw=document.getElementById('demoPw').value;
   if(!demoEncrypted){toast('Cifra algo primero','warn');return;}
   try{
-    const dec=await apiDecryptText(demoEncrypted,pw);
+    let dec;
+    if(fbReady && S.user){
+      const res = await firebaseApiDecrypt(demoEncrypted,pw);
+      dec = res.decrypted;
+    } else {
+      dec = await apiDecryptText(demoEncrypted,pw);
+    }
     document.getElementById('demoResult').textContent='[DESCIFRADO] '+dec;
     document.getElementById('demoResult').style.color='var(--g)';
     toast('Descifrado OK','success',2000);
@@ -1811,7 +1891,7 @@ const refreshSettings = () => {
   const fbSt = document.getElementById('fbSettingsStatus');
   if (fbSt) {
     fbSt.innerHTML = fbReady
-      ? `<span style="color:var(--g)">✓ Firebase conectado</span><br>Proyecto: ${FIREBASE_CONFIG.projectId}`
+      ? `<span style="color:var(--g)">✓ Firebase conectado</span><br>Proyecto: ${firebaseConfig.projectId}`
       : `<span style="color:var(--acc)">Sin Firebase configurado</span> — El cifrado de archivos funciona offline. Para autenticación, añade tu config de Firebase en el código.`;
   }
 };
