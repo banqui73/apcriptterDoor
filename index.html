@@ -802,13 +802,11 @@ const data = await aegis.decrypt(encrypted, 'miClave');
               <select class="sel-input" id="codeType" style="flex:1">
                 <option value="trial">TRIAL — 7 días Premium</option>
                 <option value="premium-30">PREMIUM — 30 días</option>
-                <option value="premium-90">PREMIUM — 90 días</option>
-                <option value="premium-365">PREMIUM — 1 año</option>
+                <option value="premium-mixed">PREMIUM — repartir 30 días / -0day</option>
                 <option value="ultra-30">ULTRA — 30 días</option>
-                <option value="ultra-90">ULTRA — 90 días</option>
-                <option value="ultra-365">ULTRA — 1 año</option>
-                <option value="ultra-forever">ULTRA — Para siempre</option>
-                <option value="premium-forever">PREMIUM — Para siempre</option>
+                <option value="ultra-mixed">ULTRA — repartir 30 días / -0day</option>
+                <option value="premium-forever">PREMIUM — -0day infinito</option>
+                <option value="ultra-forever">ULTRA — -0day infinito</option>
               </select>
               <select class="sel-input" id="codeQty">
                 <option value="1">× 1</option>
@@ -894,16 +892,77 @@ const NEW_USER_CODES_COUNT = 5;
 const CODE_CONFIGS = {
   'trial':       { prefix:'TRIAL',    tier:'trial',   dur:7*24*60*60*1000,    label:'7 días Trial'   },
   'premium-30':  { prefix:'AEGIS-PRO',tier:'premium', dur:30*24*60*60*1000,   label:'30 días Premium' },
-  'premium-90':  { prefix:'AEGIS-PRO',tier:'premium', dur:90*24*60*60*1000,   label:'90 días Premium' },
-  'premium-365': { prefix:'AEGIS-PRO',tier:'premium', dur:365*24*60*60*1000,  label:'1 año Premium'   },
   'ultra-30':    { prefix:'AEGIS-ULT',tier:'ultra',   dur:30*24*60*60*1000,   label:'30 días Ultra'   },
-  'ultra-90':    { prefix:'AEGIS-ULT',tier:'ultra',   dur:90*24*60*60*1000,   label:'90 días Ultra'   },
-  'ultra-365':   { prefix:'AEGIS-ULT',tier:'ultra',   dur:365*24*60*60*1000,  label:'1 año Ultra'     },
 };
 
-// Códigos permanentes (sin expiración) y opciones "para siempre"
-CODE_CONFIGS['ultra-forever'] = { prefix:'AEGIS-ULT', tier:'ultra', dur: null, label: 'Ultra para siempre' };
-CODE_CONFIGS['premium-forever'] = { prefix:'AEGIS-PRO', tier:'premium', dur: null, label: 'Premium para siempre' };
+// Códigos permanentes (sin expiración) y opciones "-0day infinito"
+CODE_CONFIGS['ultra-forever'] = { prefix:'AEGIS-ULT', tier:'ultra', dur: null, label: 'Ultra -0day infinito' };
+CODE_CONFIGS['premium-forever'] = { prefix:'AEGIS-PRO', tier:'premium', dur: null, label: 'Premium -0day infinito' };
+
+const CODE_MIXES = {
+  'premium-mixed': ['premium-30', 'premium-forever'],
+  'ultra-mixed': ['ultra-30', 'ultra-forever'],
+};
+
+const ACTIVATION_CODES_ROOT = 'vault_licenses';
+const DAY_MS = 24*60*60*1000;
+const CODE_FOLDER = { days30:'30_dias', forever:'siempre' };
+
+const getLicenseBucket = cfg => {
+  if(!cfg || !['premium','ultra'].includes(cfg.tier)) return null;
+  if(cfg.dur == null) return CODE_FOLDER.forever;
+  if(cfg.dur === 30*DAY_MS) return CODE_FOLDER.days30;
+  return `${Math.ceil(cfg.dur/DAY_MS)}_dias`;
+};
+
+const licensePathForConfig = (code, cfg) => {
+  const bucket = getLicenseBucket(cfg);
+  return bucket ? `${ACTIVATION_CODES_ROOT}/${cfg.tier}/${bucket}/${code}` : `${ACTIVATION_CODES_ROOT}/${code}`;
+};
+
+const licenseCandidatePaths = key => [
+  `${ACTIVATION_CODES_ROOT}/premium/${CODE_FOLDER.days30}/${key}`,
+  `${ACTIVATION_CODES_ROOT}/premium/${CODE_FOLDER.forever}/${key}`,
+  `${ACTIVATION_CODES_ROOT}/ultra/${CODE_FOLDER.days30}/${key}`,
+  `${ACTIVATION_CODES_ROOT}/ultra/${CODE_FOLDER.forever}/${key}`,
+  `${ACTIVATION_CODES_ROOT}/${key}`,
+];
+
+const findLicenseSnap = async key => {
+  for(const path of licenseCandidatePaths(key)){
+    const snap = await get(ref(db, path));
+    if(snap.exists()) return { snap, path };
+  }
+  return null;
+};
+
+const walkLicenseSnap = (snap, cb, basePath = ACTIVATION_CODES_ROOT) => {
+  if(!snap.exists()) return;
+  snap.forEach(child => {
+    const v = child.val();
+    const childPath = `${basePath}/${child.key}`;
+    if(v && typeof v === 'object' && ('tier' in v || 'status' in v || 'planDuration' in v)){
+      cb(child.key, v, childPath);
+    } else {
+      walkLicenseSnap(child, cb, childPath);
+    }
+  });
+};
+
+const getCodePoolStats = snap => {
+  const stats = {
+    'premium-30': 0,
+    'premium-forever': 0,
+    'ultra-30': 0,
+    'ultra-forever': 0,
+  };
+  walkLicenseSnap(snap, (code, v) => {
+    if(!['premium','ultra'].includes(v.tier)) return;
+    const key = v.planDuration == null ? `${v.tier}-forever` : `${v.tier}-${Math.ceil(v.planDuration/DAY_MS)}`;
+    if(key in stats) stats[key]++;
+  });
+  return stats;
+};
 
 const showFbStatus = (msg, type) => {
   const bar = document.getElementById('fbStatusBar');
@@ -977,6 +1036,15 @@ const log = (msg, type='info') => {
  */
 const generateCodesIntoVault = async (count, type = 'premium-30', createdBy = 'system') => {
   if(!fbReady || !db) return [];
+  if(CODE_MIXES[type]){
+    const generated = [];
+    for(let i = 0; i < count; i++){
+      const nextType = CODE_MIXES[type][i % CODE_MIXES[type].length];
+      const codes = await generateCodesIntoVault(1, nextType, createdBy);
+      generated.push(...codes);
+    }
+    return generated;
+  }
   const cfg = CODE_CONFIGS[type];
   if(!cfg) return [];
 
@@ -988,9 +1056,9 @@ const generateCodesIntoVault = async (count, type = 'premium-30', createdBy = 's
     const suffix = Array.from(b, x => x.toString(16).padStart(2,'0')).join('').toUpperCase();
     const code   = `${cfg.prefix}-${suffix}`;
     // El código expira para canjear: si cfg.dur es null -> sin expiración
-    const expiresAt = (cfg.dur == null) ? null : (now + cfg.dur + 30*24*60*60*1000);
+    const expiresAt = (cfg.dur == null) ? null : (now + cfg.dur);
 
-    await set(ref(db, `vault_licenses/${code}`), {
+    await set(ref(db, licensePathForConfig(code, cfg)), {
       tier:         cfg.tier,
       status:       'unclaimed',
       expiresAt:    expiresAt,
@@ -1011,16 +1079,58 @@ const generateCodesIntoVault = async (count, type = 'premium-30', createdBy = 's
 const autoInitVaultIfEmpty = async () => {
   if(!fbReady || !db) return;
   try {
-    const snap = await get(ref(db, 'vault_licenses'));
-    // ¿Hay algún código ya (reclamado o no)?
-    if(snap.exists()) return; // ya hay códigos, no hacer nada
+    const snap = await get(ref(db, ACTIVATION_CODES_ROOT));
+    let hasAnyCode = false;
+    walkLicenseSnap(snap, () => { hasAnyCode = true; });
+    if(hasAnyCode) return; // ya hay códigos, no hacer nada
 
-    log(`Vault vacío — generando ${INIT_CODES_COUNT} códigos iniciales automáticamente...`, 'warn');
-    const codes = await generateCodesIntoVault(INIT_CODES_COUNT, 'premium-30', 'system-init');
-    log(`✅ ${codes.length} códigos iniciales creados en vault_licenses`, 'ok');
+    log(`Vault vacío — generando ${INIT_CODES_COUNT} códigos iniciales repartidos automáticamente...`, 'warn');
+    const premiumCodes = await generateCodesIntoVault(Math.ceil(INIT_CODES_COUNT/2), 'premium-mixed', 'system-init');
+    const ultraCodes = await generateCodesIntoVault(Math.floor(INIT_CODES_COUNT/2), 'ultra-mixed', 'system-init');
+    const total = premiumCodes.length + ultraCodes.length;
+    log(`✅ ${total} códigos iniciales repartidos en premium/ultra y 30_dias/siempre`, 'ok');
     // No mostramos toast al usuario final para no delatar; solo en el log interno
   } catch(e) {
     log('Error autoInit vault: ' + e.message, 'err');
+  }
+};
+
+/**
+ * Asegura que existan códigos repartidos entre 30 días y -0day infinito.
+ */
+const ensureCodePoolsExist = async () => {
+  if(!fbReady || !db) return;
+  try {
+    const snap = await get(ref(db, ACTIVATION_CODES_ROOT));
+    const stats = getCodePoolStats(snap);
+
+    const ops = [];
+    if(stats['premium-30'] === 0){
+      log('No existen Premium 30 días — generando 5 códigos...','warn');
+      ops.push(generateCodesIntoVault(5, 'premium-30', 'system-init'));
+    }
+    if(stats['premium-forever'] === 0){
+      log('No existen Premium -0day infinito — generando 10 códigos...','warn');
+      ops.push(generateCodesIntoVault(5, 'premium-forever', 'system-init'));
+    }
+    if(stats['ultra-30'] === 0){
+      log('No existen Ultra 30 días — generando 5 códigos...','warn');
+      ops.push(generateCodesIntoVault(5, 'ultra-30', 'system-init'));
+    }
+    if(stats['ultra-forever'] === 0){
+      log('No existen Ultra -0day infinito — generando 5 códigos...','warn');
+      ops.push(generateCodesIntoVault(5, 'ultra-forever', 'system-init'));
+    }
+
+    if(ops.length>0){
+      const res = await Promise.all(ops);
+      const total = res.reduce((s,a)=>s+(a?.length||0),0);
+      log(`✅ Códigos repartidos creados: ${total}`,'ok');
+    } else {
+      log('Códigos 30 días e infinitos ya presentes — sin acción','info');
+    }
+  } catch(e){
+    log('Error ensureCodePoolsExist: '+e.message,'err');
   }
 };
 
@@ -1474,7 +1584,7 @@ document.getElementById('btnRequestTrial').addEventListener('click', async () =>
     const code = 'TRIAL-' + Array.from(b,x=>x.toString(16).padStart(2,'0')).join('').toUpperCase();
     const expiresAt = Date.now() + 7*24*60*60*1000;
 
-    await set(ref(db,`vault_licenses/${code}`),{
+    await set(ref(db,`${ACTIVATION_CODES_ROOT}/${code}`),{
       tier: 'trial', status: 'unclaimed', expiresAt,
       planDuration: 7*24*60*60*1000,
       createdFor: emailKey, createdAt: Date.now(),
@@ -1514,10 +1624,10 @@ const validateLicense = async key => {
   key = key.trim().toUpperCase();
 
   try {
-    const snap = await get(ref(db,'vault_licenses/'+key));
-    if(!snap.exists()){ toast('Código no válido','error'); return; }
+    const found = await findLicenseSnap(key);
+    if(!found){ toast('Código no válido','error'); return; }
 
-    const d = snap.val();
+    const d = found.snap.val();
 
     if(d.status === 'claimed'){
       if(d.claimedBy === S.user.uid){
@@ -1536,7 +1646,7 @@ const validateLicense = async key => {
     const planExpiry  = (d.planDuration == null) ? null : (Date.now() + d.planDuration);
     const planLabel   = {trial:'TRIAL',premium:'PREMIUM',ultra:'ULTRA'}[tier]||'PREMIUM';
 
-    await update(ref(db,'vault_licenses/'+key),{
+    await update(ref(db, found.path),{
       status:    'claimed',
       claimedBy: S.user.uid,
       claimedAt: Date.now(),
@@ -1554,7 +1664,7 @@ const validateLicense = async key => {
     applyPlanUI(); stopNag(); refreshSettings();
 
     if(d.planDuration == null){
-      toast(`🎉 ${planLabel} activado — para siempre`, 'success', 6000);
+      toast(`🎉 ${planLabel} activado — -0day infinito`, 'success', 6000);
     } else {
       const days = Math.ceil(d.planDuration/86400000);
       toast(`🎉 ${planLabel} activado — ${days} días (expira ${new Date(planExpiry).toLocaleDateString('es-ES')})`, 'success', 6000);
@@ -1606,21 +1716,19 @@ document.getElementById('btnAdminUnlock').addEventListener('click', async () => 
 
 const refreshAdminPanel = async () => {
   if(!S.adminUnlocked||!fbReady||!db) return;
-  const snap = await get(ref(db,'vault_licenses'));
+  const snap = await get(ref(db, ACTIVATION_CODES_ROOT));
   let unclaimed = 0, claimed = 0, expired = 0;
   const now = Date.now();
-  if(snap.exists()){
-    snap.forEach(child=>{
-      const v=child.val();
-      if(v.expiresAt < now) expired++;
-      else if(v.status==='unclaimed') unclaimed++;
-      else claimed++;
-    });
-  }
+  const stats = getCodePoolStats(snap);
+  walkLicenseSnap(snap, (code, v) => {
+    if(v.expiresAt && v.expiresAt < now) expired++;
+    else if(v.status==='unclaimed') unclaimed++;
+    else claimed++;
+  });
   const bar = document.getElementById('poolStatus');
   // Sin límite — mostrar estadísticas informativas
   bar.className = 'pool-bar ok';
-  bar.textContent = `🟢 Vault: ${unclaimed} sin usar · ${claimed} activos · ${expired} expirados — Sin límite`;
+  bar.textContent = `🟢 Vault: ${unclaimed} sin usar · ${claimed} activos · ${expired} expirados — P30:${stats['premium-30']} P∞:${stats['premium-forever']} U30:${stats['ultra-30']} U∞:${stats['ultra-forever']}`;
 };
 
 document.getElementById('btnGenCodes').addEventListener('click', async () => {
@@ -1634,12 +1742,17 @@ document.getElementById('btnGenCodes').addEventListener('click', async () => {
   if(generated.length === 0){ toast('Error generando códigos','error'); return; }
 
   const cfg  = CODE_CONFIGS[type];
+  const mixLabels = {
+    'premium-mixed': 'Premium repartido: 30 días / -0day infinito',
+    'ultra-mixed': 'Ultra repartido: 30 días / -0day infinito',
+  };
   const list = document.getElementById('codeList');
   list.innerHTML = '';
   generated.forEach(code => {
     const el = document.createElement('div');
     el.className='code-entry';
-    el.innerHTML=`<div><div class="ce-code">${code}</div><div class="ce-meta">${cfg.label}</div></div><button class="ce-copy" data-code="${code}">COPIAR</button>`;
+    const codeLabel = cfg?.label || (code.startsWith('AEGIS-ULT') ? mixLabels['ultra-mixed'] : mixLabels['premium-mixed']);
+    el.innerHTML=`<div><div class="ce-code">${code}</div><div class="ce-meta">${codeLabel}</div></div><button class="ce-copy" data-code="${code}">COPIAR</button>`;
     el.querySelector('.ce-copy').addEventListener('click',function(){
       navigator.clipboard.writeText(this.dataset.code).then(()=>toast('Copiado','success'));
     });
@@ -1653,7 +1766,7 @@ document.getElementById('btnPurgeExpired').addEventListener('click', async () =>
   if(!S.adminUnlocked){toast('Acceso denegado','error');return;}
   if(!fbReady||!db){toast('Firebase requerido','warn');return;}
 
-  const snap = await get(ref(db,'vault_licenses'));
+  const snap = await get(ref(db, ACTIVATION_CODES_ROOT));
   if(!snap.exists()){ toast('No hay códigos','info'); return; }
 
   const now = Date.now();
@@ -1661,10 +1774,9 @@ document.getElementById('btnPurgeExpired').addEventListener('click', async () =>
   let purged = 0;
 
   // Solo eliminar los expirados — sin restricción de cantidad de sin-usar
-  snap.forEach(child=>{
-    const v = child.val();
-    if(v.expiresAt < now){
-      updates[`vault_licenses/${child.key}`] = null;
+  walkLicenseSnap(snap, (code, v, path) => {
+    if(v.expiresAt && v.expiresAt < now){
+      updates[path] = null;
       purged++;
     }
   });
@@ -1720,7 +1832,9 @@ try{
   log('AegisPattern v10 listo — Firebase OK','ok');
 
   // ── AUTO-INIT: generar 10 códigos si el vault está vacío ──
-  autoInitVaultIfEmpty();
+  await autoInitVaultIfEmpty();
+  // Asegurar códigos repartidos entre 30_dias y siempre
+  await ensureCodePoolsExist();
 
 } catch(err){
   showFbStatus('Error Firebase: '+err.message.slice(0,50),'err');
