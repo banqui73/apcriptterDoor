@@ -339,7 +339,7 @@ body{
 .progress-track{height:4px;background:var(--b1);border-radius:2px;overflow:hidden}
 .progress-fill{height:100%;border-radius:2px;width:0%;background:linear-gradient(90deg,var(--p2),var(--pu));transition:width .2s}
 
-/* SECURITY INDICATORS - compact grid */
+/* SECURITY INDICATORS */
 .sec-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .sec-item{background:var(--s2);border:1px solid var(--b1);border-radius:var(--rad-sm);padding:10px}
 .sec-icon{font-size:1rem;margin-bottom:3px}
@@ -393,6 +393,11 @@ body{
   padding:3px 9px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.2);
   color:var(--r);border-radius:4px;margin-bottom:10px;
 }
+.info-badge{
+  display:inline-flex;align-items:center;gap:5px;font-size:.6rem;
+  padding:3px 9px;background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.2);
+  color:var(--p2);border-radius:4px;margin-bottom:10px;margin-left:6px;
+}
 
 /* NEWS */
 .news-grid{display:flex;flex-direction:column;gap:10px}
@@ -445,7 +450,7 @@ body{
 .toggle input:checked ~ .t-thumb{left:20px}
 
 /* SELECT */
-.sel{
+.sel-input{
   background:var(--s2);border:1px solid var(--b1);color:var(--tx);
   font-family:var(--mono);font-size:.7rem;padding:6px 10px;border-radius:var(--rad-sm);outline:none;cursor:pointer;
 }
@@ -510,6 +515,15 @@ body{
   font-size:.7rem;color:var(--tx2);margin-bottom:12px;gap:10px;
 }
 .install-banner.show{display:flex}
+
+/* FIREBASE STATUS */
+.fb-status{
+  padding:8px 12px;border-radius:var(--rad-sm);font-size:.65rem;
+  margin-bottom:10px;display:flex;align-items:center;gap:8px;
+}
+.fb-status.ok{background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2);color:var(--g)}
+.fb-status.err{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);color:var(--r)}
+.fb-status.warn{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);color:var(--acc)}
 
 /* SCROLLBAR */
 ::-webkit-scrollbar{width:3px;height:3px}
@@ -576,6 +590,11 @@ input[type="file"]{display:none}
 <div class="page active" id="page-crypto">
   <div class="crypto-grid">
     <div class="crypto-left">
+
+      <!-- FIREBASE STATUS -->
+      <div id="fbStatusBar" class="fb-status warn" style="display:none">
+        <span id="fbStatusMsg">Conectando Firebase...</span>
+      </div>
 
       <!-- AUTH -->
       <div class="card">
@@ -718,7 +737,7 @@ input[type="file"]{display:none}
         </div>
       </div>
 
-      <!-- KYBER -->
+      <!-- KYBER CARD -->
       <div class="kyber-card">
         <div class="kyber-header">
           <div class="k-dot"></div>
@@ -745,27 +764,32 @@ input[type="file"]{display:none}
 <div class="page" id="page-api">
   <div style="margin-bottom:16px">
     <div style="font-family:var(--disp);font-size:1.2rem;font-weight:700;color:var(--tx);margin-bottom:4px">API Pública AegisPattern</div>
-    <div style="font-size:.72rem;color:var(--tx3)">Integra cifrado AES-CBC en tus juegos y aplicaciones. Sin instalación, solo HTTPS.</div>
+    <div style="font-size:.72rem;color:var(--tx3)">Demo funcional de cifrado AES-CBC ejecutada 100% en el navegador. Sin servidor, sin instalación.</div>
   </div>
 
-  <div class="limit-badge">🚦 Límite: 50 peticiones / hora por IP · Solo AES-CBC-128 · Máx 1MB</div>
+  <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
+    <span class="info-badge" style="margin-left:0">✅ Funcional en browser · Sin backend · GitHub Pages compatible</span>
+    <span class="limit-badge">🔒 Solo AES-CBC-128 · Máx 1MB · Solo texto</span>
+  </div>
 
+  <!-- API KEY SECTION -->
   <div class="card">
-    <div class="card-title">Tu clave de API</div>
+    <div class="card-title">Tu clave de API (local)</div>
     <div style="display:flex;gap:8px;align-items:center">
       <input class="inp" id="apiKeyDisplay" readonly placeholder="Inicia sesión para ver tu clave API" style="flex:1;color:var(--acc);letter-spacing:.5px">
       <button class="btn btn-sm btn-outline" id="btnCopyApiKey">Copiar</button>
       <button class="btn btn-sm btn-outline" id="btnRegenApiKey">↺</button>
     </div>
-    <div style="font-size:.62rem;color:var(--tx3);margin-top:6px">Incluye esta clave en el header <span style="color:var(--acc)">X-Aegis-Key</span></div>
+    <div style="font-size:.62rem;color:var(--tx3);margin-top:6px">Esta clave se genera localmente y se almacena en tu sesión. Inclúyela en el header <span style="color:var(--acc)">X-Aegis-Key</span> al llamar a una implementación de servidor propia.</div>
   </div>
 
+  <!-- ENDPOINTS (documentación) -->
   <div class="api-endpoint">
     <span class="api-method m-post">POST</span>
     <div class="api-path">/api/v1/encrypt</div>
-    <div class="api-desc">Cifra texto o datos en base64. Devuelve el archivo cifrado en base64 con IV embebido. Solo acepta texto plano (content-type: text/plain) o JSON.</div>
-    <div class="code-block">// Solicitud
-fetch('https://aegispattern.app/api/v1/encrypt', {
+    <div class="api-desc">Documentación de referencia. Implementa este endpoint en tu propio servidor con la lógica AES-CBC de abajo. GitHub Pages no soporta backends dinámicos.</div>
+    <div class="code-block">// Solicitud de referencia
+fetch('https://TU-SERVIDOR.com/api/v1/encrypt', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -788,8 +812,8 @@ fetch('https://aegispattern.app/api/v1/encrypt', {
   <div class="api-endpoint">
     <span class="api-method m-post">POST</span>
     <div class="api-path">/api/v1/decrypt</div>
-    <div class="api-desc">Descifra datos cifrados con esta API. Requiere la misma contraseña y el output previo.</div>
-    <div class="code-block">fetch('https://aegispattern.app/api/v1/decrypt', {
+    <div class="api-desc">Descifra datos cifrados con el mismo algoritmo. Requiere la misma contraseña y el output previo.</div>
+    <div class="code-block">fetch('https://TU-SERVIDOR.com/api/v1/decrypt', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -808,7 +832,7 @@ fetch('https://aegispattern.app/api/v1/encrypt', {
     <span class="api-method m-get">GET</span>
     <div class="api-path">/api/v1/status</div>
     <div class="api-desc">Consulta el estado de tu clave API: peticiones usadas, límite y tiempo de reset.</div>
-    <div class="code-block">fetch('https://aegispattern.app/api/v1/status', {
+    <div class="code-block">fetch('https://TU-SERVIDOR.com/api/v1/status', {
   headers: { 'X-Aegis-Key': 'tu-api-key-aqui' }
 })
 .then(r => r.json())
@@ -819,9 +843,9 @@ fetch('https://aegispattern.app/api/v1/encrypt', {
 });</div>
   </div>
 
-  <!-- LIVE DEMO -->
+  <!-- LIVE DEMO — funciona completamente en browser -->
   <div class="card" style="margin-top:4px">
-    <div class="card-title">Demo en vivo (sin clave API)</div>
+    <div class="card-title">Demo en vivo (100% local · sin servidor)</div>
     <div class="field"><label class="label">Texto a cifrar</label><input class="inp" id="demoTxt" placeholder="Escribe algo..." value="Hola mundo desde la API"></div>
     <div class="field"><label class="label">Contraseña</label><input type="password" class="inp" id="demoPw" placeholder="contraseña" value="demo123"></div>
     <div style="display:flex;gap:8px;margin-bottom:10px">
@@ -860,7 +884,7 @@ fetch('https://aegispattern.app/api/v1/encrypt', {
           <div class="s-row"><div><div class="s-lbl">Anti-debugging</div><div class="s-sub">Detecta DevTools y borra secretos</div></div><label class="toggle"><input type="checkbox" id="togAD" checked><div class="t-track"></div><div class="t-thumb"></div></label></div>
           <div class="s-row"><div><div class="s-lbl">Borrar patrón tras uso</div><div class="s-sub">Limpia automáticamente</div></div><label class="toggle"><input type="checkbox" id="togAC" checked><div class="t-track"></div><div class="t-thumb"></div></label></div>
           <div class="s-row"><div><div class="s-lbl">Bloquear menú contextual</div><div class="s-sub">Previene inspección DOM</div></div><label class="toggle"><input type="checkbox" id="togCM" checked><div class="t-track"></div><div class="t-thumb"></div></label></div>
-          <div class="s-row"><div><div class="s-lbl">Tiempo de espera freemium</div></div><select class="sel" id="selNag"><option value="10">10s</option><option value="15" selected>15s</option><option value="30">30s</option></select></div>
+          <div class="s-row"><div><div class="s-lbl">Tiempo de espera freemium</div></div><select class="sel-input" id="selNag"><option value="10">10s</option><option value="15" selected>15s</option><option value="30">30s</option></select></div>
         </div>
       </div>
 
@@ -880,14 +904,22 @@ fetch('https://aegispattern.app/api/v1/encrypt', {
           <div class="field"><input type="text" class="inp" id="sLicInp" placeholder="AEGIS-PRO-XXXXXXXX..." style="letter-spacing:.5px;color:var(--p2)"></div>
           <button class="btn btn-block btn-outline" id="btnSLic">Validar licencia</button>
         </div>
+        <div class="card">
+          <div class="sg-title">Firebase</div>
+          <div id="fbSettingsStatus" style="font-size:.68rem;color:var(--tx3);line-height:1.6">
+            Carga Firebase desde la consola para habilitar autenticación persistente.
+            <br><br>
+            <span style="color:var(--acc)">Sin Firebase configurado: </span>el cifrado de archivos funciona completamente offline. La autenticación requiere Firebase.
+          </div>
+        </div>
       </div>
 
       <!-- CRYPTO -->
       <div class="sp-panel" id="sp-crypto">
         <div class="card">
           <div class="sg-title">Derivación de clave</div>
-          <div class="s-row"><span class="s-lbl">Función KDF</span><select class="sel" id="selKdf"><option value="sha256">SHA-256</option><option value="sha512">SHA-512</option><option value="pbkdf2">PBKDF2-SHA256</option></select></div>
-          <div class="s-row" id="pbRow" style="display:none"><div><div class="s-lbl">Iteraciones PBKDF2</div></div><select class="sel" id="selPbIter"><option value="100000">100k</option><option value="250000" selected>250k</option><option value="600000">600k</option></select></div>
+          <div class="s-row"><span class="s-lbl">Función KDF</span><select class="sel-input" id="selKdf"><option value="sha256">SHA-256</option><option value="sha512">SHA-512</option><option value="pbkdf2">PBKDF2-SHA256</option></select></div>
+          <div class="s-row" id="pbRow" style="display:none"><div><div class="s-lbl">Iteraciones PBKDF2</div></div><select class="sel-input" id="selPbIter"><option value="100000">100k</option><option value="250000" selected>250k</option><option value="600000">600k</option></select></div>
           <div class="s-row"><div><div class="s-lbl">Añadir magic bytes</div></div><label class="toggle"><input type="checkbox" id="togMagic" checked><div class="t-track"></div><div class="t-thumb"></div></label></div>
         </div>
       </div>
@@ -907,7 +939,7 @@ fetch('https://aegispattern.app/api/v1/encrypt', {
         </div>
         <div class="card">
           <div class="sg-title">Tipografía</div>
-          <div class="s-row"><span class="s-lbl">Fuente monoespaciada</span><select class="sel" id="selFont"><option value="'DM Mono',monospace">DM Mono</option><option value="'Courier New',monospace">Courier New</option></select></div>
+          <div class="s-row"><span class="s-lbl">Fuente monoespaciada</span><select class="sel-input" id="selFont"><option value="'DM Mono',monospace">DM Mono</option><option value="'Courier New',monospace">Courier New</option></select></div>
         </div>
       </div>
 
@@ -947,64 +979,75 @@ fetch('https://aegispattern.app/api/v1/encrypt', {
 
 <script type="module">
 // ═══════════════════════════════════════════
-// FIREBASE — credenciales dispersas y ofuscadas
+// FIREBASE — Carga dinámica con manejo de errores
+// INSTRUCCIONES: Reemplaza los valores de firebaseConfig con los
+// de tu proyecto real en https://console.firebase.google.com
+// Proyecto: champdrop-b74e4 (o el que uses)
 // ═══════════════════════════════════════════
-// Fragmentos cifrados con XOR-32 distribuidos
-const _fa = () => {
-  // Segmento A — rotación de bits
-  const sa = [0x41,0x49,0x7a,0x53,0x79,0x43,0x32,0x78,0x51,0x65,0x77,0x72,0x69,0x64,0x38,0x51,0x69,0x57,0x66,0x46,0x79,0x5f,0x52,0x56,0x64,0x47,0x33,0x6d,0x48,0x74,0x30,0x35,0x51,0x59,0x49,0x64,0x50,0x41];
-  return sa.map(c=>String.fromCharCode(c)).join('');
+
+// ▼▼▼ PEGA AQUÍ TU CONFIG REAL DE FIREBASE ▼▼▼
+const FIREBASE_CONFIG = {
+  apiKey: "TU_API_KEY_AQUI",
+  authDomain: "TU_PROYECTO.firebaseapp.com",
+  databaseURL: "https://TU_PROYECTO-default-rtdb.firebaseio.com",
+  projectId: "TU_PROYECTO",
+  storageBucket: "TU_PROYECTO.firebasestorage.app",
+  messagingSenderId: "TU_SENDER_ID",
+  appId: "TU_APP_ID"
 };
-const _fb = () => {
-  // Segmento B — authDomain base
-  const d1 = btoa('champdrop').replace(/=/g,'');
-  const d2 = '-b74e4.firebaseapp.com';
-  return atob(d1 + 'Yw==') + d2;
-};
-const _fc = () => {
-  // Segmento C — DB URL por partes
-  const p = ['https://','champdrop','-b74e4-default-rtdb','.firebaseio.com'];
-  return p.reduce((a,b)=>a+b,'');
-};
-const _fd = () => {
-  // Segmento D — projectId
-  const arr = [99,104,97,109,112,100,114,111,112,45,98,55,52,101,52];
-  return arr.map(c=>String.fromCharCode(c)).join('');
-};
-const _fe = () => {
-  // Segmento E — appId por chunks
-  const chunks = ['1:25739','034626:web:','da6436afc6','8afdde58271b'];
-  return chunks.join('');
-};
-const _ff = () => {
-  // Segmento F — messagingSenderId
-  return (25000000 + 739034626).toString();
-};
-const _fg = () => {
-  // Segmento G — storageBucket
-  return _fd() + '.firebasestorage.app';
+// ▲▲▲ FIN DE CONFIG ▲▲▲
+
+// Estado de Firebase
+let auth = null, db = null, fbReady = false;
+
+const showFbStatus = (msg, type) => {
+  const bar = document.getElementById('fbStatusBar');
+  if (!bar) return;
+  bar.style.display = 'flex';
+  bar.className = 'fb-status ' + type;
+  document.getElementById('fbStatusMsg').textContent = msg;
+  if (type === 'ok') setTimeout(() => { bar.style.display = 'none'; }, 4000);
 };
 
-// Ensamblado diferido para evitar detección estática
-const _getFirebaseConfig = () => ({
-  apiKey: _fa(),
-  authDomain: _fb(),
-  databaseURL: _fc(),
-  projectId: _fd(),
-  storageBucket: _fg(),
-  messagingSenderId: _ff(),
-  appId: _fe()
-});
+// Intento de inicializar Firebase — falla graciosamente si la config no es válida
+const initFirebase = async () => {
+  // Si la config tiene placeholders, saltamos Firebase
+  if (FIREBASE_CONFIG.apiKey === 'TU_API_KEY_AQUI' || !FIREBASE_CONFIG.apiKey) {
+    showFbStatus('Firebase no configurado — modo offline activo (cifrado funcional)', 'warn');
+    // Modo offline: habilitar botones directamente
+    stopNag();
+    return false;
+  }
+  try {
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+    const { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+            sendEmailVerification, signOut, onAuthStateChanged: _onAuthStateChanged }
+      = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+    const { getDatabase, ref, set, get, update }
+      = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-import { getDatabase, ref, set, get, update } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+    const app = initializeApp(FIREBASE_CONFIG);
+    auth = getAuth(app);
+    db = getDatabase(app);
+    fbReady = true;
 
-// Inicialización diferida — config se ensambla en runtime
-const _cfg = _getFirebaseConfig();
-const fbApp = initializeApp(_cfg);
-const auth = getAuth(fbApp);
-const db = getDatabase(fbApp);
+    // Guardar funciones en window para acceder desde handlers
+    window._fb = { createUserWithEmailAndPassword, signInWithEmailAndPassword,
+                   sendEmailVerification, signOut, ref, set, get, update };
+
+    showFbStatus('Firebase conectado ✓', 'ok');
+
+    // Escuchar cambios de auth
+    _onAuthStateChanged(auth, handleAuthChange);
+
+    return true;
+  } catch (err) {
+    console.error('Firebase init error:', err);
+    showFbStatus('Error Firebase: ' + err.message.slice(0,60), 'err');
+    stopNag(); // Habilitar cifrado offline igual
+    return false;
+  }
+};
 
 // ═══════════════════════════════════════════
 // CHACHA20 RFC 8439
@@ -1083,6 +1126,7 @@ const S = {
   user: null, isPremium: false, isTrial: false, trialEnd: 0,
   algo: 'aes-cbc', pwMode: 'pattern', patternNodes: [], patternDrawing: false,
   textPw: '', autoPw: '', autoPwLen: 32,
+  authMode: 'login',
   charsets: {upper:true,lower:true,digits:true,symbols:true,hex:false,b64:false},
   file: null, nagTime: 15, kyberKP: null,
   apiKey: null,
@@ -1165,6 +1209,7 @@ document.querySelectorAll('.sp-nav-btn').forEach(b=>b.addEventListener('click',(
 // ═══════════════════════════════════════════
 let nagTimer = null;
 const startNag = () => {
+  if (S.isPremium) return;
   const nag = document.getElementById('nagBar');
   document.getElementById('btnEnc').disabled = true;
   document.getElementById('btnDec').disabled = true;
@@ -1203,78 +1248,41 @@ document.getElementById('tabRegister').addEventListener('click',()=>{
   document.getElementById('btnAuth').textContent='REGISTRARSE';
 });
 
-// ─── Send trial code email via EmailJS-style approach using Firebase ───
-const sendTrialEmail = async (email, uid) => {
-  // Generate trial code
-  const trialBytes = crypto.getRandomValues(new Uint8Array(12));
-  const trialCode = 'AEGIS-TRIAL-' + Array.from(trialBytes, b=>b.toString(16).padStart(2,'0')).join('').toUpperCase().slice(0,16);
-  const trialExpiry = Date.now() + 8 * 60 * 60 * 1000; // 8 hours
-
-  try {
-    await set(ref(db, 'trial_codes/'+trialCode), {
-      uid, email, expires: trialExpiry, used: false, createdAt: new Date().toISOString()
-    });
-    await update(ref(db,'users/'+uid), {
-      trialCode, trialExpiry, email, plan: 'free'
-    });
-
-    // Use Firebase Realtime DB trigger / or just store for display
-    // Also try to use emailjs if configured, otherwise fallback to storing
-    const emailBody = `
-¡Bienvenido a AegisPattern v9!
-
-Tienes activada una PRUEBA PREMIUM DE 8 HORAS.
-Tu código de prueba:
-
-  ${trialCode}
-
-Cómo usarlo:
-1. Ve a la pestaña "Cifrado" o "Ajustes > Cuenta"
-2. Pega el código en el campo "Activar licencia"
-3. Haz clic en "Validar licencia"
-
-¡El código expira en 8 horas desde el registro!
-
-— AegisPattern v9
-    `.trim();
-
-    // Store pending email in Firebase (a backend worker would send it)
-    await set(ref(db, 'pending_emails/'+uid), {
-      to: email, subject: '🔑 Tu prueba Premium de 8h — AegisPattern',
-      body: emailBody, trialCode, sentAt: new Date().toISOString()
-    });
-
-    return trialCode;
-  } catch(e) {
-    console.error('Trial email error:', e);
-    return null;
-  }
-};
-
 document.getElementById('btnAuth').addEventListener('click', async()=>{
+  if (!fbReady) { toast('Firebase no configurado — modo offline activo', 'warn'); return; }
   const email = document.getElementById('aEmail').value.trim();
   const pw = document.getElementById('aPw').value;
   if(!email||!pw){toast('Rellena todos los campos','warn');return;}
   try {
+    const { createUserWithEmailAndPassword, signInWithEmailAndPassword,
+            sendEmailVerification, signOut } = window._fb;
     if(S.authMode==='register'){
       const uc = await createUserWithEmailAndPassword(auth,email,pw);
       await sendEmailVerification(uc.user);
-      // Send trial code
-      const code = await sendTrialEmail(email, uc.user.uid);
-      toast('¡Registrado! Verifica tu email. Recibirás un código premium de 8h.','success',6000);
-      if(code){
-        // Show code directly as fallback
-        setTimeout(()=>toast(`🎁 Tu código de prueba: ${code}`, 'success', 12000),1500);
-      }
+      toast('¡Registrado! Verifica tu email.','success',5000);
       await signOut(auth);
     } else {
       const uc = await signInWithEmailAndPassword(auth,email,pw);
       if(!uc.user.emailVerified){toast('Email no verificado. Revisa tu bandeja.','error');await signOut(auth);return;}
     }
-  } catch(err){toast(err.message.replace('Firebase: ',''),'error');}
+  } catch(err){
+    const msg = err.message.replace('Firebase: ','').replace(/\s*\(auth\/[^)]+\)/,'');
+    toast(msg,'error');
+  }
 });
 
-document.getElementById('btnLogout').addEventListener('click',async()=>{await signOut(auth);location.reload();});
+document.getElementById('btnLogout').addEventListener('click',async()=>{
+  if(fbReady && window._fb){ await window._fb.signOut(auth); }
+  S.user = null; S.isPremium = false;
+  document.getElementById('authFields').style.display='block';
+  document.getElementById('authTabs').style.display='flex';
+  document.getElementById('sessionRow').style.display='none';
+  document.getElementById('sDot').classList.remove('on');
+  document.getElementById('planChip').className='plan-chip free';
+  document.getElementById('planChip').textContent='FREE';
+  startNag();
+  refreshSettings();
+});
 
 const unlockAlgos = () => document.querySelectorAll('.algo-item.locked').forEach(e=>e.classList.remove('locked'));
 const lockAlgos = () => {
@@ -1284,21 +1292,24 @@ const lockAlgos = () => {
   });
 };
 
-// Check trial validity
 const checkTrial = async (uid) => {
-  const snap = await get(ref(db,'users/'+uid));
-  if(!snap.exists()) return false;
-  const data = snap.val();
-  if(data.plan==='premium') return 'premium';
-  if(data.trialExpiry && Date.now() < data.trialExpiry) {
-    S.isTrial = true;
-    S.trialEnd = data.trialExpiry;
-    return 'trial';
-  }
-  return false;
+  if (!fbReady || !db) return false;
+  const { ref, get } = window._fb;
+  try {
+    const snap = await get(ref(db,'users/'+uid));
+    if(!snap.exists()) return false;
+    const data = snap.val();
+    if(data.plan==='premium') return 'premium';
+    if(data.trialExpiry && Date.now() < data.trialExpiry) {
+      S.isTrial = true;
+      S.trialEnd = data.trialExpiry;
+      return 'trial';
+    }
+    return false;
+  } catch(e) { return false; }
 };
 
-onAuthStateChanged(auth, async user => {
+const handleAuthChange = async (user) => {
   const dot = document.getElementById('sDot');
   const chip = document.getElementById('planChip');
   if(user && user.emailVerified){
@@ -1325,44 +1336,50 @@ onAuthStateChanged(auth, async user => {
       startNag();
     }
 
-    // Generate API key if not exists
-    await generateApiKey(user.uid);
+    // Generate API key
+    generateApiKeyLocal(user.uid);
     refreshSettings();
-  } else {
-    S.user=null;S.isPremium=false;
-    dot.classList.remove('on');
-    chip.className='plan-chip free';chip.textContent='FREE';
-    startNag();
   }
-});
+};
 
-// ─── Generate / load API key ───
-const generateApiKey = async (uid) => {
-  const snap = await get(ref(db,'api_keys/'+uid));
-  if(snap.exists()){
-    S.apiKey = snap.val().key;
+// ─── API Key — generada localmente (sin backend en GitHub Pages) ───
+const generateApiKeyLocal = (uid) => {
+  const stored = sessionStorage.getItem('aegis_ak_' + uid);
+  if (stored) {
+    S.apiKey = stored;
   } else {
     const bytes = crypto.getRandomValues(new Uint8Array(24));
     S.apiKey = 'ak_' + Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');
-    await set(ref(db,'api_keys/'+uid), {
-      key: S.apiKey, uid, email: S.user.email,
-      created: new Date().toISOString(), requests: 0, limit: 50
-    });
+    sessionStorage.setItem('aegis_ak_' + uid, S.apiKey);
+  }
+  const d = document.getElementById('apiKeyDisplay');
+  if(d) d.value = S.apiKey;
+};
+
+// Si no hay Firebase, generar API key anónima igual
+const generateAnonApiKey = () => {
+  const stored = sessionStorage.getItem('aegis_ak_anon');
+  if (stored) {
+    S.apiKey = stored;
+  } else {
+    const bytes = crypto.getRandomValues(new Uint8Array(24));
+    S.apiKey = 'ak_anon_' + Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('').slice(0,32);
+    sessionStorage.setItem('aegis_ak_anon', S.apiKey);
   }
   const d = document.getElementById('apiKeyDisplay');
   if(d) d.value = S.apiKey;
 };
 
 document.getElementById('btnCopyApiKey').addEventListener('click',()=>{
-  if(!S.apiKey){toast('Inicia sesión primero','warn');return;}
+  if(!S.apiKey){toast('No hay clave generada','warn');return;}
   navigator.clipboard.writeText(S.apiKey).then(()=>toast('API key copiada','success'));
 });
 
-document.getElementById('btnRegenApiKey').addEventListener('click',async()=>{
-  if(!S.user){toast('Inicia sesión primero','warn');return;}
+document.getElementById('btnRegenApiKey').addEventListener('click',()=>{
   const bytes = crypto.getRandomValues(new Uint8Array(24));
   S.apiKey = 'ak_' + Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');
-  await update(ref(db,'api_keys/'+S.user.uid),{key:S.apiKey,created:new Date().toISOString()});
+  const uid = S.user ? S.user.uid : 'anon';
+  sessionStorage.setItem('aegis_ak_' + uid, S.apiKey);
   document.getElementById('apiKeyDisplay').value = S.apiKey;
   toast('Nueva API key generada','success');
 });
@@ -1639,6 +1656,7 @@ const processFile = async mode => {
         if(mode==='encrypt'){const n=crypto.getRandomValues(new Uint8Array(12));const enc=ChaCha20.crypt(raw,keyBytes,n);output=new Uint8Array(n.length+enc.length);output.set(n);output.set(enc,n.length);}
         else{output=ChaCha20.crypt(raw.slice(12),keyBytes,raw.slice(0,12));}
       } else {
+        // AES-CBC (FREE)
         const k16=keyBytes.slice(0,16);
         const k=await crypto.subtle.importKey('raw',k16,{name:'AES-CBC'},false,['encrypt','decrypt']);
         if(mode==='encrypt'){
@@ -1654,8 +1672,7 @@ const processFile = async mode => {
       setProgress('DESCARGANDO...',95);
       const elapsed=(performance.now()-t0).toFixed(1);
       log(`Completado ${elapsed}ms · ${fmtSize(output.length)}`,'ok');
-      const ext=mode==='encrypt'?'.aegis':'';
-      const name=mode==='encrypt'?S.file.name+ext:S.file.name.replace(/\.aegis$/,'');
+      const name=mode==='encrypt'?S.file.name+'.aegis':S.file.name.replace(/\.aegis$/,'');
       const blob=new Blob([output],{type:'application/octet-stream'});
       const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();
       setProgress('¡COMPLETADO!',100);
@@ -1674,11 +1691,18 @@ document.getElementById('btnDec').addEventListener('click',()=>processFile('decr
 // ═══════════════════════════════════════════
 const validateLicense = async key => {
   if(!key){toast('Introduce una clave','warn');return;}
-  if(!S.user){toast('Inicia sesión primero','error');return;}
   const attempts=parseInt(sessionStorage.getItem('lic_a')||'0');
-  if(attempts>=5){toast('Demasiados intentos','error');return;}
+  if(attempts>=5){toast('Demasiados intentos. Recarga la página.','error');return;}
   sessionStorage.setItem('lic_a',attempts+1);
+
+  if(!fbReady || !db){
+    toast('Firebase no configurado — no se puede validar online','warn');
+    return;
+  }
+  if(!S.user){toast('Inicia sesión primero','error');return;}
+
   try {
+    const { ref, get, update, set } = window._fb;
     // Check trial codes
     const trialSnap = await get(ref(db,'trial_codes/'+key));
     if(trialSnap.exists()){
@@ -1711,7 +1735,7 @@ document.getElementById('planChip').addEventListener('click',()=>document.getEle
 document.getElementById('btnSLic').addEventListener('click',()=>validateLicense(document.getElementById('sLicInp').value.trim()));
 
 // ═══════════════════════════════════════════
-// API DEMO
+// API DEMO — 100% local, funciona en GitHub Pages
 // ═══════════════════════════════════════════
 const apiEncryptText = async (text, pw) => {
   const enc = new TextEncoder();
@@ -1744,7 +1768,8 @@ document.getElementById('btnDemoEnc').addEventListener('click', async()=>{
     demoEncrypted=await apiEncryptText(txt,pw);
     document.getElementById('demoResult').textContent='[CIFRADO] '+demoEncrypted;
     document.getElementById('demoResult').style.color='var(--acc)';
-  }catch(e){document.getElementById('demoResult').textContent='Error: '+e.message;}
+    toast('Cifrado OK','success',2000);
+  }catch(e){document.getElementById('demoResult').textContent='Error: '+e.message;document.getElementById('demoResult').style.color='var(--r)';}
 });
 document.getElementById('btnDemoDec').addEventListener('click', async()=>{
   const pw=document.getElementById('demoPw').value;
@@ -1753,7 +1778,8 @@ document.getElementById('btnDemoDec').addEventListener('click', async()=>{
     const dec=await apiDecryptText(demoEncrypted,pw);
     document.getElementById('demoResult').textContent='[DESCIFRADO] '+dec;
     document.getElementById('demoResult').style.color='var(--g)';
-  }catch(e){document.getElementById('demoResult').textContent='Error: '+e.message;}
+    toast('Descifrado OK','success',2000);
+  }catch(e){document.getElementById('demoResult').textContent='Error: '+e.message;document.getElementById('demoResult').style.color='var(--r)';}
 });
 
 // ═══════════════════════════════════════════
@@ -1780,7 +1806,7 @@ document.querySelectorAll('.cswatch').forEach(s=>{
   });
 });
 document.getElementById('selNag').addEventListener('change',function(){S.nagTime=parseInt(this.value);});
-document.getElementById('btnClearLS').addEventListener('click',()=>{localStorage.clear();toast('localStorage borrado','warn');});
+document.getElementById('btnClearLS').addEventListener('click',()=>{localStorage.clear();sessionStorage.clear();toast('Datos locales borrados','warn');});
 document.getElementById('btnReset').addEventListener('click',()=>location.reload());
 
 const refreshSettings = () => {
@@ -1792,6 +1818,12 @@ const refreshSettings = () => {
     document.getElementById('sTrialInfo').textContent=min>0?`${min} min restantes`:'Expirada';
   } else {
     document.getElementById('sTrialInfo').textContent='—';
+  }
+  const fbSt = document.getElementById('fbSettingsStatus');
+  if (fbSt) {
+    fbSt.innerHTML = fbReady
+      ? `<span style="color:var(--g)">✓ Firebase conectado</span><br>Proyecto: ${FIREBASE_CONFIG.projectId}`
+      : `<span style="color:var(--acc)">Sin Firebase configurado</span> — El cifrado de archivos funciona offline. Para autenticación, añade tu config de Firebase en el código.`;
   }
 };
 
@@ -1851,23 +1883,23 @@ window.addEventListener('appinstalled',()=>{
 });
 
 // ═══════════════════════════════════════════
-// SEED & INIT
+// INIT
 // ═══════════════════════════════════════════
-const seedLicenses=async()=>{
-  if(localStorage.getItem('a_v9_seeded'))return;
-  const updates={};
-  for(let i=0;i<8;i++){
-    const b=crypto.getRandomValues(new Uint8Array(20));
-    const k='AEGIS-PRO-'+Array.from(b,x=>x.toString(16).padStart(2,'0')).join('').toUpperCase().slice(0,28);
-    updates['vault_licenses/'+k]={status:'unclaimed',createdAt:new Date().toISOString(),version:'v9'};
-  }
-  try{await update(ref(db),updates);localStorage.setItem('a_v9_seeded','1');}catch(e){}
-};
-
 updateSecInd();
-seedLicenses();
+generateAnonApiKey(); // API key local inmediata
+
+// Intentar inicializar Firebase (falla graciosamente si config es placeholder)
+initFirebase().then(ready => {
+  if (!ready) {
+    // Modo offline: todo funciona excepto login/licencias
+    log('Modo offline activo — cifrado funcional sin autenticación','warn');
+  } else {
+    log('Firebase conectado — autenticación disponible','ok');
+  }
+});
+
 log('AegisPattern v9 listo — Kyber-1024 + ChaCha20 + AES cargados','ok');
-log('PWA disponible · API pública activa · Prueba 8h al registrarse','info');
+log('GitHub Pages · 100% browser · Sin backend requerido','info');
 </script>
 </body>
 </html>
