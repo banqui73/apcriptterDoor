@@ -978,76 +978,65 @@ fetch('https://TU-SERVIDOR.com/api/v1/encrypt', {
 <div class="toast-wrap" id="toasts"></div>
 
 <script type="module">
-// ═══════════════════════════════════════════
-// FIREBASE — Carga dinámica con manejo de errores
-// INSTRUCCIONES: Reemplaza los valores de firebaseConfig con los
-// de tu proyecto real en https://console.firebase.google.com
-// Proyecto: champdrop-b74e4 (o el que uses)
-// ═══════════════════════════════════════════
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
+  import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+           sendEmailVerification, signOut } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+  import { getDatabase, ref, set, get, update } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
 
-// ▼▼▼ PEGA AQUÍ TU CONFIG REAL DE FIREBASE ▼▼▼
-const FIREBASE_CONFIG = {
-  apiKey: "TU_API_KEY_AQUI",
-  authDomain: "TU_PROYECTO.firebaseapp.com",
-  databaseURL: "https://TU_PROYECTO-default-rtdb.firebaseio.com",
-  projectId: "TU_PROYECTO",
-  storageBucket: "TU_PROYECTO.firebasestorage.app",
-  messagingSenderId: "TU_SENDER_ID",
-  appId: "TU_APP_ID"
-};
-// ▲▲▲ FIN DE CONFIG ▲▲▲
+  // Tu configuración de Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyC2xQewrid8QiWfFy_RVdG3mHt05QYIdPA",
+    authDomain: "champdrop-b74e4.firebaseapp.com",
+    databaseURL: "https://champdrop-b74e4-default-rtdb.firebaseio.com",
+    projectId: "champdrop-b74e4",
+    storageBucket: "champdrop-b74e4.firebasestorage.app",
+    messagingSenderId: "25739034626",
+    appId: "1:25739034626:web:da6436afc68afdde58271b",
+    measurementId: "G-5645CYD2KP"
+  };
 
-// Estado de Firebase
-let auth = null, db = null, fbReady = false;
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
 
-const showFbStatus = (msg, type) => {
-  const bar = document.getElementById('fbStatusBar');
-  if (!bar) return;
-  bar.style.display = 'flex';
-  bar.className = 'fb-status ' + type;
-  document.getElementById('fbStatusMsg').textContent = msg;
-  if (type === 'ok') setTimeout(() => { bar.style.display = 'none'; }, 4000);
-};
+  // Estado de Firebase
+  let auth = null, db = null, fbReady = false;
 
-// Intento de inicializar Firebase — falla graciosamente si la config no es válida
-const initFirebase = async () => {
-  // Si la config tiene placeholders, saltamos Firebase
-  if (FIREBASE_CONFIG.apiKey === 'TU_API_KEY_AQUI' || !FIREBASE_CONFIG.apiKey) {
-    showFbStatus('Firebase no configurado — modo offline activo (cifrado funcional)', 'warn');
-    // Modo offline: habilitar botones directamente
-    stopNag();
-    return false;
-  }
-  try {
-    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
-    const { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-            sendEmailVerification, signOut, onAuthStateChanged: _onAuthStateChanged }
-      = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
-    const { getDatabase, ref, set, get, update }
-      = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
+  const showFbStatus = (msg, type) => {
+    const bar = document.getElementById('fbStatusBar');
+    if (!bar) return;
+    bar.style.display = 'flex';
+    bar.className = 'fb-status ' + type;
+    document.getElementById('fbStatusMsg').textContent = msg;
+    if (type === 'ok') setTimeout(() => { bar.style.display = 'none'; }, 4000);
+  };
 
-    const app = initializeApp(FIREBASE_CONFIG);
-    auth = getAuth(app);
-    db = getDatabase(app);
-    fbReady = true;
+  // Intento de inicializar Firebase — falla graciosamente si la config no es válida
+  const initFirebase = async () => {
+    if (firebaseConfig.apiKey === 'TU_API_KEY_AQUI' || !firebaseConfig.apiKey) {
+      showFbStatus('Firebase no configurado — modo offline activo (cifrado funcional)', 'warn');
+      stopNag();
+      return false;
+    }
+    try {
+      auth = getAuth(app);
+      db = getDatabase(app);
+      fbReady = true;
 
-    // Guardar funciones en window para acceder desde handlers
-    window._fb = { createUserWithEmailAndPassword, signInWithEmailAndPassword,
-                   sendEmailVerification, signOut, ref, set, get, update };
+      window._fb = { createUserWithEmailAndPassword, signInWithEmailAndPassword,
+                     sendEmailVerification, signOut, ref, set, get, update };
 
-    showFbStatus('Firebase conectado ✓', 'ok');
-
-    // Escuchar cambios de auth
-    _onAuthStateChanged(auth, handleAuthChange);
-
-    return true;
-  } catch (err) {
-    console.error('Firebase init error:', err);
-    showFbStatus('Error Firebase: ' + err.message.slice(0,60), 'err');
-    stopNag(); // Habilitar cifrado offline igual
-    return false;
-  }
-};
+      showFbStatus('Firebase conectado ✓', 'ok');
+      onAuthStateChanged(auth, handleAuthChange);
+      return true;
+    } catch (err) {
+      console.error('Firebase init error:', err);
+      showFbStatus('Error Firebase: ' + err.message.slice(0,60), 'err');
+      stopNag();
+      return false;
+    }
+  };
 
 // ═══════════════════════════════════════════
 // CHACHA20 RFC 8439
