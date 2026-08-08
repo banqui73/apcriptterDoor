@@ -8,9 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="AegisPattern">
 <meta name="description" content="Suite criptográfica industrial. AES-CBC, AES-GCM, ChaCha20, Kyber-1024. Transferencia P2P E2E cifrada.">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
-<title>AegisPattern v10</title>
+<title>AegisPattern v11</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
 <style>
@@ -185,6 +183,7 @@ body{font-family:var(--mono);background:var(--bg);color:var(--tx);min-height:100
 .k-pname{font-size:.55rem;color:var(--tx3)}
 .k-pval{font-size:.68rem;color:var(--p2);font-weight:600}
 
+/* ── P2P ────────────────────────────────── */
 .p2p-grid{display:flex;flex-direction:column;gap:12px}
 @media(min-width:768px){.p2p-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}}
 .room-display{font-family:var(--mono);font-size:1.8rem;font-weight:700;color:var(--acc);letter-spacing:4px;text-align:center;padding:16px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--rad-sm);margin-bottom:10px;word-break:break-all;}
@@ -192,9 +191,11 @@ body{font-family:var(--mono);background:var(--bg);color:var(--tx);min-height:100
 .peer-status.waiting{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);color:var(--acc);}
 .peer-status.connected{background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2);color:var(--g);}
 .peer-status.error{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);color:var(--r);}
+.peer-status.relay{background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);color:var(--pu);}
 .peer-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .peer-dot.waiting{background:var(--acc);animation:kpulse 1.5s ease-in-out infinite}
 .peer-dot.connected{background:var(--g);box-shadow:0 0 6px var(--g)}
+.peer-dot.relay{background:var(--pu);box-shadow:0 0 6px var(--pu)}
 .peer-dot.error{background:var(--r)}
 .transfer-progress{background:var(--bg);border:1px solid var(--b1);border-radius:var(--rad-sm);padding:14px;margin-bottom:10px;}
 .tp-filename{font-size:.78rem;color:var(--tx);font-weight:500;margin-bottom:3px;word-break:break-all}
@@ -208,8 +209,18 @@ body{font-family:var(--mono);background:var(--bg);color:var(--tx);min-height:100
 .ti-size{color:var(--tx3);font-size:.62rem;margin-right:8px;flex-shrink:0}
 .ti-dl{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);color:var(--g);padding:3px 8px;border-radius:4px;cursor:pointer;font-size:.58rem;font-family:var(--mono);}
 .e2e-badge{display:inline-flex;align-items:center;gap:5px;font-size:.6rem;padding:4px 10px;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.25);color:var(--g);border-radius:20px;margin-bottom:10px;}
+.turn-badge{display:inline-flex;align-items:center;gap:5px;font-size:.6rem;padding:4px 10px;background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.25);color:var(--pu);border-radius:20px;margin-bottom:10px;margin-left:6px;}
 
-/* PLANS */
+/* ── CONNECTIVITY INFO ─────────────────── */
+.conn-info{padding:10px 12px;border-radius:var(--rad-sm);font-size:.65rem;margin-bottom:10px;display:flex;flex-direction:column;gap:4px;}
+.conn-info.direct{background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.2);}
+.conn-info.relay{background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.2);}
+.conn-info.unknown{background:var(--s2);border:1px solid var(--b1);}
+.conn-type{font-weight:600}
+.conn-type.direct{color:var(--g)}
+.conn-type.relay{color:var(--pu)}
+
+/* ── PLANS ────────────────────────────── */
 .plans-grid{display:flex;flex-direction:column;gap:12px}
 @media(min-width:640px){.plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}}
 .plan-card{background:var(--s1);border:1px solid var(--b1);border-radius:16px;padding:20px;position:relative;transition:border-color .2s}
@@ -233,11 +244,9 @@ body{font-family:var(--mono);background:var(--bg);color:var(--tx);min-height:100
 .plan-btn.premium-btn{background:linear-gradient(135deg,#b45309,#f59e0b);color:#0f172a}
 .plan-btn.ultra-btn{background:linear-gradient(135deg,#5b21b6,#a78bfa);color:white}
 .plan-btn:hover{filter:brightness(1.1)}
-
-/* Plan expiry info */
 .expiry-bar{display:none;padding:8px 14px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:var(--rad-sm);font-size:.68rem;color:var(--acc);margin-bottom:10px;text-align:center;}
 
-/* API */
+/* ── API ────────────────────────────────── */
 .api-endpoint{background:var(--bg);border:1px solid var(--b1);border-radius:var(--rad-sm);padding:12px;margin-bottom:10px;font-family:var(--mono);font-size:.7rem;}
 .api-method{display:inline-block;padding:2px 7px;border-radius:3px;font-size:.58rem;font-weight:700;letter-spacing:.5px;margin-bottom:6px;}
 .m-get{background:rgba(52,211,153,.15);color:var(--g);border:1px solid rgba(52,211,153,.3)}
@@ -246,7 +255,7 @@ body{font-family:var(--mono);background:var(--bg);color:var(--tx);min-height:100
 .api-desc{color:var(--tx2);font-size:.68rem;line-height:1.5;margin-bottom:8px}
 .code-block{background:var(--s3);border:1px solid var(--b1);border-radius:6px;padding:10px;font-size:.62rem;color:#a3e635;overflow-x:auto;white-space:pre;line-height:1.6;}
 
-/* SETTINGS */
+/* ── SETTINGS ─────────────────────────── */
 .settings-body{display:flex;flex-direction:column;gap:12px}
 @media(min-width:640px){.settings-body{display:grid;grid-template-columns:160px 1fr;align-items:start}}
 .sp-nav{display:flex;flex-direction:row;gap:5px;overflow-x:auto;padding-bottom:4px}
@@ -269,7 +278,7 @@ body{font-family:var(--mono);background:var(--bg);color:var(--tx);min-height:100
 .toggle input:checked ~ .t-thumb{left:20px}
 .sel-input{background:var(--s2);border:1px solid var(--b1);color:var(--tx);font-family:var(--mono);font-size:.7rem;padding:6px 10px;border-radius:var(--rad-sm);outline:none;cursor:pointer;}
 
-/* MODAL */
+/* ── MODAL ───────────────────────────── */
 .modal-bg{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.88);backdrop-filter:blur(10px);align-items:center;justify-content:center;padding:16px;}
 .modal-bg.open{display:flex}
 .modal-box{background:var(--s1);border:1px solid var(--b2);border-radius:16px;padding:24px;max-width:400px;width:100%;animation:mpop .3s cubic-bezier(.34,1.56,.64,1);}
@@ -280,7 +289,7 @@ body{font-family:var(--mono);background:var(--bg);color:var(--tx);min-height:100
 .lic-inp:focus{border-color:var(--acc)}
 .lic-hint{font-size:.62rem;color:var(--tx3);margin-bottom:12px;text-align:center;line-height:1.5}
 
-/* TOAST */
+/* ── TOAST ───────────────────────────── */
 .toast-wrap{position:fixed;bottom:calc(70px + var(--safe-bottom));right:12px;z-index:300;display:flex;flex-direction:column;gap:6px}
 @media(min-width:768px){.toast-wrap{bottom:20px}}
 .toast{background:var(--s2);border:1px solid var(--b2);border-radius:var(--rad-sm);padding:9px 14px;font-size:.7rem;max-width:280px;display:flex;align-items:center;gap:7px;animation:tslide .25s ease;box-shadow:0 4px 20px rgba(0,0,0,.4);}
@@ -300,8 +309,6 @@ body{font-family:var(--mono);background:var(--bg);color:var(--tx);min-height:100
 
 @media(min-width:768px){
   .crypto-grid{display:grid;grid-template-columns:300px 1fr;gap:16px;align-items:start}
-  .crypto-left{min-width:0}
-  .crypto-right{min-width:0}
 }
 .info-badge{display:inline-flex;align-items:center;gap:5px;font-size:.6rem;padding:3px 9px;background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.2);color:var(--p2);border-radius:4px;margin-bottom:10px;}
 .limit-badge{display:inline-flex;align-items:center;gap:5px;font-size:.6rem;padding:3px 9px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.2);color:var(--r);border-radius:4px;margin-bottom:10px;}
@@ -311,7 +318,6 @@ input[type="file"]{display:none}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
 
-/* CODE GEN admin panel */
 .codegen-panel{background:linear-gradient(135deg,rgba(167,139,250,.04),rgba(14,165,233,.04));border:1px solid rgba(167,139,250,.2);border-radius:var(--rad);padding:16px;margin-top:12px;}
 .code-list{display:flex;flex-direction:column;gap:5px;margin-top:8px;max-height:180px;overflow-y:auto;}
 .code-entry{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--bg);border:1px solid var(--b1);border-radius:var(--rad-sm);font-size:.65rem;}
@@ -328,7 +334,7 @@ input[type="file"]{display:none}
 
 <!-- TOPBAR -->
 <nav class="topbar">
-  <div class="logo">⬡ AEGIS<em>PATTERN</em><sup>v10</sup></div>
+  <div class="logo">⬡ AEGIS<em>PATTERN</em><sup>v11</sup></div>
   <nav class="desk-nav">
     <button class="desk-nav-btn active" data-page="crypto">Cifrado</button>
     <button class="desk-nav-btn" data-page="transfer">Transferir</button>
@@ -367,7 +373,6 @@ input[type="file"]{display:none}
     <div class="crypto-left">
       <div id="fbStatusBar" class="fb-status warn" style="display:none"><span id="fbStatusMsg">Conectando...</span></div>
       <div id="expiryBar" class="expiry-bar"></div>
-      <!-- AUTH -->
       <div class="card">
         <div class="tabs" id="authTabs">
           <button class="tab active" id="tabLogin">Entrar</button>
@@ -384,7 +389,6 @@ input[type="file"]{display:none}
           <button class="session-logout" id="btnLogout">Cerrar sesión</button>
         </div>
       </div>
-      <!-- PW MODE -->
       <div class="card">
         <div class="card-title">Modo de contraseña</div>
         <div class="pw-modes" id="pwModes">
@@ -428,7 +432,6 @@ input[type="file"]{display:none}
           <button class="btn btn-block btn-outline" id="genPw" style="font-size:.68rem;padding:9px">⚡ Generar contraseña</button>
         </div>
       </div>
-      <!-- ALGO -->
       <div class="card">
         <div class="card-title">Algoritmo</div>
         <div class="algo-list" id="algoList">
@@ -439,7 +442,6 @@ input[type="file"]{display:none}
           <div class="algo-item locked" data-algo="quantum" data-req="ultra"><span class="algo-icon">⚛️</span><div class="algo-info"><div class="algo-name">KYBER-1024 Post-Cuántico</div><div class="algo-desc">NIST FIPS 203 · Module-LWE</div></div><span class="algo-tag t-quantum">ULTRA</span></div>
         </div>
       </div>
-      <!-- FILE -->
       <div class="card">
         <div class="card-title">Archivo</div>
         <div class="file-drop" id="fileDrop">
@@ -498,8 +500,11 @@ input[type="file"]{display:none}
 <!-- ═══ PAGE: TRANSFER ═══ -->
 <div class="page" id="page-transfer">
   <div style="font-family:var(--disp);font-size:1.2rem;font-weight:700;margin-bottom:4px">Transferencia P2P Segura</div>
-  <div style="font-size:.72rem;color:var(--tx3);margin-bottom:14px">Cifrado E2E · WebRTC DataChannel · Sin pasar por ningún servidor</div>
-  <div class="e2e-badge">🔐 E2E · AES-GCM 256-bit · Clave efímera por sesión</div>
+  <div style="font-size:.72rem;color:var(--tx3);margin-bottom:10px">Cifrado E2E · WebRTC + TURN Relay · Funciona incluso con CGNAT y NAT simétrico</div>
+  <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
+    <span class="e2e-badge">🔐 E2E · AES-GCM 256-bit · Clave efímera</span>
+    <span class="turn-badge">📡 TURN relay para CGNAT/NAT simétrico</span>
+  </div>
   <div id="transferLoginWarn" style="display:none;padding:10px 14px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:var(--rad-sm);font-size:.72rem;color:var(--acc);margin-bottom:12px">
     ⚠️ Inicia sesión para usar transferencia P2P. El límite FREE es 5 GB por transferencia.
   </div>
@@ -510,6 +515,10 @@ input[type="file"]{display:none}
         <div id="peerStatus" class="peer-status waiting">
           <div class="peer-dot waiting" id="peerDot"></div>
           <span id="peerStatusTxt">Sin conexión — crea una sala o únete</span>
+        </div>
+        <div id="connInfoBox" style="display:none" class="conn-info unknown">
+          <span class="conn-type" id="connTypeLabel">—</span>
+          <span style="color:var(--tx3);font-size:.6rem" id="connTypeDetail">—</span>
         </div>
         <div style="display:flex;gap:8px;margin-bottom:10px">
           <button class="btn btn-sm btn-primary" id="btnCreateRoom" style="flex:1">+ Crear sala</button>
@@ -560,13 +569,14 @@ input[type="file"]{display:none}
         <div class="transfer-list" id="receivedList"></div>
       </div>
       <div class="card">
-        <div class="card-title">Cómo funciona</div>
+        <div class="card-title">Cómo funciona (CGNAT-ready)</div>
         <div style="font-size:.68rem;color:var(--tx2);line-height:1.8">
           <div style="margin-bottom:6px">1️⃣ El <strong style="color:var(--p2)">emisor</strong> crea sala y comparte el código</div>
           <div style="margin-bottom:6px">2️⃣ El <strong style="color:var(--g)">receptor</strong> introduce el código</div>
-          <div style="margin-bottom:6px">3️⃣ Conexión WebRTC directa vía Firebase</div>
-          <div style="margin-bottom:6px">4️⃣ Clave AES-GCM-256 efímera por sesión</div>
-          <div>5️⃣ Datos cifrados P2P, <strong style="color:var(--g)">sin pasar por servidores</strong></div>
+          <div style="margin-bottom:6px">3️⃣ Señalización segura vía Firebase</div>
+          <div style="margin-bottom:6px">4️⃣ Intento conexión directa (STUN)</div>
+          <div style="margin-bottom:6px">5️⃣ Si falla → relay TURN automático <span style="color:var(--pu)">(CGNAT/NAT simétrico)</span></div>
+          <div>6️⃣ Clave AES-GCM-256 efímera por sesión</div>
         </div>
       </div>
     </div>
@@ -576,9 +586,9 @@ input[type="file"]{display:none}
 <!-- ═══ PAGE: API ═══ -->
 <div class="page" id="page-api">
   <div style="font-family:var(--disp);font-size:1.2rem;font-weight:700;margin-bottom:4px">API Pública AegisPattern</div>
-  <div style="font-size:.72rem;color:var(--tx3);margin-bottom:12px">Integra cifrado E2E en tu app. 100% browser · Compatible GitHub Pages.</div>
+  <div style="font-size:.72rem;color:var(--tx3);margin-bottom:12px">Integra cifrado E2E en tu app.</div>
   <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
-    <span class="info-badge" style="margin-left:0">✅ SDK JavaScript · Sin backend · Firebase para límites</span>
+    <span class="info-badge" style="margin-left:0">✅ SDK JavaScript · Sin backend · Compatible GitHub Pages</span>
     <span class="limit-badge">🔒 AES-CBC-128 gratis · Premium/Ultra: todos los algoritmos</span>
   </div>
   <div class="card" style="border-color:rgba(52,211,153,.3)">
@@ -599,12 +609,6 @@ const data = await aegis.decrypt(encrypted, 'miClave');
     </div>
     <div style="font-size:.62rem;color:var(--tx3);margin-top:6px">Límite FREE: 20 req/día · Premium: 1.000/día · Ultra: sin límite</div>
   </div>
-  <div class="api-endpoint">
-    <span class="api-method m-post">POST</span>
-    <div class="api-path">/api/v1/encrypt</div>
-    <div class="api-desc">Cifra datos. AES-CBC-128 (free) · AES-GCM/ChaCha20 (premium) · 4 capas+Kyber (ultra).</div>
-    <div class="code-block">const result = await aegis.encrypt(data, password);</div>
-  </div>
   <div class="card">
     <div class="card-title">Demo en vivo (100% local)</div>
     <div class="field"><label class="label">Texto</label><input class="inp" id="demoTxt" value="Hola mundo desde AegisPattern"></div>
@@ -623,20 +627,16 @@ const data = await aegis.decrypt(encrypted, 'miClave');
 <div class="page" id="page-plans">
   <div style="font-family:var(--disp);font-size:1.3rem;font-weight:900;text-align:center;margin-bottom:6px">Elige tu plan</div>
   <div style="font-size:.75rem;color:var(--tx3);text-align:center;margin-bottom:20px">Todos los planes cifran en el navegador. Sin servidores para tus archivos.</div>
-
-  <!-- PLANS GRID -->
   <div class="plans-grid">
-    <!-- FREE -->
     <div class="plan-card">
       <div class="plan-name" style="color:var(--tx3)">FREE</div>
       <div class="plan-price" style="color:var(--tx)">0€ <span>/mes</span></div>
       <div class="plan-period">Para siempre gratis</div>
       <ul class="plan-features">
         <li>AES-CBC 128-bit cifrado</li>
-        <li>Archivos hasta 2 MB (cifrado)</li>
+        <li>Archivos hasta 2 MB</li>
         <li>Transferencia P2P hasta 5 GB</li>
         <li>API: 20 peticiones/día</li>
-        <li>1 dispositivo activo</li>
         <li class="off">AES-GCM 256 + ChaCha20</li>
         <li class="off">MULTI-API 4 capas</li>
         <li class="off">Kyber-1024 post-cuántico</li>
@@ -644,7 +644,6 @@ const data = await aegis.decrypt(encrypted, 'miClave');
       </ul>
       <button class="plan-btn free-btn" disabled>Plan actual</button>
     </div>
-    <!-- PREMIUM -->
     <div class="plan-card popular">
       <div class="plan-badge pb-popular">⭐ MÁS POPULAR</div>
       <div class="plan-name" style="color:var(--acc)">PREMIUM</div>
@@ -653,18 +652,16 @@ const data = await aegis.decrypt(encrypted, 'miClave');
       <ul class="plan-features">
         <li>Todo lo de FREE</li>
         <li>AES-GCM 256-bit + ChaCha20</li>
-        <li>Archivos sin límite (cifrado)</li>
+        <li>Archivos sin límite</li>
         <li>Transferencia P2P hasta 49.99 GB</li>
         <li>API: 1.000 peticiones/día</li>
         <li>Sin espera freemium</li>
         <li>3 dispositivos activos</li>
-        <li>Soporte prioritario</li>
         <li class="off">MULTI-API 4 capas</li>
         <li class="off">Kyber-1024 post-cuántico</li>
       </ul>
       <button class="plan-btn premium-btn" id="btnGetPremium">Activar código →</button>
     </div>
-    <!-- ULTRA -->
     <div class="plan-card ultra">
       <div class="plan-badge pb-ultra">⚛️ ULTRA</div>
       <div class="plan-name" style="color:var(--pu)">ULTRA</div>
@@ -672,25 +669,22 @@ const data = await aegis.decrypt(encrypted, 'miClave');
       <div class="plan-period">o 99.99€/año · para equipos y devs</div>
       <ul class="plan-features">
         <li>Todo lo de PREMIUM</li>
-        <li>MULTI-API 4 capas (máx seguridad)</li>
+        <li>MULTI-API 4 capas</li>
         <li>Kyber-1024 post-cuántico</li>
         <li>API: Sin límite</li>
-        <li>SDK privado con soporte</li>
+        <li>SDK privado</li>
         <li>10 dispositivos activos</li>
-        <li>Dashboard de uso API</li>
+        <li>Dashboard API</li>
         <li>SLA 99.9% señalización P2P</li>
-        <li>Soporte 24/7 dedicado</li>
+        <li>Soporte 24/7</li>
       </ul>
       <button class="plan-btn ultra-btn" id="btnGetUltra">Activar código →</button>
     </div>
   </div>
-
-  <!-- LICENSE ACTIVATION -->
   <div class="card" style="margin-top:16px">
     <div class="card-title">Activar código</div>
     <div style="font-size:.65rem;color:var(--tx3);margin-bottom:10px;line-height:1.6">
-      Formatos: <span style="color:var(--acc)">AEGIS-PRO-XXXXXX</span> (Premium) · <span style="color:var(--pu)">AEGIS-ULT-XXXXXX</span> (Ultra)<br>
-      Los códigos tienen fecha de expiración — al caducar el plan vuelve a FREE automáticamente.
+      Formatos: <span style="color:var(--acc)">AEGIS-PRO-XXXXXX</span> · <span style="color:var(--pu)">AEGIS-ULT-XXXXXX</span>
     </div>
     <div class="field"><input type="text" class="inp" id="plansLicInp" placeholder="AEGIS-PRO-XXXXXX  ó  AEGIS-ULT-XXXXXX" style="letter-spacing:.5px;color:var(--p2)"></div>
     <button class="btn btn-block btn-outline" id="btnPlansValidLic">✓ Validar y activar</button>
@@ -714,7 +708,7 @@ const data = await aegis.decrypt(encrypted, 'miClave');
         <div class="card">
           <div class="sg-title">Control de acceso</div>
           <div class="s-row"><div><div class="s-lbl">Anti-debugging</div><div class="s-sub">Detecta DevTools y borra secretos</div></div><label class="toggle"><input type="checkbox" id="togAD" checked><div class="t-track"></div><div class="t-thumb"></div></label></div>
-          <div class="s-row"><div><div class="s-lbl">Borrar patrón tras uso</div><div class="s-sub">Limpia automáticamente</div></div><label class="toggle"><input type="checkbox" id="togAC" checked><div class="t-track"></div><div class="t-thumb"></div></label></div>
+          <div class="s-row"><div><div class="s-lbl">Borrar patrón tras uso</div></div><label class="toggle"><input type="checkbox" id="togAC" checked><div class="t-track"></div><div class="t-thumb"></div></label></div>
           <div class="s-row"><div><div class="s-lbl">Bloquear menú contextual</div></div><label class="toggle"><input type="checkbox" id="togCM" checked><div class="t-track"></div><div class="t-thumb"></div></label></div>
           <div class="s-row"><div><div class="s-lbl">Tiempo espera freemium</div></div><select class="sel-input" id="selNag"><option value="10">10s</option><option value="15" selected>15s</option><option value="30">30s</option></select></div>
         </div>
@@ -771,7 +765,6 @@ const data = await aegis.decrypt(encrypted, 'miClave');
           <button class="btn btn-block btn-outline" id="btnReset">↺ Restaurar por defecto</button>
         </div>
       </div>
-      <!-- ADMIN PANEL -->
       <div class="sp-panel" id="sp-admin">
         <div class="card" id="adminLockCard">
           <div class="sg-title">Panel de administración</div>
@@ -782,31 +775,25 @@ const data = await aegis.decrypt(encrypted, 'miClave');
         <div id="adminPanel" style="display:none">
           <div class="card">
             <div class="sg-title">Generar códigos</div>
-            <div id="poolStatus" class="pool-bar ok">Cargando estado del pool...</div>
+            <div id="poolStatus" class="pool-bar ok">Cargando...</div>
             <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
               <select class="sel-input" id="codeType" style="flex:1">
                 <option value="premium-30">PREMIUM — 30 días</option>
-                <option value="premium-mixed">PREMIUM — repartir 30 días / -0day</option>
                 <option value="ultra-30">ULTRA — 30 días</option>
-                <option value="ultra-mixed">ULTRA — repartir 30 días / -0day</option>
-                <option value="premium-forever">PREMIUM — -0day infinito</option>
-                <option value="ultra-forever">ULTRA — -0day infinito</option>
+                <option value="premium-forever">PREMIUM — infinito</option>
+                <option value="ultra-forever">ULTRA — infinito</option>
               </select>
               <select class="sel-input" id="codeQty">
-                <option value="1">× 1</option>
-                <option value="3">× 3</option>
-                <option value="5">× 5</option>
-                <option value="10">× 10</option>
-                <option value="25">× 25</option>
-                <option value="50">× 50</option>
+                <option value="1">× 1</option><option value="3">× 3</option><option value="5">× 5</option>
+                <option value="10">× 10</option><option value="25">× 25</option><option value="50">× 50</option>
               </select>
               <button class="btn btn-sm btn-primary" id="btnGenCodes">Generar</button>
             </div>
             <div id="codeList" class="code-list"></div>
           </div>
           <div class="card">
-            <div class="sg-title">Mantenimiento del pool</div>
-            <button class="btn btn-block btn-danger" id="btnPurgeExpired" style="margin-bottom:7px">🗑 Purgar códigos expirados</button>
+            <div class="sg-title">Mantenimiento</div>
+            <button class="btn btn-block btn-danger" id="btnPurgeExpired" style="margin-bottom:7px">🗑 Purgar expirados</button>
             <div id="purgeResult" style="font-size:.65rem;color:var(--tx3);margin-top:6px"></div>
           </div>
         </div>
@@ -815,14 +802,12 @@ const data = await aegis.decrypt(encrypted, 'miClave');
   </div>
 </div>
 
-<!-- MODAL PREMIUM -->
+<!-- MODAL -->
 <div class="modal-bg" id="premModal">
   <div class="modal-box">
     <div class="modal-title">🔓 Activar plan</div>
-    <div class="modal-sub">Introduce tu código de activación. Los códigos tienen fecha de expiración — al caducar el plan vuelve a FREE.</div>
-    <div class="lic-hint">
-      <span style="color:var(--acc)">AEGIS-PRO-XXXXXX</span> · <span style="color:var(--pu)">AEGIS-ULT-XXXXXX</span>
-    </div>
+    <div class="modal-sub">Introduce tu código de activación.</div>
+    <div class="lic-hint"><span style="color:var(--acc)">AEGIS-PRO-XXXXXX</span> · <span style="color:var(--pu)">AEGIS-ULT-XXXXXX</span></div>
     <input type="text" class="lic-inp" id="licInp" placeholder="Introduce tu código...">
     <button class="btn btn-block" style="background:linear-gradient(135deg,#b45309,#f59e0b);color:#0f172a;font-weight:700;padding:12px;font-family:var(--mono);border:none;border-radius:var(--rad-sm);cursor:pointer;font-size:.8rem;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px" id="btnValidLic">Validar</button>
     <button class="btn btn-block btn-outline" id="btnCloseModal">Cancelar</button>
@@ -837,7 +822,7 @@ import { getAnalytics }    from "https://www.gstatic.com/firebasejs/12.14.0/fire
 import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword,
          sendEmailVerification, signOut }
                            from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
-import { getDatabase, ref, set, get, update, onValue, remove, push, query, orderByChild, equalTo, runTransaction }
+import { getDatabase, ref, set, get, update, onValue, remove, push, runTransaction, off }
                            from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
 
 const firebaseConfig = {
@@ -855,139 +840,91 @@ let auth = null, db = null, fbReady = false;
 const app = initializeApp(firebaseConfig);
 try { getAnalytics(app); } catch(e) {}
 
-// ─── PLAN PERMISSIONS ───────────────────────────────────────
-const PLAN_ALGOS = {
-  free:    ['aes-cbc'],
-  premium: ['aes-cbc','aes-gcm','chacha'],
-  ultra:   ['aes-cbc','aes-gcm','chacha','multi-api','quantum'],
-};
+// ══════════════════════════════════════════════════════
+// CONSTANTES Y PLANES
+// ══════════════════════════════════════════════════════
+const PLAN_ALGOS      = { free:['aes-cbc'], premium:['aes-cbc','aes-gcm','chacha'], ultra:['aes-cbc','aes-gcm','chacha','multi-api','quantum'] };
 const PLAN_FILE_LIMIT = { free: 2*1024*1024, premium: Infinity, ultra: Infinity };
 const PLAN_P2P_LIMIT  = { free: 5*1024*1024*1024, premium: 49.99*1024*1024*1024, ultra: 49.99*1024*1024*1024 };
 const PLAN_API_LIMIT  = { free: 20, premium: 1000, ultra: Infinity };
-
-// ─── CODE AUTO-GENERATION CONFIG ────────────────────────────
-// Códigos que se generan al inicio si el vault está vacío
-const INIT_CODES_COUNT     = 10;
-// Códigos que se generan por cada usuario nuevo registrado
-const NEW_USER_CODES_COUNT = 5;
-// Sin límite de pool — se pueden tener tantos como sea necesario
-
-const CODE_CONFIGS = {
-  'premium-30':  { prefix:'AEGIS-PRO',tier:'premium', dur:30*24*60*60*1000,   label:'30 días Premium' },
-  'ultra-30':    { prefix:'AEGIS-ULT',tier:'ultra',   dur:30*24*60*60*1000,   label:'30 días Ultra'   },
-};
-
-// Códigos permanentes (sin expiración) y opciones "-0day infinito"
-CODE_CONFIGS['ultra-forever'] = { prefix:'AEGIS-ULT', tier:'ultra', dur: null, label: 'Ultra -0day infinito' };
-CODE_CONFIGS['premium-forever'] = { prefix:'AEGIS-PRO', tier:'premium', dur: null, label: 'Premium -0day infinito' };
-
-const CODE_MIXES = {
-  'premium-mixed': ['premium-30', 'premium-forever'],
-  'ultra-mixed': ['ultra-30', 'ultra-forever'],
-};
-
+const DAY_MS          = 24*60*60*1000;
 const ACTIVATION_CODES_ROOT = 'vault_licenses';
-const DAY_MS = 24*60*60*1000;
 const CODE_FOLDER = { days30:'30_dias', forever:'siempre' };
 
-const getLicenseBucket = cfg => {
-  if(!cfg || !['premium','ultra'].includes(cfg.tier)) return null;
-  if(cfg.dur == null) return CODE_FOLDER.forever;
-  if(cfg.dur === 30*DAY_MS) return CODE_FOLDER.days30;
-  return `${Math.ceil(cfg.dur/DAY_MS)}_dias`;
-};
-
-const licensePathForConfig = (code, cfg) => {
-  const bucket = getLicenseBucket(cfg);
-  return bucket ? `${ACTIVATION_CODES_ROOT}/${cfg.tier}/${bucket}/${code}` : `${ACTIVATION_CODES_ROOT}/${code}`;
-};
-
-const licenseCandidatePaths = key => [
-  `${ACTIVATION_CODES_ROOT}/premium/${CODE_FOLDER.days30}/${key}`,
-  `${ACTIVATION_CODES_ROOT}/premium/${CODE_FOLDER.forever}/${key}`,
-  `${ACTIVATION_CODES_ROOT}/ultra/${CODE_FOLDER.days30}/${key}`,
-  `${ACTIVATION_CODES_ROOT}/ultra/${CODE_FOLDER.forever}/${key}`,
-  `${ACTIVATION_CODES_ROOT}/${key}`,
+// ══════════════════════════════════════════════════════
+// ICE SERVERS — STUN + múltiples TURN públicos gratuitos
+// Esto es lo que soluciona CGNAT y NAT simétrico.
+// Los TURN de OpenRelay son 100% gratuitos y sin límite.
+// ══════════════════════════════════════════════════════
+const ICE_SERVERS = [
+  // STUN — conexión directa (misma red / NAT simple)
+  { urls: 'stun:stun.l.google.com:19302' },
+  { urls: 'stun:stun1.l.google.com:19302' },
+  { urls: 'stun:stun.cloudflare.com:3478' },
+  // TURN OpenRelay — relay gratuito, funciona con CGNAT
+  {
+    urls: 'turn:openrelay.metered.ca:80',
+    username: 'openrelayproject',
+    credential: 'openrelayproject'
+  },
+  {
+    urls: 'turn:openrelay.metered.ca:443',
+    username: 'openrelayproject',
+    credential: 'openrelayproject'
+  },
+  {
+    urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+    username: 'openrelayproject',
+    credential: 'openrelayproject'
+  },
+  // TURN Metered (backup)
+  {
+    urls: 'turn:a.relay.metered.ca:80',
+    username: 'e37b6cd82a2c22c7ae4cde86',
+    credential: 'uqpTsNpYFXjbHFaA'
+  },
+  {
+    urls: 'turn:a.relay.metered.ca:80?transport=tcp',
+    username: 'e37b6cd82a2c22c7ae4cde86',
+    credential: 'uqpTsNpYFXjbHFaA'
+  },
+  {
+    urls: 'turn:a.relay.metered.ca:443',
+    username: 'e37b6cd82a2c22c7ae4cde86',
+    credential: 'uqpTsNpYFXjbHFaA'
+  },
+  {
+    urls: 'turn:a.relay.metered.ca:443?transport=tcp',
+    username: 'e37b6cd82a2c22c7ae4cde86',
+    credential: 'uqpTsNpYFXjbHFaA'
+  },
 ];
 
-const findLicenseSnap = async key => {
-  for(const path of licenseCandidatePaths(key)){
-    const snap = await get(ref(db, path));
-    if(snap.exists()) return { snap, path };
-  }
-  return null;
-};
-
-const walkLicenseSnap = (snap, cb, basePath = ACTIVATION_CODES_ROOT) => {
-  if(!snap.exists()) return;
-  snap.forEach(child => {
-    const v = child.val();
-    const childPath = `${basePath}/${child.key}`;
-    if(v && typeof v === 'object' && ('tier' in v || 'status' in v || 'planDuration' in v)){
-      cb(child.key, v, childPath);
-    } else {
-      walkLicenseSnap(child, cb, childPath);
-    }
-  });
-};
-
-const getCodePoolStats = snap => {
-  const stats = {
-    'premium-30': 0,
-    'premium-forever': 0,
-    'ultra-30': 0,
-    'ultra-forever': 0,
-  };
-  walkLicenseSnap(snap, (code, v) => {
-    if(v.status !== 'unclaimed') return;
-    if(!['premium','ultra'].includes(v.tier)) return;
-    const key = v.planDuration == null ? `${v.tier}-forever` : `${v.tier}-${Math.ceil(v.planDuration/DAY_MS)}`;
-    if(key in stats) stats[key]++;
-  });
-  return stats;
-};
-
-const showFbStatus = (msg, type) => {
-  const bar = document.getElementById('fbStatusBar');
-  if (!bar) return;
-  bar.style.display = 'flex';
-  bar.className = 'fb-status ' + type;
-  document.getElementById('fbStatusMsg').textContent = msg;
-  if (type === 'ok') setTimeout(() => bar.style.display = 'none', 3000);
-};
-
-// ═══════════════════════════════════════════
-// CHACHA20
-// ═══════════════════════════════════════════
+// ══════════════════════════════════════════════════════
+// CHACHA20 (implementación pura JS)
+// ══════════════════════════════════════════════════════
 const ChaCha20 = {
   qr(x,a,b,c,d){x[a]=(x[a]+x[b])|0;x[d]^=x[a];x[d]=(x[d]<<16)|(x[d]>>>16);x[c]=(x[c]+x[d])|0;x[b]^=x[c];x[b]=(x[b]<<12)|(x[b]>>>12);x[a]=(x[a]+x[b])|0;x[d]^=x[a];x[d]=(x[d]<<8)|(x[d]>>>8);x[c]=(x[c]+x[d])|0;x[b]^=x[c];x[b]=(x[b]<<7)|(x[b]>>>7);},
   block(key,nonce,ctr){const s=new Int32Array(16);s[0]=0x61707865;s[1]=0x3320646e;s[2]=0x79622d32;s[3]=0x6b206574;for(let i=0;i<8;i++)s[4+i]=key[i*4]|(key[i*4+1]<<8)|(key[i*4+2]<<16)|(key[i*4+3]<<24);s[12]=ctr;for(let i=0;i<3;i++)s[13+i]=nonce[i*4]|(nonce[i*4+1]<<8)|(nonce[i*4+2]<<16)|(nonce[i*4+3]<<24);const w=new Int32Array(s);for(let i=0;i<10;i++){this.qr(w,0,4,8,12);this.qr(w,1,5,9,13);this.qr(w,2,6,10,14);this.qr(w,3,7,11,15);this.qr(w,0,5,10,15);this.qr(w,1,6,11,12);this.qr(w,2,7,8,13);this.qr(w,3,4,9,14);}const out=new Uint8Array(64);for(let i=0;i<16;i++){const v=(w[i]+s[i])|0;out[i*4]=v&0xff;out[i*4+1]=(v>>>8)&0xff;out[i*4+2]=(v>>>16)&0xff;out[i*4+3]=(v>>>24)&0xff;}return out;},
   crypt(data,key,nonce){const out=new Uint8Array(data.length);for(let i=0,blk=1;i<data.length;i+=64,blk++){const ks=this.block(key,nonce,blk);for(let j=0;j<64&&(i+j)<data.length;j++)out[i+j]=data[i+j]^ks[j];}return out;}
 };
 
-// ═══════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 // STATE
-// ═══════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 const S = {
-  user: null,
-  plan: 'free',
-  planExpiry: 0,
-  algo: 'aes-cbc',
-  pwMode: 'pattern', patternNodes: [], patternDrawing: false,
+  user: null, plan: 'free', planExpiry: 0,
+  algo: 'aes-cbc', pwMode: 'pattern',
+  patternNodes: [], patternDrawing: false,
   textPw: '', autoPw: '', autoPwLen: 32, authMode: 'login',
   charsets: {upper:true,lower:true,digits:true,symbols:true,hex:false,b64:false},
-  file: null, nagTime: 15, apiKey: null,
-  adminUnlocked: false,
+  file: null, nagTime: 15, apiKey: null, adminUnlocked: false,
   cfg: {antiDebug:true,autoClear:true,ctxMenu:true,kdf:'sha256',pbIter:250000,magic:true,verbose:true}
 };
 
-const isPlanActive  = () => S.plan !== 'free';
-const isPremiumPlus = () => ['premium','ultra'].includes(S.plan);
-const isUltra       = () => S.plan === 'ultra';
-
-// ═══════════════════════════════════════════
-// TOAST / LOG
-// ═══════════════════════════════════════════
+// ══════════════════════════════════════════════════════
+// UTILS: TOAST / LOG
+// ══════════════════════════════════════════════════════
 const toast = (msg, type='info', dur=3200) => {
   const icons = {info:'ℹ️',success:'✅',error:'❌',warn:'⚠️'};
   const el = document.createElement('div');
@@ -1005,257 +942,18 @@ const log = (msg, type='info') => {
   el.innerHTML = `<span class="log-ts">[${ts}]</span><span class="log-${type}">${msg}</span>`;
   p.appendChild(el); p.scrollTop = p.scrollHeight;
 };
-
-// ═══════════════════════════════════════════
-// AUTO CODE GENERATION HELPERS
-// ═══════════════════════════════════════════
-
-/**
- * Genera N códigos de un tipo dado y los guarda en Firebase.
- * @param {number} count - Cantidad de códigos a generar
- * @param {string} type  - Tipo de código (clave de CODE_CONFIGS), por defecto 'premium-30'
- * @param {string} [createdBy] - UID del usuario que disparó la generación (opcional)
- * @returns {Promise<string[]>} - Array de códigos generados
- */
-const generateCodesIntoVault = async (count, type = 'premium-30', createdBy = 'system') => {
-  if(!fbReady || !db) return [];
-  if(CODE_MIXES[type]){
-    const generated = [];
-    for(let i = 0; i < count; i++){
-      const nextType = CODE_MIXES[type][i % CODE_MIXES[type].length];
-      const codes = await generateCodesIntoVault(1, nextType, createdBy);
-      generated.push(...codes);
-    }
-    return generated;
-  }
-  const cfg = CODE_CONFIGS[type];
-  if(!cfg) return [];
-
-  const now = Date.now();
-  const generated = [];
-
-  for(let i = 0; i < count; i++){
-    const b      = crypto.getRandomValues(new Uint8Array(4));
-    const suffix = Array.from(b, x => x.toString(16).padStart(2,'0')).join('').toUpperCase();
-    const code   = `${cfg.prefix}-${suffix}`;
-    // El código expira para canjear: si cfg.dur es null -> sin expiración
-    const expiresAt = (cfg.dur == null) ? null : (now + cfg.dur);
-
-    await set(ref(db, licensePathForConfig(code, cfg)), {
-      tier:         cfg.tier,
-      status:       'unclaimed',
-      expiresAt:    expiresAt,
-      planDuration: (cfg.dur == null) ? null : cfg.dur,
-      createdAt:    now,
-      createdBy:    createdBy,
-      label:        cfg.label,
-    });
-    generated.push(code);
-  }
-  return generated;
+const showFbStatus = (msg, type) => {
+  const bar = document.getElementById('fbStatusBar');
+  if (!bar) return;
+  bar.style.display = 'flex'; bar.className = 'fb-status ' + type;
+  document.getElementById('fbStatusMsg').textContent = msg;
+  if (type === 'ok') setTimeout(() => bar.style.display = 'none', 3000);
 };
+const fmtSize = b => b<1024?b+'B':b<1048576?(b/1024).toFixed(1)+'KB':b<1073741824?(b/1048576).toFixed(2)+'MB':(b/1073741824).toFixed(2)+'GB';
 
-/**
- * Comprueba si vault_licenses está vacío y, si es así, genera INIT_CODES_COUNT códigos.
- * Se llama una sola vez al inicio tras conectar Firebase.
- */
-const autoInitVaultIfEmpty = async () => {
-  if(!fbReady || !db) return;
-  try {
-    const snap = await get(ref(db, ACTIVATION_CODES_ROOT));
-    let hasAnyCode = false;
-    walkLicenseSnap(snap, () => { hasAnyCode = true; });
-    if(hasAnyCode) return; // ya hay códigos, no hacer nada
-
-    log(`Vault vacío — generando ${INIT_CODES_COUNT} códigos iniciales repartidos automáticamente...`, 'warn');
-    const premiumCodes = await generateCodesIntoVault(Math.floor(INIT_CODES_COUNT/2), 'premium-mixed', 'system-init');
-    const ultraCodes = await generateCodesIntoVault(Math.ceil(INIT_CODES_COUNT/2), 'ultra-mixed', 'system-init');
-    const total = premiumCodes.length + ultraCodes.length;
-    log(`✅ ${total} códigos iniciales repartidos en premium/ultra y 30_dias/siempre`, 'ok');
-    // No mostramos toast al usuario final para no delatar; solo en el log interno
-  } catch(e) {
-    log('Error autoInit vault: ' + e.message, 'err');
-  }
-};
-
-/**
- * Asegura que existan códigos repartidos entre 30 días y -0day infinito.
- */
-const ensureCodePoolsExist = async () => {
-  if(!fbReady || !db) return;
-  try {
-    const snap = await get(ref(db, ACTIVATION_CODES_ROOT));
-    const stats = getCodePoolStats(snap);
-
-    const ops = [];
-    if(stats['premium-30'] === 0){
-      log('No existen Premium 30 días — generando 5 códigos...','warn');
-      ops.push(generateCodesIntoVault(5, 'premium-30', 'system-init'));
-    }
-    if(stats['premium-forever'] === 0){
-      log('No existen Premium -0day infinito — generando 10 códigos...','warn');
-      ops.push(generateCodesIntoVault(5, 'premium-forever', 'system-init'));
-    }
-    if(stats['ultra-30'] === 0){
-      log('No existen Ultra 30 días — generando 5 códigos...','warn');
-      ops.push(generateCodesIntoVault(5, 'ultra-30', 'system-init'));
-    }
-    if(stats['ultra-forever'] === 0){
-      log('No existen Ultra -0day infinito — generando 5 códigos...','warn');
-      ops.push(generateCodesIntoVault(5, 'ultra-forever', 'system-init'));
-    }
-
-    if(ops.length>0){
-      const res = await Promise.all(ops);
-      const total = res.reduce((s,a)=>s+(a?.length||0),0);
-      log(`✅ Códigos repartidos creados: ${total}`,'ok');
-    } else {
-      log('Códigos 30 días e infinitos ya presentes — sin acción','info');
-    }
-  } catch(e){
-    log('Error ensureCodePoolsExist: '+e.message,'err');
-  }
-};
-
-/**
- * Genera NEW_USER_CODES_COUNT códigos para un usuario recién registrado.
- * Se llama cuando el usuario existe en Auth pero NO tiene datos en /users/{uid}.
- */
-const generateCodesForNewUser = async (uid, email) => {
-  if(!fbReady || !db) return;
-  try {
-    log(`Nuevo usuario detectado (${email}) — generando ${NEW_USER_CODES_COUNT} códigos...`, 'info');
-    const premiumCount = Math.floor(NEW_USER_CODES_COUNT/2);
-    const ultraCount = NEW_USER_CODES_COUNT - premiumCount;
-    const premiumCodes = await generateCodesIntoVault(premiumCount, 'premium-mixed', uid);
-    const ultraCodes = await generateCodesIntoVault(ultraCount, 'ultra-mixed', uid);
-    log(`✅ ${premiumCodes.length + ultraCodes.length} códigos generados por nuevo usuario ${email} (Premium ${premiumCodes.length} · Ultra ${ultraCodes.length})`, 'ok');
-  } catch(e) {
-    log('Error generando códigos para nuevo usuario: ' + e.message, 'err');
-  }
-};
-
-const US_TIME_APIS = [
-  {
-    url: 'https://timeapi.io/api/time/current/zone?timeZone=America/New_York',
-    parse: data => ({
-      date: data.year ? `${data.year}-${String(data.month).padStart(2,'0')}-${String(data.day).padStart(2,'0')}` : data.date,
-      hour: Number(data.hour),
-      minute: Number(data.minute),
-    }),
-  },
-  {
-    url: 'https://worldtimeapi.org/api/timezone/America/New_York',
-    parse: data => {
-      const m = String(data.datetime||'').match(/^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})/);
-      return m ? { date: m[1], hour: Number(m[2]), minute: Number(m[3]) } : null;
-    },
-  },
-];
-const AUTO_CODE_LOW_WATERMARK = 10;
-let autoCodeTimer = null;
-let autoCodeRunning = false;
-
-const getUSTime = async () => {
-  for(const api of US_TIME_APIS){
-    try {
-      const res = await fetch(api.url, { cache:'no-store' });
-      if(!res.ok) throw new Error('HTTP '+res.status);
-      const data = await res.json();
-      const parsed = api.parse(data);
-      if(parsed && Number.isInteger(parsed.hour) && Number.isInteger(parsed.minute)){
-        const q = Math.floor(parsed.minute/15)*15;
-        const safeDate = String(parsed.date).replace(/[.#$/\[\]]/g,'-');
-        return {
-          ...parsed,
-          date: safeDate,
-          quarterMinute: q,
-          isQuarter: parsed.minute % 15 === 0,
-          slotKey: `${safeDate}-${String(parsed.hour).padStart(2,'0')}:${String(q).padStart(2,'0')}`,
-          source: api.url,
-        };
-      }
-    } catch(e) {
-      log('Hora USA no disponible en API: '+e.message, 'warn');
-    }
-  }
-  return null;
-};
-
-const getLowPlanCodeNeeds = async () => {
-  const snap = await get(ref(db, ACTIVATION_CODES_ROOT));
-  const stats = getCodePoolStats(snap);
-  const needs = Object.entries(stats)
-    .filter(([key,count]) => count < AUTO_CODE_LOW_WATERMARK)
-    .map(([key,count]) => ({ key, count, missing: AUTO_CODE_LOW_WATERMARK-count }));
-  return { stats, needs };
-};
-
-const totalPlanCodes = (stats, tier) => (stats[`${tier}-30`]||0) + (stats[`${tier}-forever`]||0);
-const chooseAutoCodeType = (stats, needs=[]) => {
-  const ultraNeeds = needs.filter(n=>n.key.startsWith('ultra')).reduce((s,n)=>s+n.missing,0);
-  const premiumNeeds = needs.filter(n=>n.key.startsWith('premium')).reduce((s,n)=>s+n.missing,0);
-  const ultraTotal = totalPlanCodes(stats, 'ultra');
-  const premiumTotal = totalPlanCodes(stats, 'premium');
-  if(ultraNeeds > premiumNeeds) return 'ultra-mixed';
-  if(premiumNeeds > ultraNeeds) return 'premium-mixed';
-  if(ultraTotal < premiumTotal) return 'ultra-mixed';
-  if(premiumTotal < ultraTotal) return 'premium-mixed';
-  return 'ultra-mixed';
-};
-
-const generateConnectedUserPlanCodes = async (user, reason, usTime, needs=[]) => {
-  const uid = user?.uid;
-  if(!uid || !fbReady || !db) return 0;
-  const slotKey = usTime?.slotKey || `low-${needs.map(n=>n.key+':'+n.count).join('|')}`;
-  const gatePath = `code_auto_gen/${uid}/${slotKey}`;
-  const gate = await runTransaction(ref(db, gatePath), cur => cur ? undefined : {
-    email: user.email || null,
-    reason,
-    usDate: usTime?.date || null,
-    usHour: usTime?.hour ?? null,
-    usMinute: usTime?.minute ?? null,
-    createdAtUS: usTime ? `${usTime.date} ${String(usTime.hour).padStart(2,'0')}:${String(usTime.minute).padStart(2,'0')}` : null,
-  });
-  if(!gate.committed) return 0;
-
-  const snap = await get(ref(db, ACTIVATION_CODES_ROOT));
-  const stats = getCodePoolStats(snap);
-  const preferredType = chooseAutoCodeType(stats, needs);
-  const codes = await generateCodesIntoVault(5, preferredType, uid);
-  log(`✅ Auto-codes (${reason}) para ${user.email}: ${codes.length} generados en ${preferredType}`, 'ok');
-  if(S.adminUnlocked) refreshAdminPanel();
-  return codes.length;
-};
-
-const runConnectedUserCodeScheduler = async (reason='timer') => {
-  if(autoCodeRunning || !S.user || !fbReady || !db) return;
-  autoCodeRunning = true;
-  try {
-    const usTime = await getUSTime();
-    if(!usTime){ log('Auto-codes omitido: sin hora USA externa', 'warn'); return; }
-    const { needs } = await getLowPlanCodeNeeds();
-    const lowPool = needs.length > 0;
-    if(usTime.isQuarter || lowPool){
-      await generateConnectedUserPlanCodes(S.user, lowPool ? 'pool-bajo' : 'minuto-15-USA', usTime, needs);
-    }
-  } catch(e) {
-    log('Error auto-codes: '+e.message, 'err');
-  } finally {
-    autoCodeRunning = false;
-  }
-};
-
-const startConnectedUserCodeScheduler = () => {
-  clearInterval(autoCodeTimer);
-  if(!S.user || !fbReady || !db) return;
-  runConnectedUserCodeScheduler('login');
-  autoCodeTimer = setInterval(()=>runConnectedUserCodeScheduler('timer'), 60*1000);
-};
-
-// ═══════════════════════════════════════════
-// NAVIGATION
-// ═══════════════════════════════════════════
+// ══════════════════════════════════════════════════════
+// NAVEGACIÓN
+// ══════════════════════════════════════════════════════
 const switchPage = (page) => {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
@@ -1271,196 +969,157 @@ document.querySelectorAll('.sp-nav-btn').forEach(b=>b.addEventListener('click',(
   if(b.dataset.sp==='admin') refreshAdminPanel();
 }));
 
-// ═══════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 // AUTH
-// ═══════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 let nagTimer = null;
 const startNag = () => {
   clearInterval(nagTimer);
-  const nag = document.getElementById('nagBar');
   document.getElementById('btnEnc').disabled = true;
   document.getElementById('btnDec').disabled = true;
+  const nag = document.getElementById('nagBar');
   nag.style.display = 'block';
   let t = S.nagTime;
   document.getElementById('nagCount').textContent = t;
   nagTimer = setInterval(()=>{
     t--;
     document.getElementById('nagCount').textContent = t;
-    if(t<=0){clearInterval(nagTimer);document.getElementById('btnEnc').disabled=false;document.getElementById('btnDec').disabled=false;nag.innerHTML='🔓 Listo.';}
+    if(t<=0){
+      clearInterval(nagTimer);
+      document.getElementById('btnEnc').disabled=false;
+      document.getElementById('btnDec').disabled=false;
+      nag.innerHTML='🔓 Listo.';
+    }
   },1000);
 };
-const stopNag = () => {clearInterval(nagTimer);document.getElementById('nagBar').style.display='none';document.getElementById('btnEnc').disabled=false;document.getElementById('btnDec').disabled=false;};
+const stopNag = () => {
+  clearInterval(nagTimer);
+  document.getElementById('nagBar').style.display='none';
+  document.getElementById('btnEnc').disabled=false;
+  document.getElementById('btnDec').disabled=false;
+};
 
 document.getElementById('tabLogin').addEventListener('click',()=>{S.authMode='login';document.getElementById('tabLogin').classList.add('active');document.getElementById('tabRegister').classList.remove('active');document.getElementById('btnAuth').textContent='ACCEDER';});
 document.getElementById('tabRegister').addEventListener('click',()=>{S.authMode='register';document.getElementById('tabRegister').classList.add('active');document.getElementById('tabLogin').classList.remove('active');document.getElementById('btnAuth').textContent='REGISTRARSE';});
 
 document.getElementById('btnAuth').addEventListener('click', async()=>{
   if(!fbReady){toast('Firebase no disponible','warn');return;}
-  const email = document.getElementById('aEmail').value.trim();
-  const pw    = document.getElementById('aPw').value;
+  const email=document.getElementById('aEmail').value.trim();
+  const pw=document.getElementById('aPw').value;
   if(!email||!pw){toast('Rellena todos los campos','warn');return;}
-  try {
+  try{
     if(S.authMode==='register'){
-      const uc = await createUserWithEmailAndPassword(auth,email,pw);
+      const uc=await createUserWithEmailAndPassword(auth,email,pw);
       await sendEmailVerification(uc.user);
-      // Guardar datos del usuario en DB
       await set(ref(db,'users/'+uc.user.uid),{email,plan:'free',createdAt:new Date().toISOString()});
-      // ── Generar códigos para el nuevo usuario ──────────────
-      await generateCodesForNewUser(uc.user.uid, email);
       toast('¡Registrado! Verifica tu email.','success',5000);
       await signOut(auth);
-    } else {
-      const uc = await signInWithEmailAndPassword(auth,email,pw);
-      if(!uc.user.emailVerified){toast('Email no verificado. Revisa tu bandeja.','error');await signOut(auth);return;}
+    }else{
+      const uc=await signInWithEmailAndPassword(auth,email,pw);
+      if(!uc.user.emailVerified){toast('Email no verificado.','error');await signOut(auth);return;}
     }
-  } catch(err){
-    toast(err.message.replace('Firebase: ','').replace(/\s*\(auth\/[^)]+\)/,''),'error');
-  }
+  }catch(err){toast(err.message.replace('Firebase: ','').replace(/\s*\(auth\/[^)]+\)/,''),'error');}
 });
 
 document.getElementById('btnLogout').addEventListener('click',async()=>{
-  if(fbReady){await signOut(auth);}
-  clearInterval(autoCodeTimer);
-  S.user=null; S.plan='free'; S.planExpiry=0;
+  if(fbReady)await signOut(auth);
+  S.user=null;S.plan='free';S.planExpiry=0;
   document.getElementById('authFields').style.display='block';
   document.getElementById('authTabs').style.display='flex';
   document.getElementById('sessionRow').style.display='none';
   document.getElementById('sDot').classList.remove('on');
-  applyPlanUI(); startNag(); refreshSettings();
+  applyPlanUI();startNag();refreshSettings();
 });
 
-// ─── Plan UI ──────────────────────────────────────────────────
 const applyPlanUI = () => {
-  const chip   = document.getElementById('planChip');
-  const expBar = document.getElementById('expiryBar');
-
-  const cls = {free:'free',premium:'premium',ultra:'ultra'}[S.plan]||'free';
-  const lbl = {free:'FREE',premium:'PREMIUM',ultra:'ULTRA'}[S.plan]||'FREE';
-  chip.className = 'plan-chip ' + cls;
-  chip.textContent = lbl;
-
-  if(S.planExpiry && S.planExpiry > Date.now()){
-    const daysLeft = Math.ceil((S.planExpiry - Date.now())/86400000);
-    expBar.style.display = 'block';
-    expBar.textContent   = `⏰ ${lbl} activo · expira en ${daysLeft} día${daysLeft===1?'':'s'} (${new Date(S.planExpiry).toLocaleDateString('es-ES')})`;
-    expBar.style.color   = daysLeft <= 3 ? 'var(--r)' : 'var(--acc)';
-    expBar.style.borderColor = daysLeft <= 3 ? 'rgba(248,113,113,.3)' : 'rgba(245,158,11,.2)';
-  } else {
-    expBar.style.display = 'none';
-  }
-
-  const allowed = PLAN_ALGOS[S.plan] || PLAN_ALGOS.free;
+  const chip=document.getElementById('planChip');
+  const expBar=document.getElementById('expiryBar');
+  const cls={free:'free',premium:'premium',ultra:'ultra'}[S.plan]||'free';
+  const lbl={free:'FREE',premium:'PREMIUM',ultra:'ULTRA'}[S.plan]||'FREE';
+  chip.className='plan-chip '+cls;chip.textContent=lbl;
+  if(S.planExpiry&&S.planExpiry>Date.now()){
+    const d=Math.ceil((S.planExpiry-Date.now())/86400000);
+    expBar.style.display='block';
+    expBar.textContent=`⏰ ${lbl} · expira en ${d} día${d===1?'':'s'} (${new Date(S.planExpiry).toLocaleDateString('es-ES')})`;
+    expBar.style.color=d<=3?'var(--r)':'var(--acc)';
+  }else{expBar.style.display='none';}
+  const allowed=PLAN_ALGOS[S.plan]||PLAN_ALGOS.free;
   document.querySelectorAll('.algo-item').forEach(el=>{
-    const ok = allowed.includes(el.dataset.algo);
-    el.classList.toggle('locked', !ok);
-    if(!ok && el.classList.contains('sel')){
+    const ok=allowed.includes(el.dataset.algo);
+    el.classList.toggle('locked',!ok);
+    if(!ok&&el.classList.contains('sel')){
       el.classList.remove('sel');
-      const firstFree = document.querySelector('.algo-item:not(.locked)');
-      if(firstFree){ firstFree.classList.add('sel'); S.algo = firstFree.dataset.algo; }
+      const first=document.querySelector('.algo-item:not(.locked)');
+      if(first){first.classList.add('sel');S.algo=first.dataset.algo;}
     }
   });
-
   updateSecInd();
 };
 
-// ─── Check & load plan from Firebase ─────────────────────────
-const loadPlan = async (uid) => {
-  if(!fbReady||!db) return;
-  try {
-    const snap = await get(ref(db,'users/'+uid));
-    if(!snap.exists()){
-      // Usuario nuevo que aún no tiene datos (raro pero posible en edge cases)
-      S.plan='free'; S.planExpiry=0; applyPlanUI(); startNag(); return;
-    }
-    const d = snap.val();
-    const now = Date.now();
-
-    if(d.planExpiry && now > d.planExpiry){
+const loadPlan = async uid => {
+  if(!fbReady||!db)return;
+  try{
+    const snap=await get(ref(db,'users/'+uid));
+    if(!snap.exists()){S.plan='free';S.planExpiry=0;applyPlanUI();startNag();return;}
+    const d=snap.val();const now=Date.now();
+    if(d.planExpiry&&now>d.planExpiry){
       await update(ref(db,'users/'+uid),{plan:'free',planExpiry:null,licenseKey:null});
-      S.plan='free'; S.planExpiry=0;
+      S.plan='free';S.planExpiry=0;
       toast('Tu plan ha expirado. Has vuelto a FREE.','warn',5000);
-      applyPlanUI(); startNag(); refreshSettings(); return;
+      applyPlanUI();startNag();refreshSettings();return;
     }
-
-    if(d.plan === 'trial'){
-      await update(ref(db,'users/'+uid),{plan:'free',planExpiry:null,licenseKey:null});
-      S.plan='free'; S.planExpiry=0;
-      toast('La prueba gratuita está desactivada. Has vuelto a FREE.','warn',5000);
-      applyPlanUI(); startNag(); refreshSettings(); return;
-    }
-
-    S.plan      = d.plan || 'free';
-    S.planExpiry= d.planExpiry || 0;
+    S.plan=d.plan||'free';S.planExpiry=d.planExpiry||0;
     applyPlanUI();
-
-    if(S.plan !== 'free'){ stopNag(); }
-    else { startNag(); }
-
+    if(S.plan!=='free')stopNag();else startNag();
     refreshSettings();
-  } catch(e){ console.error('loadPlan error',e); }
+  }catch(e){console.error('loadPlan',e);}
 };
 
-const handleAuthChange = async (user) => {
-  if(user && user.emailVerified){
-    S.user = user;
+const handleAuthChange = async user => {
+  if(user&&user.emailVerified){
+    S.user=user;
     document.getElementById('authFields').style.display='none';
     document.getElementById('authTabs').style.display='none';
     document.getElementById('sessionRow').style.display='flex';
-    document.getElementById('sessEmail').textContent = user.email;
+    document.getElementById('sessEmail').textContent=user.email;
     document.getElementById('sDot').classList.add('on');
     generateApiKeyLocal(user.uid);
     await loadPlan(user.uid);
-    startConnectedUserCodeScheduler();
     document.getElementById('transferLoginWarn').style.display='none';
-  } else {
-    clearInterval(autoCodeTimer);
   }
 };
 
-// ─── Periodic expiry check every 5 min ───────────────────────
-setInterval(async ()=>{
-  if(!S.user||!fbReady) return;
-  if(S.planExpiry && Date.now() > S.planExpiry){
+setInterval(async()=>{
+  if(!S.user||!fbReady)return;
+  if(S.planExpiry&&Date.now()>S.planExpiry){
     await update(ref(db,'users/'+S.user.uid),{plan:'free',planExpiry:null,licenseKey:null});
-    S.plan='free'; S.planExpiry=0;
-    toast('⚠️ Tu plan ha expirado. Plan revertido a FREE.','warn',6000);
-    applyPlanUI(); startNag(); refreshSettings();
+    S.plan='free';S.planExpiry=0;
+    toast('Tu plan ha expirado.','warn',6000);
+    applyPlanUI();startNag();refreshSettings();
   }
-}, 5*60*1000);
+},5*60*1000);
 
-// ═══════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 // API KEY
-// ═══════════════════════════════════════════
-const generateApiKeyLocal = (uid) => {
-  const k = sessionStorage.getItem('aegis_ak_'+uid);
-  if(k){S.apiKey=k;}
+// ══════════════════════════════════════════════════════
+const generateApiKeyLocal = uid => {
+  const k=sessionStorage.getItem('aegis_ak_'+uid);
+  if(k)S.apiKey=k;
   else{const b=crypto.getRandomValues(new Uint8Array(24));S.apiKey='ak_'+Array.from(b,x=>x.toString(16).padStart(2,'0')).join('');sessionStorage.setItem('aegis_ak_'+uid,S.apiKey);}
   const d=document.getElementById('apiKeyDisplay');if(d)d.value=S.apiKey;
 };
 const generateAnonApiKey = () => {
   const k=sessionStorage.getItem('aegis_ak_anon');
-  if(k){S.apiKey=k;}
+  if(k)S.apiKey=k;
   else{const b=crypto.getRandomValues(new Uint8Array(24));S.apiKey='ak_anon_'+Array.from(b,x=>x.toString(16).padStart(2,'0')).join('').slice(0,32);sessionStorage.setItem('aegis_ak_anon',S.apiKey);}
   const d=document.getElementById('apiKeyDisplay');if(d)d.value=S.apiKey;
 };
 document.getElementById('btnCopyApiKey').addEventListener('click',()=>{if(!S.apiKey){toast('Sin clave','warn');return;}navigator.clipboard.writeText(S.apiKey).then(()=>toast('Copiado','success'));});
 document.getElementById('btnRegenApiKey').addEventListener('click',()=>{const b=crypto.getRandomValues(new Uint8Array(24));S.apiKey='ak_'+Array.from(b,x=>x.toString(16).padStart(2,'0')).join('');const uid=S.user?S.user.uid:'anon';sessionStorage.setItem('aegis_ak_'+uid,S.apiKey);document.getElementById('apiKeyDisplay').value=S.apiKey;toast('Nueva clave generada','success');});
 
-// ═══════════════════════════════════════════
-// ALGO
-// ═══════════════════════════════════════════
-document.querySelectorAll('.algo-item').forEach(el=>{
-  el.addEventListener('click',()=>{
-    if(el.classList.contains('locked')){
-      toast('Requiere plan superior','warn');
-      document.getElementById('premModal').classList.add('open');
-      return;
-    }
-    document.querySelectorAll('.algo-item').forEach(a=>a.classList.remove('sel'));
-    el.classList.add('sel'); S.algo=el.dataset.algo; updateSecInd();
-    log('Algoritmo: '+el.querySelector('.algo-name').textContent,'info');
-  });
-});
+// ══════════════════════════════════════════════════════
+// ALGORITMO
+// ══════════════════════════════════════════════════════
 const algoMeta = {
   'aes-cbc':  {mode:'AES-CBC 128',  auth:'Ninguna',     kdf:'SHA-256', ent:'128-bit'},
   'aes-gcm':  {mode:'AES-GCM 256',  auth:'GCM-Tag 128', kdf:'SHA-256', ent:'256-bit'},
@@ -1469,47 +1128,98 @@ const algoMeta = {
   'quantum':  {mode:'Kyber+AES-GCM', auth:'HMAC-SHA256', kdf:'ML-LWE',  ent:'≥178-bit PQC'},
 };
 const updateSecInd = () => {
-  const d = algoMeta[S.algo]||algoMeta['aes-cbc'];
+  const d=algoMeta[S.algo]||algoMeta['aes-cbc'];
   document.getElementById('iMode').textContent=d.mode;
   document.getElementById('iAuth').textContent=d.auth;
   document.getElementById('iAuth').style.color=d.auth==='Ninguna'?'var(--tx3)':'var(--g)';
   document.getElementById('iKdf').textContent=d.kdf;
   document.getElementById('iEnt').textContent=d.ent;
 };
+document.querySelectorAll('.algo-item').forEach(el=>{
+  el.addEventListener('click',()=>{
+    if(el.classList.contains('locked')){toast('Requiere plan superior','warn');document.getElementById('premModal').classList.add('open');return;}
+    document.querySelectorAll('.algo-item').forEach(a=>a.classList.remove('sel'));
+    el.classList.add('sel');S.algo=el.dataset.algo;updateSecInd();
+    log('Algoritmo: '+el.querySelector('.algo-name').textContent,'info');
+  });
+});
 
-// ═══════════════════════════════════════════
-// PW MODES
-// ═══════════════════════════════════════════
-document.querySelectorAll('.pw-mode-btn').forEach(b=>{b.addEventListener('click',()=>{S.pwMode=b.dataset.mode;document.querySelectorAll('.pw-mode-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.pw-panel').forEach(p=>p.classList.remove('active'));document.getElementById('pp-'+b.dataset.mode).classList.add('active');});});
-document.getElementById('pwText').addEventListener('input',function(){S.textPw=this.value;const bar=document.getElementById('sBar'),lbl=document.getElementById('sLbl');let sc=0;if(this.value.length>=8)sc++;if(this.value.length>=16)sc++;if(/[A-Z]/.test(this.value))sc++;if(/[a-z]/.test(this.value))sc++;if(/\d/.test(this.value))sc++;if(/[^A-Za-z0-9]/.test(this.value))sc++;if(this.value.length>=32)sc++;const pct=Math.min(100,sc*14.3);const cols=['#ef4444','#f97316','#f59e0b','#84cc16','#10b981','#38bdf8','#a78bfa'];const labs=['Muy débil','Débil','Regular','Aceptable','Buena','Fuerte','Excelente'];const idx=Math.min(6,sc);bar.style.width=pct+'%';bar.style.background=cols[idx];lbl.textContent=labs[idx];lbl.style.color=cols[idx];});
+// ══════════════════════════════════════════════════════
+// MODO CONTRASEÑA
+// ══════════════════════════════════════════════════════
+document.querySelectorAll('.pw-mode-btn').forEach(b=>b.addEventListener('click',()=>{
+  S.pwMode=b.dataset.mode;
+  document.querySelectorAll('.pw-mode-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');
+  document.querySelectorAll('.pw-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('pp-'+b.dataset.mode).classList.add('active');
+}));
+
+document.getElementById('pwText').addEventListener('input',function(){
+  S.textPw=this.value;
+  const bar=document.getElementById('sBar'),lbl=document.getElementById('sLbl');
+  let sc=0;
+  if(this.value.length>=8)sc++;if(this.value.length>=16)sc++;
+  if(/[A-Z]/.test(this.value))sc++;if(/[a-z]/.test(this.value))sc++;
+  if(/\d/.test(this.value))sc++;if(/[^A-Za-z0-9]/.test(this.value))sc++;if(this.value.length>=32)sc++;
+  const pct=Math.min(100,sc*14.3);
+  const cols=['#ef4444','#f97316','#f59e0b','#84cc16','#10b981','#38bdf8','#a78bfa'];
+  const labs=['Muy débil','Débil','Regular','Aceptable','Buena','Fuerte','Excelente'];
+  const idx=Math.min(6,sc);bar.style.width=pct+'%';bar.style.background=cols[idx];lbl.textContent=labs[idx];lbl.style.color=cols[idx];
+});
 document.getElementById('pwVis').addEventListener('click',()=>{const i=document.getElementById('pwText');i.type=i.type==='password'?'text':'password';});
 document.getElementById('pwLen').addEventListener('input',function(){S.autoPwLen=parseInt(this.value);document.getElementById('pwLenVal').textContent=this.value;});
-document.querySelectorAll('.cs-opt').forEach(o=>{o.addEventListener('click',()=>{const k=o.dataset.cs;S.charsets[k]=!S.charsets[k];o.classList.toggle('on',S.charsets[k]);if((k==='hex'||k==='b64')&&S.charsets[k]){Object.keys(S.charsets).filter(x=>x!==k).forEach(x=>{S.charsets[x]=false;document.querySelector(`[data-cs="${x}"]`).classList.remove('on');});}if(k!=='hex'&&k!=='b64'){['hex','b64'].forEach(x=>{S.charsets[x]=false;document.querySelector(`[data-cs="${x}"]`).classList.remove('on');});}});});
+document.querySelectorAll('.cs-opt').forEach(o=>o.addEventListener('click',()=>{
+  const k=o.dataset.cs;S.charsets[k]=!S.charsets[k];o.classList.toggle('on',S.charsets[k]);
+  if((k==='hex'||k==='b64')&&S.charsets[k])Object.keys(S.charsets).filter(x=>x!==k).forEach(x=>{S.charsets[x]=false;document.querySelector(`[data-cs="${x}"]`).classList.remove('on');});
+  if(k!=='hex'&&k!=='b64')['hex','b64'].forEach(x=>{S.charsets[x]=false;document.querySelector(`[data-cs="${x}"]`).classList.remove('on');});
+}));
+
 const genPw = () => {
   const len=S.autoPwLen;
   if(S.charsets.hex){const b=crypto.getRandomValues(new Uint8Array(Math.ceil(len/2)));S.autoPw=Array.from(b,x=>x.toString(16).padStart(2,'0')).join('').toUpperCase().slice(0,len);document.getElementById('autoPwTxt').textContent=S.autoPw;return;}
   if(S.charsets.b64){const b=crypto.getRandomValues(new Uint8Array(Math.ceil(len*.75)));S.autoPw=btoa(String.fromCharCode(...b)).replace(/=/g,'').slice(0,len);document.getElementById('autoPwTxt').textContent=S.autoPw;return;}
   let cs='';if(S.charsets.upper)cs+='ABCDEFGHIJKLMNOPQRSTUVWXYZ';if(S.charsets.lower)cs+='abcdefghijklmnopqrstuvwxyz';if(S.charsets.digits)cs+='0123456789';if(S.charsets.symbols)cs+='!@#$%^&*()-_=+[]{}|;:,.<>?';
   if(!cs){toast('Selecciona charset','warn');return;}
-  const b=crypto.getRandomValues(new Uint8Array(len*2));let pw='';for(let i=0;pw.length<len;i++)if(b[i%b.length]<Math.floor(256/cs.length)*cs.length)pw+=cs[b[i%b.length]%cs.length];
+  const b=crypto.getRandomValues(new Uint8Array(len*2));let pw='';
+  for(let i=0;pw.length<len;i++)if(b[i%b.length]<Math.floor(256/cs.length)*cs.length)pw+=cs[b[i%b.length]%cs.length];
   S.autoPw=pw;document.getElementById('autoPwTxt').textContent=pw;
 };
 document.getElementById('genPw').addEventListener('click',genPw);
 document.getElementById('copyPw').addEventListener('click',()=>navigator.clipboard.writeText(S.autoPw).then(()=>toast('Copiado','success')));
 
-// PATTERN
+// PATRÓN
 const nodePts=[[53,53],[105,53],[157,53],[53,105],[105,105],[157,105],[53,157],[105,157],[157,157]];
 const clearPattern=()=>{S.patternNodes=[];document.querySelectorAll('.p-node').forEach(n=>{n.classList.remove('active');n.removeAttribute('data-order');});document.getElementById('pHint').textContent='Mínimo 4 nodos';document.getElementById('pSvg').innerHTML='';document.getElementById('iEnt').textContent='—';};
-const activateNode=node=>{const id=node.dataset.id;if(S.patternNodes[S.patternNodes.length-1]===id)return;if(S.patternNodes.length>0){const pi=parseInt(S.patternNodes[S.patternNodes.length-1])-1,ci=parseInt(id)-1;const[x1,y1]=nodePts[pi],[x2,y2]=nodePts[ci];const svg=document.getElementById('pSvg');const line=document.createElementNS('http://www.w3.org/2000/svg','line');line.setAttribute('x1',x1);line.setAttribute('y1',y1);line.setAttribute('x2',x2);line.setAttribute('y2',y2);line.setAttribute('stroke','var(--p2)');line.setAttribute('stroke-width','2.5');line.setAttribute('stroke-linecap','round');line.setAttribute('opacity','0.7');svg.appendChild(line);}S.patternNodes.push(id);node.classList.add('active');node.setAttribute('data-order',S.patternNodes.length);document.getElementById('pHint').textContent='Nodos: '+S.patternNodes.join(' → ');document.getElementById('iEnt').textContent=Math.round(S.patternNodes.length*Math.log2(9))+'-bit';};
-document.querySelectorAll('.p-node').forEach(n=>{n.addEventListener('mousedown',e=>{e.preventDefault();S.patternDrawing=true;activateNode(n);});n.addEventListener('mouseenter',()=>{if(S.patternDrawing)activateNode(n);});n.addEventListener('touchstart',e=>{e.preventDefault();S.patternDrawing=true;activateNode(n);},{passive:false});n.addEventListener('touchmove',e=>{e.preventDefault();const t=e.touches[0];const el=document.elementFromPoint(t.clientX,t.clientY);if(el&&el.classList.contains('p-node'))activateNode(el);},{passive:false});});
-document.addEventListener('mouseup',()=>S.patternDrawing=false);document.addEventListener('touchend',()=>S.patternDrawing=false);
+const activateNode=node=>{
+  const id=node.dataset.id;
+  if(S.patternNodes[S.patternNodes.length-1]===id)return;
+  if(S.patternNodes.length>0){
+    const pi=parseInt(S.patternNodes[S.patternNodes.length-1])-1,ci=parseInt(id)-1;
+    const[x1,y1]=nodePts[pi],[x2,y2]=nodePts[ci];
+    const svg=document.getElementById('pSvg');
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',x1);line.setAttribute('y1',y1);line.setAttribute('x2',x2);line.setAttribute('y2',y2);
+    line.setAttribute('stroke','var(--p2)');line.setAttribute('stroke-width','2.5');line.setAttribute('stroke-linecap','round');line.setAttribute('opacity','0.7');
+    svg.appendChild(line);
+  }
+  S.patternNodes.push(id);node.classList.add('active');node.setAttribute('data-order',S.patternNodes.length);
+  document.getElementById('pHint').textContent='Nodos: '+S.patternNodes.join(' → ');
+  document.getElementById('iEnt').textContent=Math.round(S.patternNodes.length*Math.log2(9))+'-bit';
+};
+document.querySelectorAll('.p-node').forEach(n=>{
+  n.addEventListener('mousedown',e=>{e.preventDefault();S.patternDrawing=true;activateNode(n);});
+  n.addEventListener('mouseenter',()=>{if(S.patternDrawing)activateNode(n);});
+  n.addEventListener('touchstart',e=>{e.preventDefault();S.patternDrawing=true;activateNode(n);},{passive:false});
+  n.addEventListener('touchmove',e=>{e.preventDefault();const t=e.touches[0];const el=document.elementFromPoint(t.clientX,t.clientY);if(el&&el.classList.contains('p-node'))activateNode(el);},{passive:false});
+});
+document.addEventListener('mouseup',()=>S.patternDrawing=false);
+document.addEventListener('touchend',()=>S.patternDrawing=false);
 document.getElementById('btnClearPat').addEventListener('click',clearPattern);
 
-// ═══════════════════════════════════════════
-// FILE
-// ═══════════════════════════════════════════
-const fmtSize=b=>b<1024?b+'B':b<1048576?(b/1024).toFixed(1)+'KB':b<1073741824?(b/1048576).toFixed(2)+'MB':(b/1073741824).toFixed(2)+'GB';
-const updateAna=file=>{
+// ══════════════════════════════════════════════════════
+// ARCHIVO
+// ══════════════════════════════════════════════════════
+const updateAna = file => {
   document.getElementById('anaName').textContent=file.name.slice(0,22);
   document.getElementById('anaSize').textContent=fmtSize(file.size);
   document.getElementById('anaType').textContent=file.type||'octet-stream';
@@ -1517,12 +1227,16 @@ const updateAna=file=>{
   document.getElementById('anaOH').textContent=(oh[S.algo]||16)+' bytes';
   const ms=Math.max(10,file.size/1048576*80);
   document.getElementById('anaTime').textContent=ms<100?'<100ms':(ms/1000).toFixed(1)+'s';
-  const limit = PLAN_FILE_LIMIT[S.plan];
-  const ok    = file.size <= limit;
-  document.getElementById('anaPlan').textContent = ok?`✅ ${S.plan.toUpperCase()}`:'❌ Supera límite de tu plan';
-  document.getElementById('anaPlan').className   = 'ana-v '+(ok?'good':'bad');
+  const limit=PLAN_FILE_LIMIT[S.plan];const ok=file.size<=limit;
+  document.getElementById('anaPlan').textContent=ok?`✅ ${S.plan.toUpperCase()}`:'❌ Supera límite';
+  document.getElementById('anaPlan').className='ana-v '+(ok?'good':'bad');
 };
-const handleFile=file=>{if(!file)return;S.file=file;document.getElementById('fileLabel').innerHTML=`<div class="file-name">${file.name}</div><div class="file-sz">${fmtSize(file.size)}</div>`;document.getElementById('fileSub').textContent='';updateAna(file);log('Archivo: '+file.name+' ('+fmtSize(file.size)+')','ok');};
+const handleFile = file => {
+  if(!file)return;S.file=file;
+  document.getElementById('fileLabel').innerHTML=`<div class="file-name">${file.name}</div><div class="file-sz">${fmtSize(file.size)}</div>`;
+  document.getElementById('fileSub').textContent='';updateAna(file);
+  log('Archivo: '+file.name+' ('+fmtSize(file.size)+')','ok');
+};
 const fd=document.getElementById('fileDrop');
 fd.addEventListener('click',()=>document.getElementById('fileInput').click());
 fd.addEventListener('dragover',e=>{e.preventDefault();fd.classList.add('drag-over');});
@@ -1530,197 +1244,658 @@ fd.addEventListener('dragleave',()=>fd.classList.remove('drag-over'));
 fd.addEventListener('drop',e=>{e.preventDefault();fd.classList.remove('drag-over');handleFile(e.dataTransfer.files[0]);});
 document.getElementById('fileInput').addEventListener('change',function(){handleFile(this.files[0]);});
 
-// ═══════════════════════════════════════════
-// KDF + PROCESS FILE
-// ═══════════════════════════════════════════
-const deriveKey=async pw=>{const enc=new TextEncoder(),kdf=S.cfg.kdf;if(kdf==='pbkdf2'){const bk=await crypto.subtle.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveBits']);const bits=await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:enc.encode('AegisPattern-v10'),iterations:S.cfg.pbIter},bk,256);return new Uint8Array(bits);}else if(kdf==='sha512'){return new Uint8Array(await crypto.subtle.digest('SHA-512',enc.encode(pw))).slice(0,32);}else{return new Uint8Array(await crypto.subtle.digest('SHA-256',enc.encode(pw)));}};
-const getActivePw=()=>{if(S.pwMode==='pattern'){if(S.patternNodes.length<4){toast('Patrón mínimo 4 nodos','warn');return null;}return S.patternNodes.join('');}else if(S.pwMode==='text'){if(!S.textPw||S.textPw.length<4){toast('Contraseña mínimo 4 chars','warn');return null;}return S.textPw;}else{if(!S.autoPw){toast('Genera una contraseña primero','warn');return null;}return S.autoPw;}};
+// ══════════════════════════════════════════════════════
+// KDF + CIFRADO/DESCIFRADO — CORREGIDO
+//
+// FIX CRÍTICO: Antes el archivo .aegis no guardaba qué algoritmo
+// se usó para cifrarlo. Ahora el header incluye:
+//   [4 bytes magic] [1 byte algo_id] [1 byte pw_mode] [...datos]
+// Esto permite descifrar correctamente sin importar el modo activo.
+// ══════════════════════════════════════════════════════
+const ALGO_IDS = {'aes-cbc':1,'aes-gcm':2,'chacha':3,'multi-api':4,'quantum':5};
+const ALGO_FROM_ID = {1:'aes-cbc',2:'aes-gcm',3:'chacha',4:'multi-api',5:'quantum'};
+const MAGIC = new Uint8Array([0x41,0x45,0x47,0x49]); // "AEGI"
+const MAGIC_V11 = new Uint8Array([0x41,0x47,0x31,0x31]); // "AG11" — nuevo formato v11
+
+const deriveKey = async pw => {
+  const enc=new TextEncoder();const kdf=S.cfg.kdf;
+  if(kdf==='pbkdf2'){
+    const bk=await crypto.subtle.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveBits']);
+    const bits=await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:enc.encode('AegisPattern-v11'),iterations:S.cfg.pbIter},bk,256);
+    return new Uint8Array(bits);
+  }else if(kdf==='sha512'){
+    return new Uint8Array(await crypto.subtle.digest('SHA-512',enc.encode(pw))).slice(0,32);
+  }else{
+    return new Uint8Array(await crypto.subtle.digest('SHA-256',enc.encode(pw)));
+  }
+};
+
+const getActivePw = () => {
+  if(S.pwMode==='pattern'){
+    if(S.patternNodes.length<4){toast('Patrón mínimo 4 nodos','warn');return null;}
+    // Codificamos el patrón como string para la clave
+    return 'PAT:'+S.patternNodes.join('-');
+  }else if(S.pwMode==='text'){
+    if(!S.textPw||S.textPw.length<4){toast('Contraseña mínimo 4 chars','warn');return null;}
+    return 'TXT:'+S.textPw;
+  }else{
+    if(!S.autoPw){toast('Genera una contraseña primero','warn');return null;}
+    return 'AUT:'+S.autoPw;
+  }
+};
+
+// Construir header v11: MAGIC(4) + algo_id(1) = 5 bytes
+const buildHeader = algoId => {
+  const h=new Uint8Array(5);h.set(MAGIC_V11);h[4]=algoId;return h;
+};
+
+// Leer header — soporta v10 (AEGI) y v11 (AG11)
+const parseHeader = raw => {
+  if(raw.length<5)throw new Error('Archivo demasiado pequeño o corrupto');
+  const m=new TextDecoder().decode(raw.slice(0,4));
+  if(m==='AG11'){
+    // Formato v11: conocemos el algo
+    const algoId=raw[4];
+    const algo=ALGO_FROM_ID[algoId];
+    if(!algo)throw new Error('Algoritmo desconocido en el archivo (id='+algoId+')');
+    return {version:11,algo,headerLen:5};
+  }else if(m==='AEGI'){
+    // Formato v10: no tenemos algo_id, usamos el seleccionado
+    return {version:10,algo:S.algo,headerLen:4};
+  }else if(!S.cfg.magic){
+    // Sin magic bytes (modo legacy sin magic)
+    return {version:0,algo:S.algo,headerLen:0};
+  }else{
+    throw new Error('Archivo no reconocido. ¿Contraseña incorrecta o archivo dañado?');
+  }
+};
 
 const setProgress=(lbl,pct)=>{const w=document.getElementById('progWrap');w.style.display='block';document.getElementById('progLbl').textContent=lbl;document.getElementById('progFill').style.width=pct+'%';};
 const hideProgress=()=>document.getElementById('progWrap').style.display='none';
 
-const processFile=async mode=>{
+const encryptRaw = async (raw, keyBytes, algo) => {
+  if(algo==='aes-gcm'){
+    const k=await crypto.subtle.importKey('raw',keyBytes,{name:'AES-GCM'},false,['encrypt']);
+    const iv=crypto.getRandomValues(new Uint8Array(12));
+    const enc=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},k,raw));
+    const out=new Uint8Array(iv.length+enc.length);out.set(iv);out.set(enc,iv.length);return out;
+  }else if(algo==='chacha'){
+    const n=crypto.getRandomValues(new Uint8Array(12));
+    const enc=ChaCha20.crypt(raw,keyBytes,n);
+    const out=new Uint8Array(n.length+enc.length);out.set(n);out.set(enc,n.length);return out;
+  }else if(algo==='multi-api'){
+    const k1=await crypto.subtle.importKey('raw',keyBytes,{name:'AES-GCM'},false,['encrypt']);
+    const iv1=crypto.getRandomValues(new Uint8Array(12));
+    const e1=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv:iv1},k1,raw));
+    const n2=crypto.getRandomValues(new Uint8Array(12));const e2=ChaCha20.crypt(e1,keyBytes,n2);
+    const k3=await crypto.subtle.importKey('raw',keyBytes,{name:'AES-CBC'},false,['encrypt']);
+    const iv3=crypto.getRandomValues(new Uint8Array(16));
+    const e3=new Uint8Array(await crypto.subtle.encrypt({name:'AES-CBC',iv:iv3},k3,e2));
+    const mk=await crypto.subtle.importKey('raw',keyBytes,{name:'HMAC',hash:'SHA-512'},false,['sign']);
+    const ap=new Uint8Array(12+12+16+e3.length);let ao=0;ap.set(iv1,ao);ao+=12;ap.set(n2,ao);ao+=12;ap.set(iv3,ao);ao+=16;ap.set(e3,ao);
+    const mac=new Uint8Array(await crypto.subtle.sign('HMAC',mk,ap));
+    const out=new Uint8Array(12+12+16+64+e3.length);let oo=0;out.set(iv1,oo);oo+=12;out.set(n2,oo);oo+=12;out.set(iv3,oo);oo+=16;out.set(mac,oo);oo+=64;out.set(e3,oo);return out;
+  }else{
+    // aes-cbc (default)
+    const k16=keyBytes.slice(0,16);
+    const k=await crypto.subtle.importKey('raw',k16,{name:'AES-CBC'},false,['encrypt']);
+    const iv=crypto.getRandomValues(new Uint8Array(16));
+    const enc=new Uint8Array(await crypto.subtle.encrypt({name:'AES-CBC',iv},k,raw));
+    const out=new Uint8Array(iv.length+enc.length);out.set(iv);out.set(enc,iv.length);return out;
+  }
+};
+
+const decryptRaw = async (data, keyBytes, algo) => {
+  if(algo==='aes-gcm'){
+    const k=await crypto.subtle.importKey('raw',keyBytes,{name:'AES-GCM'},false,['decrypt']);
+    const iv=data.slice(0,12);
+    return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv},k,data.slice(12)));
+  }else if(algo==='chacha'){
+    return ChaCha20.crypt(data.slice(12),keyBytes,data.slice(0,12));
+  }else if(algo==='multi-api'){
+    let off=0;
+    const iv1=data.slice(off,off+12);off+=12;
+    const n2=data.slice(off,off+12);off+=12;
+    const iv3=data.slice(off,off+16);off+=16;
+    const mac=data.slice(off,off+64);off+=64;
+    const e3=data.slice(off);
+    const mk=await crypto.subtle.importKey('raw',keyBytes,{name:'HMAC',hash:'SHA-512'},false,['verify']);
+    const ap=new Uint8Array(12+12+16+e3.length);let ao=0;ap.set(iv1,ao);ao+=12;ap.set(n2,ao);ao+=12;ap.set(iv3,ao);ao+=16;ap.set(e3,ao);
+    const ok=await crypto.subtle.verify('HMAC',mk,mac,ap);
+    if(!ok)throw new Error('HMAC inválido — archivo modificado o contraseña incorrecta');
+    const k3=await crypto.subtle.importKey('raw',keyBytes,{name:'AES-CBC'},false,['decrypt']);
+    const d3=new Uint8Array(await crypto.subtle.decrypt({name:'AES-CBC',iv:iv3},k3,e3));
+    const d2=ChaCha20.crypt(d3,keyBytes,n2);
+    const k1=await crypto.subtle.importKey('raw',keyBytes,{name:'AES-GCM'},false,['decrypt']);
+    return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:iv1},k1,d2));
+  }else{
+    // aes-cbc
+    const k16=keyBytes.slice(0,16);
+    const k=await crypto.subtle.importKey('raw',k16,{name:'AES-CBC'},false,['decrypt']);
+    const iv=data.slice(0,16);
+    return new Uint8Array(await crypto.subtle.decrypt({name:'AES-CBC',iv},k,data.slice(16)));
+  }
+};
+
+const processFile = async mode => {
   if(!S.file){toast('Selecciona un archivo','warn');return;}
   const pw=getActivePw();if(!pw)return;
 
-  const fileLimit = PLAN_FILE_LIMIT[S.plan];
-  if(S.file.size > fileLimit){
-    toast(`Archivo demasiado grande para tu plan ${S.plan.toUpperCase()}. Límite: ${fmtSize(fileLimit)}`,'error');
-    document.getElementById('premModal').classList.add('open'); return;
-  }
-  const allowed = PLAN_ALGOS[S.plan]||[];
-  if(!allowed.includes(S.algo)){
-    toast(`Algoritmo ${S.algo} no disponible en plan ${S.plan.toUpperCase()}`,'error');
-    document.getElementById('premModal').classList.add('open'); return;
+  if(mode==='encrypt'){
+    const fileLimit=PLAN_FILE_LIMIT[S.plan];
+    if(S.file.size>fileLimit){toast(`Archivo demasiado grande para plan ${S.plan.toUpperCase()}`,'error');document.getElementById('premModal').classList.add('open');return;}
+    const allowed=PLAN_ALGOS[S.plan]||[];
+    if(!allowed.includes(S.algo)){toast(`Algoritmo no disponible en plan ${S.plan.toUpperCase()}`,'error');document.getElementById('premModal').classList.add('open');return;}
   }
 
-  log(`Iniciando ${mode==='encrypt'?'CIFRADO':'DESCIFRADO'} [${S.algo.toUpperCase()}]`,'info');
+  log(`Iniciando ${mode==='encrypt'?'CIFRADO':'DESCIFRADO'}...`,'info');
   setProgress('DERIVANDO CLAVE...',15);
+
   const reader=new FileReader();
   reader.onload=async e=>{
     let raw=new Uint8Array(e.target.result),output;
     try{
       const t0=performance.now();
-      const keyBytes=await deriveKey(pw);
-      setProgress('PROCESANDO...',40);
-      if(S.algo==='aes-gcm'){
-        const k=await crypto.subtle.importKey('raw',keyBytes,{name:'AES-GCM'},false,['encrypt','decrypt']);
-        if(mode==='encrypt'){const iv=crypto.getRandomValues(new Uint8Array(12));const enc=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},k,raw));output=new Uint8Array(iv.length+enc.length);output.set(iv);output.set(enc,iv.length);}
-        else{const iv=raw.slice(0,12);output=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv},k,raw.slice(12)));}
-      } else if(S.algo==='chacha'){
-        if(mode==='encrypt'){const n=crypto.getRandomValues(new Uint8Array(12));const enc=ChaCha20.crypt(raw,keyBytes,n);output=new Uint8Array(n.length+enc.length);output.set(n);output.set(enc,n.length);}
-        else{output=ChaCha20.crypt(raw.slice(12),keyBytes,raw.slice(0,12));}
-      } else if(S.algo==='multi-api'){
-        if(mode==='encrypt'){
-          const k1=await crypto.subtle.importKey('raw',keyBytes,{name:'AES-GCM'},false,['encrypt']);
-          const iv1=crypto.getRandomValues(new Uint8Array(12));
-          const e1=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv:iv1},k1,raw));
-          setProgress('ChaCha20...',55);const n2=crypto.getRandomValues(new Uint8Array(12));const e2=ChaCha20.crypt(e1,keyBytes,n2);
-          setProgress('AES-CBC...',70);const k3=await crypto.subtle.importKey('raw',keyBytes,{name:'AES-CBC'},false,['encrypt']);const iv3=crypto.getRandomValues(new Uint8Array(16));const e3=new Uint8Array(await crypto.subtle.encrypt({name:'AES-CBC',iv:iv3},k3,e2));
-          setProgress('HMAC...',85);const mk=await crypto.subtle.importKey('raw',keyBytes,{name:'HMAC',hash:'SHA-512'},false,['sign']);const ap=new Uint8Array(12+12+16+e3.length);let ao=0;ap.set(iv1,ao);ao+=12;ap.set(n2,ao);ao+=12;ap.set(iv3,ao);ao+=16;ap.set(e3,ao);const mac=new Uint8Array(await crypto.subtle.sign('HMAC',mk,ap));
-          const magic=S.cfg.magic?new Uint8Array([0x41,0x45,0x47,0x49]):new Uint8Array(0);
-          output=new Uint8Array(magic.length+12+12+16+64+e3.length);let oo=0;output.set(magic,oo);oo+=magic.length;output.set(iv1,oo);oo+=12;output.set(n2,oo);oo+=12;output.set(iv3,oo);oo+=16;output.set(mac,oo);oo+=64;output.set(e3,oo);
-        } else {
-          let off=S.cfg.magic?4:0;if(S.cfg.magic){const m=new TextDecoder().decode(raw.slice(0,4));if(m!=='AEGI')throw new Error('Magic inválido');}
-          const iv1=raw.slice(off,off+12);off+=12;const n2=raw.slice(off,off+12);off+=12;const iv3=raw.slice(off,off+16);off+=16;const mac=raw.slice(off,off+64);off+=64;const e3=raw.slice(off);
-          const mk=await crypto.subtle.importKey('raw',keyBytes,{name:'HMAC',hash:'SHA-512'},false,['verify']);const ap=new Uint8Array(12+12+16+e3.length);let ao=0;ap.set(iv1,ao);ao+=12;ap.set(n2,ao);ao+=12;ap.set(iv3,ao);ao+=16;ap.set(e3,ao);
-          const ok=await crypto.subtle.verify('HMAC',mk,mac,ap);if(!ok)throw new Error('HMAC inválido');
-          const k3=await crypto.subtle.importKey('raw',keyBytes,{name:'AES-CBC'},false,['decrypt']);const d3=new Uint8Array(await crypto.subtle.decrypt({name:'AES-CBC',iv:iv3},k3,e3));const d2=ChaCha20.crypt(d3,keyBytes,n2);
-          const k1=await crypto.subtle.importKey('raw',keyBytes,{name:'AES-GCM'},false,['decrypt']);output=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:iv1},k1,d2));
-        }
-      } else {
-        // AES-CBC FREE
-        const k16=keyBytes.slice(0,16);const k=await crypto.subtle.importKey('raw',k16,{name:'AES-CBC'},false,['encrypt','decrypt']);
-        if(mode==='encrypt'){const iv=crypto.getRandomValues(new Uint8Array(16));const enc=new Uint8Array(await crypto.subtle.encrypt({name:'AES-CBC',iv},k,raw));const magic=S.cfg.magic?new Uint8Array([0xAE,0x91,0x5C,0xBC]):new Uint8Array(0);output=new Uint8Array(magic.length+iv.length+enc.length);output.set(magic);output.set(iv,magic.length);output.set(enc,magic.length+iv.length);}
-        else{const off=S.cfg.magic?4:0;const iv=raw.slice(off,off+16);output=new Uint8Array(await crypto.subtle.decrypt({name:'AES-CBC',iv},k,raw.slice(off+16)));}
+
+      if(mode==='encrypt'){
+        const keyBytes=await deriveKey(pw);
+        setProgress('CIFRANDO...',40);
+        const algoId=ALGO_IDS[S.algo]||1;
+        const header=buildHeader(algoId);
+        const encrypted=await encryptRaw(raw,keyBytes,S.algo);
+        setProgress('EMPAQUETANDO...',85);
+        output=new Uint8Array(header.length+encrypted.length);
+        output.set(header);output.set(encrypted,header.length);
+      }else{
+        // DESCIFRADO: leer header para saber el algoritmo real
+        setProgress('LEYENDO HEADER...',20);
+        let hdr;
+        try{hdr=parseHeader(raw);}catch(he){throw new Error(he.message);}
+        const algo=hdr.algo;
+        const payload=raw.slice(hdr.headerLen);
+        log(`Formato v${hdr.version} · Algoritmo detectado: ${algo.toUpperCase()}`,'info');
+
+        // Verificar que el plan actual tiene permiso para descifrar
+        const allowed=PLAN_ALGOS[S.plan]||[];
+        if(!allowed.includes(algo))throw new Error(`El archivo usa ${algo.toUpperCase()} — necesitas plan superior para descifrarlo`);
+
+        setProgress('DERIVANDO CLAVE...',40);
+        const keyBytes=await deriveKey(pw);
+        setProgress('DESCIFRANDO...',60);
+        output=await decryptRaw(payload,keyBytes,algo);
       }
+
       setProgress('DESCARGANDO...',95);
       const elapsed=(performance.now()-t0).toFixed(1);
       log(`OK ${elapsed}ms · ${fmtSize(output.length)}`,'ok');
-      const name=mode==='encrypt'?S.file.name+'.aegis':S.file.name.replace(/\.aegis$/,'');
+
+      const name=mode==='encrypt'
+        ? S.file.name+'.aegis'
+        : S.file.name.replace(/\.aegis$/i,'');
+
       const blob=new Blob([output],{type:'application/octet-stream'});
       const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();
       setProgress('¡COMPLETADO!',100);setTimeout(hideProgress,2000);
       toast(`${mode==='encrypt'?'Cifrado':'Descifrado'} OK (${elapsed}ms)`,'success');
-      if(S.cfg.autoClear)clearPattern();
-    } catch(err){hideProgress();log('ERROR: '+err.message,'err');toast(err.message,'error',5000);}
+      if(mode==='encrypt'&&S.cfg.autoClear)clearPattern();
+    }catch(err){
+      hideProgress();
+      log('ERROR: '+err.message,'err');
+      toast(err.message,'error',6000);
+    }
   };
   reader.readAsArrayBuffer(S.file);
 };
+
 document.getElementById('btnEnc').addEventListener('click',()=>processFile('encrypt'));
 document.getElementById('btnDec').addEventListener('click',()=>processFile('decrypt'));
 
-// ═══════════════════════════════════════════
-// P2P TRANSFER
-// ═══════════════════════════════════════════
-let pc=null,dataChannel=null,sessionKey=null;
-let sendFileData=null,recvParts=[],recvMeta=null,recvBytes=0,recvChunks=0,recvWriter=null,recvFileHandle=null,recvQueue=Promise.resolve();
-const CHUNK_SIZE=64*1024;
-const P2P_MAX_BUFFER=8*1024*1024;
-const P2P_LOW_BUFFER=2*1024*1024;
-let currentRoomId=null;
-const iceServers=[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:stun.cloudflare.com:3478'}];
+// ══════════════════════════════════════════════════════
+// P2P TRANSFERENCIA — CORREGIDA con TURN + señalización mejorada
+// ══════════════════════════════════════════════════════
+let pc=null, dataChannel=null, sessionKey=null;
+let sendFileData=null, recvParts=[], recvMeta=null, recvBytes=0, recvChunks=0;
+let recvWriter=null, recvFileHandle=null, recvQueue=Promise.resolve();
+let currentRoomId=null, sigListenerRef=null, sigListenerFn=null;
 
-const setPeerStatus=(type,msg)=>{const s=document.getElementById('peerStatus');const dot=document.getElementById('peerDot');s.className='peer-status '+type;dot.className='peer-dot '+type;document.getElementById('peerStatusTxt').textContent=msg;};
-const genRoomCode=()=>{const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let code='';const bytes=crypto.getRandomValues(new Uint8Array(8));bytes.forEach(b=>code+=chars[b%chars.length]);return code;};
-const genSessionKey=async()=>{const key=await crypto.subtle.generateKey({name:'AES-GCM',length:256},true,['encrypt','decrypt']);const raw=await crypto.subtle.exportKey('raw',key);return{key,raw:new Uint8Array(raw)};};
-const encryptChunk=async(data)=>{const iv=crypto.getRandomValues(new Uint8Array(12));const enc=await crypto.subtle.encrypt({name:'AES-GCM',iv},sessionKey.key,data);const combined=new Uint8Array(12+enc.byteLength);combined.set(iv);combined.set(new Uint8Array(enc),12);return combined;};
-const decryptChunk=async(data)=>{const iv=data.slice(0,12);return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv},sessionKey.key,data.slice(12)));};
-const waitForChannelDrain=()=>new Promise(resolve=>{if(!dataChannel||dataChannel.bufferedAmount<=P2P_MAX_BUFFER)return resolve();const done=()=>resolve();dataChannel.bufferedAmountLowThreshold=P2P_LOW_BUFFER;dataChannel.addEventListener('bufferedamountlow',done,{once:true});setTimeout(done,15000);});
-const safeName=name=>(name||'archivo').replace(/[<>:"/\\|?*\x00-\x1F]/g,'_').slice(0,160);
-const b64FromBytes=bytes=>{let s='';for(let i=0;i<bytes.length;i+=0x8000)s+=String.fromCharCode(...bytes.subarray(i,i+0x8000));return btoa(s);};
-const bytesFromB64=b64=>Uint8Array.from(atob(b64),c=>c.charCodeAt(0));
-const updateRecvProgress=()=>{if(!recvMeta)return;const pct=Math.min(100,Math.floor(recvBytes/recvMeta.size*100));document.getElementById('recvFill').style.width=pct+'%';document.getElementById('recvPct').textContent=pct+'%';document.getElementById('recvFileMeta').textContent=`${fmtSize(recvBytes)} / ${fmtSize(recvMeta.size)} · ${recvWriter?'stream a disco':'buffer seguro'}`;};
-const addReceivedItem=(url,name,size,mode)=>{const list=document.getElementById('receivedList');const item=document.createElement('div');item.className='transfer-item';item.innerHTML=`<span class="ti-name">${name}</span><span class="ti-size">${fmtSize(size)} · ${mode}</span><button class="ti-dl" onclick="(function(u,n){const a=document.createElement('a');a.href=u;a.download=n;a.click();})(this.dataset.url,this.dataset.name)" data-url="${url}" data-name="${name}">⬇ Guardar</button>`;list.insertBefore(item,list.firstChild);};
-const openRecvSink=async meta=>{recvWriter=null;recvFileHandle=null;recvParts=[];recvBytes=0;recvChunks=0;if(navigator.storage&&navigator.storage.getDirectory){try{const root=await navigator.storage.getDirectory();recvFileHandle=await root.getFileHandle(`aegis-${Date.now()}-${safeName(meta.name)}`,{create:true});recvWriter=await recvFileHandle.createWritable();log('Recepción grande: stream OPFS activado','ok');}catch(e){log('OPFS no disponible, usando Blob por chunks: '+e.message,'warn');}}};
-const finishRecvFile=async()=>{if(!recvMeta)return;let url,mode;if(recvWriter&&recvFileHandle){await recvWriter.close();const file=await recvFileHandle.getFile();url=URL.createObjectURL(file);mode='disco temporal';}else{const blob=new Blob(recvParts,{type:recvMeta.mimeType||'application/octet-stream'});url=URL.createObjectURL(blob);mode='memoria';}addReceivedItem(url,recvMeta.name,recvMeta.size,mode);document.getElementById('receiveProgress').style.display='none';toast('✅ Recibido: '+recvMeta.name,'success');log('Recibido completo: '+recvMeta.name,'ok');recvParts=[];recvMeta=null;recvWriter=null;recvFileHandle=null;recvBytes=0;recvChunks=0;};
-const handleP2PMessage=async data=>{if(typeof data==='string'){const msg=JSON.parse(data);if(msg.type==='key'){const rawKey=bytesFromB64(msg.key);const key=await crypto.subtle.importKey('raw',rawKey,{name:'AES-GCM'},false,['encrypt','decrypt']);sessionKey={key,raw:rawKey};log('Clave E2E recibida','ok');}else if(msg.type==='meta'){recvMeta=msg;await openRecvSink(msg);document.getElementById('receiveProgress').style.display='block';document.getElementById('noReceiveYet').style.display='none';document.getElementById('recvFileName').textContent=msg.name;document.getElementById('recvFill').style.width='0%';document.getElementById('recvPct').textContent='0%';updateRecvProgress();log('Recibiendo por chunks: '+msg.name,'info');}else if(msg.type==='done'){await finishRecvFile();}else if(msg.type==='abort'){throw new Error('Transferencia cancelada por el emisor');}return;}if(!recvMeta||!sessionKey)return;const plain=await decryptChunk(new Uint8Array(data));if(recvWriter)await recvWriter.write(plain);else recvParts.push(plain);recvBytes+=plain.byteLength;recvChunks++;if(recvChunks%4===0||recvBytes>=recvMeta.size)updateRecvProgress();};
-const initPeerConnection=()=>{if(pc){try{pc.close();}catch(e){}}pc=new RTCPeerConnection({iceServers,iceCandidatePoolSize:10});pc.oniceconnectionstatechange=()=>{if(pc.iceConnectionState==='connected'||pc.iceConnectionState==='completed'){setPeerStatus('connected','🔐 Conectado P2P — E2E activo');document.getElementById('sendFileSection').style.display='block';}else if(pc.iceConnectionState==='disconnected'||pc.iceConnectionState==='failed'){setPeerStatus('error','Conexión perdida');}};return pc;};
-const setupDataChannel=dc=>{dataChannel=dc;dataChannel.binaryType='arraybuffer';dataChannel.bufferedAmountLowThreshold=P2P_LOW_BUFFER;dataChannel.onopen=()=>{setPeerStatus('connected','🔐 Canal abierto — E2E activo');document.getElementById('sendFileSection').style.display='block';document.getElementById('noReceiveYet').textContent='Canal abierto. Esperando archivos...';};dataChannel.onmessage=e=>{recvQueue=recvQueue.then(()=>handleP2PMessage(e.data)).catch(err=>{log('Error P2P: '+err.message,'err');setPeerStatus('error','Error recibiendo archivo');});};dataChannel.onerror=e=>{log('Canal error: '+(e.message||''),'err');setPeerStatus('error','Error en canal de datos');};dataChannel.onclose=()=>setPeerStatus('waiting','Canal cerrado');};
-const sendSignal=async(roomId,fromRole,payload)=>{if(!fbReady||!db)return;await push(ref(db,`p2p_rooms/${roomId}/signals/${fromRole}`),{payload:JSON.stringify(payload),ts:Date.now()});};
-const listenSignals=(roomId,myRole,callback)=>{if(!fbReady||!db)return;const otherRole=myRole==='initiator'?'joiner':'initiator';return onValue(ref(db,`p2p_rooms/${roomId}/signals/${otherRole}`),snap=>{if(!snap.exists())return;snap.forEach(child=>{try{const d=JSON.parse(child.val().payload);callback(d);}catch(e){}});});};
-const createRoom=async()=>{if(!fbReady||!db){toast('Firebase requerido para P2P','warn');return;}const code=genRoomCode();currentRoomId=code;document.getElementById('roomCodeDisplay').style.display='block';document.getElementById('roomCodeTxt').textContent=code;setPeerStatus('waiting','⏳ Esperando que alguien se una...');const pc2=initPeerConnection();const dc=pc2.createDataChannel('aegis-transfer',{ordered:true});setupDataChannel(dc);const sk=await genSessionKey();sessionKey=sk;pc2.onicecandidate=async e=>{if(e.candidate)await sendSignal(code,'initiator',{type:'ice',candidate:e.candidate});};const offer=await pc2.createOffer();await pc2.setLocalDescription(offer);await sendSignal(code,'initiator',{type:'offer',sdp:offer});listenSignals(code,'initiator',async msg=>{if(msg.type==='answer'&&pc2.signalingState!=='stable'){await pc2.setRemoteDescription(new RTCSessionDescription(msg.sdp));}else if(msg.type==='ice'&&msg.candidate){try{await pc2.addIceCandidate(new RTCIceCandidate(msg.candidate));}catch(e){}}});setTimeout(()=>{if(fbReady&&db)remove(ref(db,`p2p_rooms/${code}`));},30*60*1000);log('Sala creada: '+code,'ok');toast('Sala creada: '+code,'success');};
-const joinRoom=async code=>{if(!fbReady||!db){toast('Firebase requerido','warn');return;}code=code.toUpperCase().trim();currentRoomId=code;setPeerStatus('waiting','⏳ Conectando...');const pc2=initPeerConnection();pc2.ondatachannel=e=>setupDataChannel(e.channel);pc2.onicecandidate=async e=>{if(e.candidate)await sendSignal(code,'joiner',{type:'ice',candidate:e.candidate});};listenSignals(code,'joiner',async msg=>{if(msg.type==='offer'&&pc2.signalingState==='stable'){await pc2.setRemoteDescription(new RTCSessionDescription(msg.sdp));const answer=await pc2.createAnswer();await pc2.setLocalDescription(answer);await sendSignal(code,'joiner',{type:'answer',sdp:answer});}else if(msg.type==='ice'&&msg.candidate){try{await pc2.addIceCandidate(new RTCIceCandidate(msg.candidate));}catch(e){}}});log('Uniéndose a sala: '+code,'info');};
-const sendFileP2P=async file=>{if(!dataChannel||dataChannel.readyState!=='open'){toast('Canal P2P no abierto','error');return;}const maxSize=PLAN_P2P_LIMIT[S.plan];if(file.size>maxSize){toast(`Archivo supera límite P2P de tu plan (${fmtSize(maxSize)})`,'error');return;}try{if(!sessionKey)sessionKey=await genSessionKey();dataChannel.send(JSON.stringify({type:'key',key:b64FromBytes(sessionKey.raw)}));dataChannel.send(JSON.stringify({type:'meta',name:file.name,size:file.size,chunkSize:CHUNK_SIZE,totalChunks:Math.ceil(file.size/CHUNK_SIZE),mimeType:file.type}));document.getElementById('sendProgress').style.display='block';document.getElementById('sendFileName').textContent=file.name;document.getElementById('sendFileMeta').textContent=`0 / ${fmtSize(file.size)} · chunks ${fmtSize(CHUNK_SIZE)}`;document.getElementById('sendFill').style.width='0%';document.getElementById('sendPct').textContent='0%';let offset=0,idx=0;while(offset<file.size){if(dataChannel.readyState!=='open')throw new Error('Canal cerrado durante el envío');await waitForChannelDrain();const end=Math.min(offset+CHUNK_SIZE,file.size);const raw=await file.slice(offset,end).arrayBuffer();const encrypted=await encryptChunk(new Uint8Array(raw));dataChannel.send(encrypted.buffer);offset=end;idx++;if(idx%4===0||offset>=file.size){const pct=Math.floor(offset/file.size*100);document.getElementById('sendFill').style.width=pct+'%';document.getElementById('sendPct').textContent=pct+'%';document.getElementById('sendFileMeta').textContent=`${fmtSize(offset)} / ${fmtSize(file.size)} · buffer ${fmtSize(dataChannel.bufferedAmount)}`;await new Promise(r=>setTimeout(r,0));}}await waitForChannelDrain();dataChannel.send(JSON.stringify({type:'done'}));toast('✅ Enviado: '+file.name,'success');log('Enviado por chunks: '+file.name,'ok');}catch(e){try{dataChannel?.send(JSON.stringify({type:'abort',reason:e.message}));}catch(_e){}toast('Error enviando: '+e.message,'error');log('Error enviando P2P: '+e.message,'err');}};
+const CHUNK_SIZE     = 64*1024;
+const P2P_MAX_BUFFER = 8*1024*1024;
+const P2P_LOW_BUFFER = 2*1024*1024;
+
+const setPeerStatus = (type, msg) => {
+  const s=document.getElementById('peerStatus'),dot=document.getElementById('peerDot');
+  s.className='peer-status '+type;dot.className='peer-dot '+type;
+  document.getElementById('peerStatusTxt').textContent=msg;
+};
+
+const setConnInfo = (type, detail) => {
+  const box=document.getElementById('connInfoBox');
+  box.style.display='block';box.className='conn-info '+type;
+  document.getElementById('connTypeLabel').textContent=type==='direct'?'🟢 Conexión directa':'🟣 Relay TURN (CGNAT)';
+  document.getElementById('connTypeLabel').className='conn-type '+type;
+  document.getElementById('connTypeDetail').textContent=detail;
+};
+
+const genRoomCode = () => {
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let code='';
+  const bytes=crypto.getRandomValues(new Uint8Array(8));bytes.forEach(b=>code+=chars[b%chars.length]);return code;
+};
+
+const genSessionKey = async () => {
+  const key=await crypto.subtle.generateKey({name:'AES-GCM',length:256},true,['encrypt','decrypt']);
+  const raw=await crypto.subtle.exportKey('raw',key);return{key,raw:new Uint8Array(raw)};
+};
+
+const encryptChunk = async data => {
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const enc=await crypto.subtle.encrypt({name:'AES-GCM',iv},sessionKey.key,data);
+  const combined=new Uint8Array(12+enc.byteLength);combined.set(iv);combined.set(new Uint8Array(enc),12);return combined;
+};
+const decryptChunk = async data => {
+  const iv=data.slice(0,12);
+  return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv},sessionKey.key,data.slice(12)));
+};
+
+const waitForChannelDrain = () => new Promise(resolve=>{
+  if(!dataChannel||dataChannel.bufferedAmount<=P2P_MAX_BUFFER)return resolve();
+  const done=()=>resolve();
+  dataChannel.bufferedAmountLowThreshold=P2P_LOW_BUFFER;
+  dataChannel.addEventListener('bufferedamountlow',done,{once:true});
+  setTimeout(done,15000);
+});
+
+const b64FromBytes = bytes => {let s='';for(let i=0;i<bytes.length;i+=0x8000)s+=String.fromCharCode(...bytes.subarray(i,i+0x8000));return btoa(s);};
+const bytesFromB64 = b64 => Uint8Array.from(atob(b64),c=>c.charCodeAt(0));
+
+const updateRecvProgress = () => {
+  if(!recvMeta)return;
+  const pct=Math.min(100,Math.floor(recvBytes/recvMeta.size*100));
+  document.getElementById('recvFill').style.width=pct+'%';
+  document.getElementById('recvPct').textContent=pct+'%';
+  document.getElementById('recvFileMeta').textContent=`${fmtSize(recvBytes)} / ${fmtSize(recvMeta.size)}`;
+};
+
+const addReceivedItem = (url,name,size,mode) => {
+  const list=document.getElementById('receivedList');
+  const item=document.createElement('div');item.className='transfer-item';
+  item.innerHTML=`<span class="ti-name">${name}</span><span class="ti-size">${fmtSize(size)} · ${mode}</span><button class="ti-dl" onclick="(function(u,n){const a=document.createElement('a');a.href=u;a.download=n;a.click();})(this.dataset.url,this.dataset.name)" data-url="${url}" data-name="${name}">⬇ Guardar</button>`;
+  list.insertBefore(item,list.firstChild);
+};
+
+const openRecvSink = async meta => {
+  recvWriter=null;recvFileHandle=null;recvParts=[];recvBytes=0;recvChunks=0;
+  if(navigator.storage&&navigator.storage.getDirectory){
+    try{
+      const root=await navigator.storage.getDirectory();
+      recvFileHandle=await root.getFileHandle(`aegis-${Date.now()}.tmp`,{create:true});
+      recvWriter=await recvFileHandle.createWritable();
+      log('Stream OPFS activado','ok');
+    }catch(e){log('OPFS no disponible, usando buffer','warn');}
+  }
+};
+
+const finishRecvFile = async () => {
+  if(!recvMeta)return;
+  let url,mode;
+  if(recvWriter&&recvFileHandle){
+    await recvWriter.close();const file=await recvFileHandle.getFile();url=URL.createObjectURL(file);mode='disco';
+  }else{
+    const blob=new Blob(recvParts,{type:recvMeta.mimeType||'application/octet-stream'});url=URL.createObjectURL(blob);mode='memoria';
+  }
+  addReceivedItem(url,recvMeta.name,recvMeta.size,mode);
+  document.getElementById('receiveProgress').style.display='none';
+  toast('✅ Recibido: '+recvMeta.name,'success');
+  log('Recibido: '+recvMeta.name,'ok');
+  recvParts=[];recvMeta=null;recvWriter=null;recvFileHandle=null;recvBytes=0;recvChunks=0;
+};
+
+const handleP2PMessage = async data => {
+  if(typeof data==='string'){
+    const msg=JSON.parse(data);
+    if(msg.type==='key'){
+      const raw=bytesFromB64(msg.key);
+      const key=await crypto.subtle.importKey('raw',raw,{name:'AES-GCM'},false,['encrypt','decrypt']);
+      sessionKey={key,raw};log('Clave E2E recibida','ok');
+    }else if(msg.type==='meta'){
+      recvMeta=msg;await openRecvSink(msg);
+      document.getElementById('receiveProgress').style.display='block';
+      document.getElementById('noReceiveYet').style.display='none';
+      document.getElementById('recvFileName').textContent=msg.name;
+      document.getElementById('recvFill').style.width='0%';document.getElementById('recvPct').textContent='0%';
+      updateRecvProgress();log('Recibiendo: '+msg.name,'info');
+    }else if(msg.type==='done'){
+      await finishRecvFile();
+    }else if(msg.type==='abort'){
+      log('Transferencia cancelada por el emisor','err');
+    }
+    return;
+  }
+  if(!recvMeta||!sessionKey)return;
+  const plain=await decryptChunk(new Uint8Array(data));
+  if(recvWriter)await recvWriter.write(plain);else recvParts.push(plain);
+  recvBytes+=plain.byteLength;recvChunks++;
+  if(recvChunks%4===0||recvBytes>=recvMeta.size)updateRecvProgress();
+};
+
+// ── Señalización mejorada ─────────────────────────────
+// Usamos timestamp en cada señal y procesamos sin duplicados
+const processedSignals = new Set();
+
+const sendSignal = async (roomId, fromRole, payload) => {
+  if(!fbReady||!db)return;
+  const signalRef=ref(db,`p2p_rooms/${roomId}/signals/${fromRole}`);
+  await push(signalRef,{payload:JSON.stringify(payload),ts:Date.now()});
+};
+
+const stopListening = () => {
+  if(sigListenerRef&&sigListenerFn){
+    try{off(sigListenerRef,sigListenerFn);}catch(e){}
+    sigListenerRef=null;sigListenerFn=null;
+  }
+  processedSignals.clear();
+};
+
+const listenSignals = (roomId, myRole, callback) => {
+  if(!fbReady||!db)return;
+  stopListening();
+  const otherRole=myRole==='initiator'?'joiner':'initiator';
+  sigListenerRef=ref(db,`p2p_rooms/${roomId}/signals/${otherRole}`);
+  sigListenerFn=onValue(sigListenerRef, snap=>{
+    if(!snap.exists())return;
+    snap.forEach(child=>{
+      const key=child.key;
+      if(processedSignals.has(key))return;
+      processedSignals.add(key);
+      try{const d=JSON.parse(child.val().payload);callback(d);}catch(e){log('Error señal: '+e.message,'err');}
+    });
+  });
+};
+
+// Detectar tipo de conexión (directa vs relay)
+const detectConnectionType = () => {
+  if(!pc)return;
+  if(pc.getStats){
+    pc.getStats().then(stats=>{
+      stats.forEach(r=>{
+        if(r.type==='candidate-pair'&&r.state==='succeeded'){
+          const local=Array.from(stats.values()).find(s=>s.id===r.localCandidateId);
+          if(local){
+            const isRelay=local.candidateType==='relay';
+            setConnInfo(isRelay?'relay':'direct',
+              isRelay?'Via servidor TURN (CGNAT detectado)':'Conexión P2P directa');
+          }
+        }
+      });
+    }).catch(()=>{});
+  }
+};
+
+const initPeerConnection = () => {
+  if(pc){try{pc.close();}catch(e){}}
+  pc=new RTCPeerConnection({
+    iceServers: ICE_SERVERS,
+    iceCandidatePoolSize: 10,
+    iceTransportPolicy: 'all', // Permite TURN como fallback automático
+  });
+
+  pc.oniceconnectionstatechange=()=>{
+    log('ICE: '+pc.iceConnectionState,'info');
+    if(pc.iceConnectionState==='connected'||pc.iceConnectionState==='completed'){
+      setPeerStatus('connected','🔐 Conectado P2P — E2E activo');
+      document.getElementById('sendFileSection').style.display='block';
+      setTimeout(detectConnectionType, 1000);
+    }else if(pc.iceConnectionState==='checking'){
+      setPeerStatus('waiting','⏳ Negociando conexión (STUN/TURN)...');
+    }else if(pc.iceConnectionState==='failed'){
+      setPeerStatus('error','❌ ICE falló — inténtalo de nuevo');
+      log('ICE failed — revisa firewall o conexión a internet','err');
+    }else if(pc.iceConnectionState==='disconnected'){
+      setPeerStatus('error','Conexión perdida');
+    }
+  };
+
+  pc.onconnectionstatechange=()=>{
+    if(pc.connectionState==='connected')detectConnectionType();
+    if(pc.connectionState==='failed'){
+      setPeerStatus('error','Conexión fallida');
+      log('PeerConnection failed','err');
+    }
+  };
+
+  return pc;
+};
+
+const setupDataChannel = dc => {
+  dataChannel=dc;dataChannel.binaryType='arraybuffer';
+  dataChannel.bufferedAmountLowThreshold=P2P_LOW_BUFFER;
+  dataChannel.onopen=()=>{
+    setPeerStatus('connected','🔐 Canal abierto — E2E activo');
+    document.getElementById('sendFileSection').style.display='block';
+    document.getElementById('noReceiveYet').textContent='Canal abierto. Esperando archivos...';
+    setTimeout(detectConnectionType,1000);
+  };
+  dataChannel.onmessage=e=>{
+    recvQueue=recvQueue.then(()=>handleP2PMessage(e.data)).catch(err=>{
+      log('Error P2P recv: '+err.message,'err');
+    });
+  };
+  dataChannel.onerror=e=>{log('Canal error: '+(e.error?.message||e.message||''),'err');setPeerStatus('error','Error en canal');};
+  dataChannel.onclose=()=>setPeerStatus('waiting','Canal cerrado');
+};
+
+// ── Crear sala ─────────────────────────────────────────
+const createRoom = async () => {
+  if(!fbReady||!db){toast('Firebase requerido para P2P','warn');return;}
+  const code=genRoomCode();currentRoomId=code;
+  document.getElementById('roomCodeDisplay').style.display='block';
+  document.getElementById('roomCodeTxt').textContent=code;
+  document.getElementById('connInfoBox').style.display='none';
+  setPeerStatus('waiting','⏳ Esperando al otro dispositivo...');
+
+  const pc2=initPeerConnection();
+  const dc=pc2.createDataChannel('aegis-transfer',{ordered:true});
+  setupDataChannel(dc);
+
+  sessionKey=await genSessionKey();
+
+  // ICE candidates — enviamos todos para max conectividad
+  const pendingCandidates=[];
+  let offerSent=false;
+  pc2.onicecandidate=async ev=>{
+    if(ev.candidate){
+      if(offerSent)await sendSignal(code,'initiator',{type:'ice',candidate:ev.candidate.toJSON()});
+      else pendingCandidates.push(ev.candidate.toJSON());
+    }
+  };
+
+  const offer=await pc2.createOffer();
+  await pc2.setLocalDescription(offer);
+  await sendSignal(code,'initiator',{type:'offer',sdp:offer});
+  offerSent=true;
+
+  // Enviar candidatos pendientes
+  for(const c of pendingCandidates)await sendSignal(code,'initiator',{type:'ice',candidate:c});
+
+  listenSignals(code,'initiator',async msg=>{
+    if(msg.type==='answer'&&pc2.signalingState!=='stable'){
+      try{await pc2.setRemoteDescription(new RTCSessionDescription(msg.sdp));}
+      catch(e){log('Error setRemoteDesc (answer): '+e.message,'err');}
+    }else if(msg.type==='ice'&&msg.candidate){
+      try{await pc2.addIceCandidate(new RTCIceCandidate(msg.candidate));}catch(e){}
+    }
+  });
+
+  // Limpiar sala tras 45 min
+  setTimeout(()=>{if(fbReady&&db)remove(ref(db,`p2p_rooms/${code}`)).catch(()=>{});},45*60*1000);
+  log('Sala creada: '+code,'ok');toast('Sala creada: '+code,'success');
+};
+
+// ── Unirse a sala ──────────────────────────────────────
+const joinRoom = async code => {
+  if(!fbReady||!db){toast('Firebase requerido','warn');return;}
+  code=code.toUpperCase().trim();currentRoomId=code;
+  document.getElementById('connInfoBox').style.display='none';
+  setPeerStatus('waiting','⏳ Conectando...');log('Uniéndose a sala: '+code,'info');
+
+  const pc2=initPeerConnection();
+  pc2.ondatachannel=e=>setupDataChannel(e.channel);
+
+  const remoteCandidatesQueue=[];
+  let remoteSet=false;
+
+  pc2.onicecandidate=async ev=>{
+    if(ev.candidate)await sendSignal(code,'joiner',{type:'ice',candidate:ev.candidate.toJSON()});
+  };
+
+  listenSignals(code,'joiner',async msg=>{
+    if(msg.type==='offer'&&pc2.signalingState==='stable'){
+      try{
+        await pc2.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+        remoteSet=true;
+        // Procesar candidatos en cola
+        for(const c of remoteCandidatesQueue){
+          try{await pc2.addIceCandidate(new RTCIceCandidate(c));}catch(e){}
+        }
+        remoteCandidatesQueue.length=0;
+        const answer=await pc2.createAnswer();
+        await pc2.setLocalDescription(answer);
+        await sendSignal(code,'joiner',{type:'answer',sdp:answer});
+      }catch(e){log('Error offer: '+e.message,'err');setPeerStatus('error','Error al conectar');}
+    }else if(msg.type==='ice'&&msg.candidate){
+      if(remoteSet){
+        try{await pc2.addIceCandidate(new RTCIceCandidate(msg.candidate));}catch(e){}
+      }else{
+        remoteCandidatesQueue.push(msg.candidate);
+      }
+    }
+  });
+};
 
 document.getElementById('btnCreateRoom').addEventListener('click',createRoom);
-document.getElementById('btnJoinRoom').addEventListener('click',()=>{const row=document.getElementById('joinRoomRow');row.style.display=row.style.display==='none'?'block':'none';});
-document.getElementById('btnConfirmJoin').addEventListener('click',()=>{const code=document.getElementById('roomCodeInput').value;if(!code||code.length<6){toast('Código inválido','warn');return;}joinRoom(code);document.getElementById('joinRoomRow').style.display='none';document.getElementById('sendFileSection').style.display='block';});
+document.getElementById('btnJoinRoom').addEventListener('click',()=>{
+  const row=document.getElementById('joinRoomRow');row.style.display=row.style.display==='none'?'block':'none';
+});
+document.getElementById('btnConfirmJoin').addEventListener('click',()=>{
+  const code=document.getElementById('roomCodeInput').value;
+  if(!code||code.length<6){toast('Código inválido','warn');return;}
+  joinRoom(code);document.getElementById('joinRoomRow').style.display='none';document.getElementById('sendFileSection').style.display='block';
+});
+
 const sfd=document.getElementById('sendFileDrop');
 sfd.addEventListener('click',()=>document.getElementById('sendFileInput').click());
 sfd.addEventListener('dragover',e=>{e.preventDefault();sfd.classList.add('drag-over');});
 sfd.addEventListener('dragleave',()=>sfd.classList.remove('drag-over'));
 sfd.addEventListener('drop',e=>{e.preventDefault();sfd.classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f){sendFileData=f;document.getElementById('sendFileLabel').innerHTML=`<div class="file-name">${f.name}</div><div class="file-sz">${fmtSize(f.size)}</div>`;document.getElementById('btnSendFile').disabled=false;}});
 document.getElementById('sendFileInput').addEventListener('change',function(){if(this.files[0]){sendFileData=this.files[0];document.getElementById('sendFileLabel').innerHTML=`<div class="file-name">${this.files[0].name}</div><div class="file-sz">${fmtSize(this.files[0].size)}</div>`;document.getElementById('btnSendFile').disabled=false;}});
+
+const sendFileP2P = async file => {
+  if(!dataChannel||dataChannel.readyState!=='open'){toast('Canal P2P no abierto','error');return;}
+  const maxSize=PLAN_P2P_LIMIT[S.plan];
+  if(file.size>maxSize){toast(`Supera límite P2P (${fmtSize(maxSize)})`,'error');return;}
+  try{
+    if(!sessionKey)sessionKey=await genSessionKey();
+    dataChannel.send(JSON.stringify({type:'key',key:b64FromBytes(sessionKey.raw)}));
+    dataChannel.send(JSON.stringify({type:'meta',name:file.name,size:file.size,mimeType:file.type}));
+    document.getElementById('sendProgress').style.display='block';
+    document.getElementById('sendFileName').textContent=file.name;
+    document.getElementById('sendFill').style.width='0%';document.getElementById('sendPct').textContent='0%';
+    let offset=0,idx=0;
+    while(offset<file.size){
+      if(dataChannel.readyState!=='open')throw new Error('Canal cerrado durante el envío');
+      await waitForChannelDrain();
+      const end=Math.min(offset+CHUNK_SIZE,file.size);
+      const raw=await file.slice(offset,end).arrayBuffer();
+      const enc=await encryptChunk(new Uint8Array(raw));
+      dataChannel.send(enc.buffer);
+      offset=end;idx++;
+      if(idx%4===0||offset>=file.size){
+        const pct=Math.floor(offset/file.size*100);
+        document.getElementById('sendFill').style.width=pct+'%';
+        document.getElementById('sendPct').textContent=pct+'%';
+        document.getElementById('sendFileMeta').textContent=`${fmtSize(offset)} / ${fmtSize(file.size)}`;
+        await new Promise(r=>setTimeout(r,0));
+      }
+    }
+    await waitForChannelDrain();
+    dataChannel.send(JSON.stringify({type:'done'}));
+    toast('✅ Enviado: '+file.name,'success');
+    log('Enviado: '+file.name,'ok');
+  }catch(err){
+    try{dataChannel?.send(JSON.stringify({type:'abort',reason:err.message}));}catch(_){}
+    toast('Error enviando: '+err.message,'error');
+    log('Error P2P send: '+err.message,'err');
+  }
+};
 document.getElementById('btnSendFile').addEventListener('click',()=>{if(sendFileData)sendFileP2P(sendFileData);else toast('Selecciona un archivo','warn');});
 
-// ═══════════════════════════════════════════
-// Trial gratuito desactivado: solo se aceptan códigos de plan Premium/Ultra.
+// ══════════════════════════════════════════════════════
 // LICENSE VALIDATION
-// ═══════════════════════════════════════════
+// ══════════════════════════════════════════════════════
+const CODE_CONFIGS = {
+  'premium-30':      {prefix:'AEGIS-PRO',tier:'premium',dur:30*DAY_MS,   label:'30 días Premium'},
+  'ultra-30':        {prefix:'AEGIS-ULT',tier:'ultra',  dur:30*DAY_MS,   label:'30 días Ultra'},
+  'premium-forever': {prefix:'AEGIS-PRO',tier:'premium',dur:null,         label:'Premium infinito'},
+  'ultra-forever':   {prefix:'AEGIS-ULT',tier:'ultra',  dur:null,         label:'Ultra infinito'},
+};
+
+const getLicenseBucket = cfg => {
+  if(!cfg||!['premium','ultra'].includes(cfg.tier))return null;
+  return cfg.dur==null?CODE_FOLDER.forever:CODE_FOLDER.days30;
+};
+const licensePathForConfig = (code,cfg) => {
+  const b=getLicenseBucket(cfg);
+  return b?`${ACTIVATION_CODES_ROOT}/${cfg.tier}/${b}/${code}`:`${ACTIVATION_CODES_ROOT}/${code}`;
+};
+const licenseCandidatePaths = key => [
+  `${ACTIVATION_CODES_ROOT}/premium/${CODE_FOLDER.days30}/${key}`,
+  `${ACTIVATION_CODES_ROOT}/premium/${CODE_FOLDER.forever}/${key}`,
+  `${ACTIVATION_CODES_ROOT}/ultra/${CODE_FOLDER.days30}/${key}`,
+  `${ACTIVATION_CODES_ROOT}/ultra/${CODE_FOLDER.forever}/${key}`,
+  `${ACTIVATION_CODES_ROOT}/${key}`,
+];
+const findLicenseSnap = async key => {
+  for(const path of licenseCandidatePaths(key)){
+    const snap=await get(ref(db,path));if(snap.exists())return{snap,path};
+  }
+  return null;
+};
+const walkLicenseSnap = (snap,cb,basePath=ACTIVATION_CODES_ROOT) => {
+  if(!snap.exists())return;
+  snap.forEach(child=>{
+    const v=child.val();const childPath=`${basePath}/${child.key}`;
+    if(v&&typeof v==='object'&&('tier' in v||'status' in v)){cb(child.key,v,childPath);}
+    else{walkLicenseSnap(child,cb,childPath);}
+  });
+};
+
 const validateLicense = async key => {
-  if(!key){ toast('Introduce un código','warn'); return; }
-  const attempts = parseInt(sessionStorage.getItem('lic_a')||'0');
-  if(attempts >= 5){ toast('Demasiados intentos. Recarga la página.','error'); return; }
-  sessionStorage.setItem('lic_a', attempts+1);
-  if(!fbReady||!db){ toast('Firebase requerido','warn'); return; }
-  if(!S.user){ toast('Inicia sesión primero','error'); document.getElementById('premModal').classList.add('open'); return; }
-
-  key = key.trim().toUpperCase();
-
-  try {
-    const found = await findLicenseSnap(key);
-    if(!found){ toast('Código no válido','error'); return; }
-
-    const d = found.snap.val();
-    if(d.tier === 'trial'){
-      toast('La prueba gratuita está desactivada','error');
-      return;
+  if(!key){toast('Introduce un código','warn');return;}
+  const attempts=parseInt(sessionStorage.getItem('lic_a')||'0');
+  if(attempts>=5){toast('Demasiados intentos. Recarga.','error');return;}
+  sessionStorage.setItem('lic_a',attempts+1);
+  if(!fbReady||!db){toast('Firebase requerido','warn');return;}
+  if(!S.user){toast('Inicia sesión primero','error');document.getElementById('premModal').classList.add('open');return;}
+  key=key.trim().toUpperCase();
+  try{
+    const found=await findLicenseSnap(key);
+    if(!found){toast('Código no válido','error');return;}
+    const d=found.snap.val();
+    if(d.status==='claimed'){
+      toast(d.claimedBy===S.user.uid?'Ya activado en tu cuenta':'Código ya usado por otra cuenta',d.claimedBy===S.user.uid?'warn':'error');return;
     }
-
-    if(d.status === 'claimed'){
-      if(d.claimedBy === S.user.uid){
-        toast('Este código ya está activado en tu cuenta.','warn');
-      } else {
-        toast('Código ya utilizado por otra cuenta','error');
-      }
-      return;
-    }
-
-    if(d.expiresAt && Date.now() > d.expiresAt){
-      toast('Código expirado','error'); return;
-    }
-
-    const tier        = d.tier || 'premium';
-    const planExpiry  = (d.planDuration == null) ? null : (Date.now() + d.planDuration);
-    const planLabel   = {premium:'PREMIUM',ultra:'ULTRA'}[tier]||'PREMIUM';
-
-    await update(ref(db, found.path),{
-      status:    'claimed',
-      claimedBy: S.user.uid,
-      claimedAt: Date.now(),
-    });
-
-    await update(ref(db,'users/'+S.user.uid),{
-      plan:       tier,
-      planExpiry: planExpiry,
-      licenseKey: key,
-      email:      S.user.email,
-    });
-
-    S.plan       = tier;
-    S.planExpiry = planExpiry;
-    applyPlanUI(); stopNag(); refreshSettings();
-
-    if(d.planDuration == null){
-      toast(`🎉 ${planLabel} activado — -0day infinito`, 'success', 6000);
-    } else {
-      const days = Math.ceil(d.planDuration/86400000);
-      toast(`🎉 ${planLabel} activado — ${days} días (expira ${new Date(planExpiry).toLocaleDateString('es-ES')})`, 'success', 6000);
-    }
+    if(d.expiresAt&&Date.now()>d.expiresAt){toast('Código expirado','error');return;}
+    const tier=d.tier||'premium';
+    const planExpiry=d.planDuration==null?null:Date.now()+d.planDuration;
+    const planLabel={premium:'PREMIUM',ultra:'ULTRA'}[tier]||'PREMIUM';
+    await update(ref(db,found.path),{status:'claimed',claimedBy:S.user.uid,claimedAt:Date.now()});
+    await update(ref(db,'users/'+S.user.uid),{plan:tier,planExpiry,licenseKey:key,email:S.user.email});
+    S.plan=tier;S.planExpiry=planExpiry;
+    applyPlanUI();stopNag();refreshSettings();
+    const expStr=d.planDuration==null?'-0day infinito':`${Math.ceil(d.planDuration/86400000)} días`;
+    toast(`🎉 ${planLabel} activado — ${expStr}`,'success',6000);
     document.getElementById('premModal').classList.remove('open');
     sessionStorage.removeItem('lic_a');
-  } catch(e){ toast('Error: '+e.message,'error'); }
+  }catch(e){toast('Error: '+e.message,'error');}
 };
 
 document.getElementById('btnValidLic').addEventListener('click',()=>validateLicense(document.getElementById('licInp').value));
@@ -1731,173 +1906,145 @@ document.getElementById('btnPlansValidLic').addEventListener('click',()=>validat
 document.getElementById('btnGetPremium').addEventListener('click',()=>document.getElementById('premModal').classList.add('open'));
 document.getElementById('btnGetUltra').addEventListener('click',()=>document.getElementById('premModal').classList.add('open'));
 
-// ═══════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 // API DEMO
-// ═══════════════════════════════════════════
-const apiEncryptText=async(text,pw)=>{const enc=new TextEncoder();const raw=enc.encode(text);const keyBytes=new Uint8Array(await crypto.subtle.digest('SHA-256',enc.encode(pw)));const k16=keyBytes.slice(0,16);const key=await crypto.subtle.importKey('raw',k16,{name:'AES-CBC'},false,['encrypt']);const iv=crypto.getRandomValues(new Uint8Array(16));const encrypted=new Uint8Array(await crypto.subtle.encrypt({name:'AES-CBC',iv},key,raw));const combined=new Uint8Array(iv.length+encrypted.length);combined.set(iv);combined.set(encrypted,iv.length);return btoa(String.fromCharCode(...combined));};
-const apiDecryptText=async(b64,pw)=>{const enc=new TextEncoder();const bytes=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));const keyBytes=new Uint8Array(await crypto.subtle.digest('SHA-256',enc.encode(pw)));const k16=keyBytes.slice(0,16);const key=await crypto.subtle.importKey('raw',k16,{name:'AES-CBC'},false,['decrypt']);const iv=bytes.slice(0,16);const decrypted=await crypto.subtle.decrypt({name:'AES-CBC',iv},key,bytes.slice(16));return new TextDecoder().decode(decrypted);};
+// ══════════════════════════════════════════════════════
+const apiEncrypt=async(text,pw)=>{const enc=new TextEncoder();const raw=enc.encode(text);const kB=new Uint8Array(await crypto.subtle.digest('SHA-256',enc.encode(pw)));const k16=kB.slice(0,16);const key=await crypto.subtle.importKey('raw',k16,{name:'AES-CBC'},false,['encrypt']);const iv=crypto.getRandomValues(new Uint8Array(16));const encrypted=new Uint8Array(await crypto.subtle.encrypt({name:'AES-CBC',iv},key,raw));const combined=new Uint8Array(iv.length+encrypted.length);combined.set(iv);combined.set(encrypted,iv.length);return btoa(String.fromCharCode(...combined));};
+const apiDecrypt=async(b64,pw)=>{const enc=new TextEncoder();const bytes=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));const kB=new Uint8Array(await crypto.subtle.digest('SHA-256',enc.encode(pw)));const k16=kB.slice(0,16);const key=await crypto.subtle.importKey('raw',k16,{name:'AES-CBC'},false,['decrypt']);const iv=bytes.slice(0,16);const dec=await crypto.subtle.decrypt({name:'AES-CBC',iv},key,bytes.slice(16));return new TextDecoder().decode(dec);};
 let demoEncrypted='';
-document.getElementById('btnDemoEnc').addEventListener('click',async()=>{const txt=document.getElementById('demoTxt').value,pw=document.getElementById('demoPw').value;if(!txt||!pw){toast('Rellena campos','warn');return;}try{demoEncrypted=await apiEncryptText(txt,pw);document.getElementById('demoResult').textContent='[CIFRADO] '+demoEncrypted;document.getElementById('demoResult').style.color='var(--acc)';toast('Cifrado OK','success',2000);}catch(e){document.getElementById('demoResult').textContent='Error: '+e.message;document.getElementById('demoResult').style.color='var(--r)';}});
-document.getElementById('btnDemoDec').addEventListener('click',async()=>{const pw=document.getElementById('demoPw').value;if(!demoEncrypted){toast('Cifra algo primero','warn');return;}try{const dec=await apiDecryptText(demoEncrypted,pw);document.getElementById('demoResult').textContent='[DESCIFRADO] '+dec;document.getElementById('demoResult').style.color='var(--g)';toast('Descifrado OK','success',2000);}catch(e){document.getElementById('demoResult').textContent='Error: '+e.message;document.getElementById('demoResult').style.color='var(--r)';}});
+document.getElementById('btnDemoEnc').addEventListener('click',async()=>{const txt=document.getElementById('demoTxt').value,pw=document.getElementById('demoPw').value;if(!txt||!pw){toast('Rellena campos','warn');return;}try{demoEncrypted=await apiEncrypt(txt,pw);document.getElementById('demoResult').textContent='[CIFRADO] '+demoEncrypted;document.getElementById('demoResult').style.color='var(--acc)';toast('Cifrado OK','success',2000);}catch(e){document.getElementById('demoResult').textContent='Error: '+e.message;document.getElementById('demoResult').style.color='var(--r)';}});
+document.getElementById('btnDemoDec').addEventListener('click',async()=>{const pw=document.getElementById('demoPw').value;if(!demoEncrypted){toast('Cifra algo primero','warn');return;}try{const dec=await apiDecrypt(demoEncrypted,pw);document.getElementById('demoResult').textContent='[DESCIFRADO] '+dec;document.getElementById('demoResult').style.color='var(--g)';toast('Descifrado OK','success',2000);}catch(e){document.getElementById('demoResult').textContent='Error: '+e.message;document.getElementById('demoResult').style.color='var(--r)';}});
 
-// ═══════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 // ADMIN PANEL
-// ═══════════════════════════════════════════
-const ADMIN_PW_HASH = 'a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4';
+// ══════════════════════════════════════════════════════
+const ADMIN_PW_HASH='a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4';
+const hashStr=async s=>{const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');};
 
-const hashStr = async s => {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
-  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-};
-
-document.getElementById('btnAdminUnlock').addEventListener('click', async () => {
-  const pw = document.getElementById('adminPwInp').value;
-  const h  = await hashStr(pw);
-  if(h === ADMIN_PW_HASH || pw === 'aegisadmin2026'){
-    S.adminUnlocked = true;
-    document.getElementById('adminLockCard').style.display = 'none';
-    document.getElementById('adminPanel').style.display = 'block';
+document.getElementById('btnAdminUnlock').addEventListener('click',async()=>{
+  const pw=document.getElementById('adminPwInp').value;
+  const h=await hashStr(pw);
+  if(h===ADMIN_PW_HASH||pw==='aegisadmin2026'){
+    S.adminUnlocked=true;
+    document.getElementById('adminLockCard').style.display='none';
+    document.getElementById('adminPanel').style.display='block';
     refreshAdminPanel();
-  } else {
-    toast('Contraseña incorrecta','error');
-  }
+  }else toast('Contraseña incorrecta','error');
 });
 
-const refreshAdminPanel = async () => {
-  if(!S.adminUnlocked||!fbReady||!db) return;
-  const snap = await get(ref(db, ACTIVATION_CODES_ROOT));
-  let unclaimed = 0, claimed = 0, expired = 0;
-  const now = Date.now();
-  const stats = getCodePoolStats(snap);
-  walkLicenseSnap(snap, (code, v) => {
-    if(v.expiresAt && v.expiresAt < now) expired++;
-    else if(v.status==='unclaimed') unclaimed++;
-    else claimed++;
-  });
-  const bar = document.getElementById('poolStatus');
-  // Sin límite — mostrar estadísticas informativas
-  bar.className = 'pool-bar ok';
-  bar.textContent = `🟢 Vault: ${unclaimed} sin usar · ${claimed} activos · ${expired} expirados — P30:${stats['premium-30']} P∞:${stats['premium-forever']} U30:${stats['ultra-30']} U∞:${stats['ultra-forever']}`;
+const generateCodesIntoVault=async(count,type,createdBy='admin')=>{
+  if(!fbReady||!db)return[];
+  const cfg=CODE_CONFIGS[type];if(!cfg)return[];
+  const now=Date.now();const generated=[];
+  for(let i=0;i<count;i++){
+    const b=crypto.getRandomValues(new Uint8Array(4));
+    const suffix=Array.from(b,x=>x.toString(16).padStart(2,'0')).join('').toUpperCase();
+    const code=`${cfg.prefix}-${suffix}`;
+    const expiresAt=cfg.dur==null?null:now+cfg.dur;
+    await set(ref(db,licensePathForConfig(code,cfg)),{tier:cfg.tier,status:'unclaimed',expiresAt,planDuration:cfg.dur,createdAt:now,createdBy,label:cfg.label});
+    generated.push(code);
+  }
+  return generated;
 };
 
-document.getElementById('btnGenCodes').addEventListener('click', async () => {
+const refreshAdminPanel=async()=>{
+  if(!S.adminUnlocked||!fbReady||!db)return;
+  const snap=await get(ref(db,ACTIVATION_CODES_ROOT));
+  let unclaimed=0,claimed=0,expired=0;const now=Date.now();
+  walkLicenseSnap(snap,(code,v)=>{
+    if(v.expiresAt&&v.expiresAt<now)expired++;
+    else if(v.status==='unclaimed')unclaimed++;else claimed++;
+  });
+  const bar=document.getElementById('poolStatus');
+  bar.className='pool-bar ok';
+  bar.textContent=`Vault: ${unclaimed} sin usar · ${claimed} activos · ${expired} expirados`;
+};
+
+document.getElementById('btnGenCodes').addEventListener('click',async()=>{
   if(!S.adminUnlocked){toast('Acceso denegado','error');return;}
-  if(!fbReady||!db){toast('Firebase requerido','warn');return;}
-
-  const type = document.getElementById('codeType').value;
-  const qty  = parseInt(document.getElementById('codeQty').value);
-
-  const generated = await generateCodesIntoVault(qty, type, S.user?.uid || 'admin');
-  if(generated.length === 0){ toast('Error generando códigos','error'); return; }
-
-  const cfg  = CODE_CONFIGS[type];
-  const mixLabels = {
-    'premium-mixed': 'Premium repartido: 30 días / -0day infinito',
-    'ultra-mixed': 'Ultra repartido: 30 días / -0day infinito',
-  };
-  const list = document.getElementById('codeList');
-  list.innerHTML = '';
-  generated.forEach(code => {
-    const el = document.createElement('div');
-    el.className='code-entry';
-    const codeLabel = cfg?.label || (code.startsWith('AEGIS-ULT') ? mixLabels['ultra-mixed'] : mixLabels['premium-mixed']);
-    el.innerHTML=`<div><div class="ce-code">${code}</div><div class="ce-meta">${codeLabel}</div></div><button class="ce-copy" data-code="${code}">COPIAR</button>`;
-    el.querySelector('.ce-copy').addEventListener('click',function(){
-      navigator.clipboard.writeText(this.dataset.code).then(()=>toast('Copiado','success'));
-    });
+  const type=document.getElementById('codeType').value;
+  const qty=parseInt(document.getElementById('codeQty').value);
+  const generated=await generateCodesIntoVault(qty,type,S.user?.uid||'admin');
+  if(!generated.length){toast('Error generando','error');return;}
+  const list=document.getElementById('codeList');list.innerHTML='';
+  generated.forEach(code=>{
+    const el=document.createElement('div');el.className='code-entry';
+    el.innerHTML=`<div><div class="ce-code">${code}</div><div class="ce-meta">${CODE_CONFIGS[type]?.label||type}</div></div><button class="ce-copy" data-code="${code}">COPIAR</button>`;
+    el.querySelector('.ce-copy').addEventListener('click',function(){navigator.clipboard.writeText(this.dataset.code).then(()=>toast('Copiado','success'));});
     list.appendChild(el);
   });
-  toast(`${generated.length} código${generated.length>1?'s':''} generado${generated.length>1?'s':''}`, 'success');
-  refreshAdminPanel();
+  toast(`${generated.length} código(s) generado(s)`,'success');refreshAdminPanel();
 });
 
-document.getElementById('btnPurgeExpired').addEventListener('click', async () => {
+document.getElementById('btnPurgeExpired').addEventListener('click',async()=>{
   if(!S.adminUnlocked){toast('Acceso denegado','error');return;}
-  if(!fbReady||!db){toast('Firebase requerido','warn');return;}
-
-  const snap = await get(ref(db, ACTIVATION_CODES_ROOT));
-  if(!snap.exists()){ toast('No hay códigos','info'); return; }
-
-  const now = Date.now();
-  const updates = {};
-  let purged = 0;
-
-  // Solo eliminar los expirados — sin restricción de cantidad de sin-usar
-  walkLicenseSnap(snap, (code, v, path) => {
-    if(v.expiresAt && v.expiresAt < now){
-      updates[path] = null;
-      purged++;
-    }
-  });
-
-  if(Object.keys(updates).length > 0){
-    await update(ref(db), updates);
-  }
-  document.getElementById('purgeResult').textContent = `✅ ${purged} código${purged!==1?'s':''} expirado${purged!==1?'s':''} eliminado${purged!==1?'s':''}.`;
-  toast(`Purga: ${purged} eliminados`,'success');
-  refreshAdminPanel();
+  const snap=await get(ref(db,ACTIVATION_CODES_ROOT));if(!snap.exists()){toast('No hay códigos','info');return;}
+  const now=Date.now();const updates={};let purged=0;
+  walkLicenseSnap(snap,(code,v,path)=>{if(v.expiresAt&&v.expiresAt<now){updates[path]=null;purged++;}});
+  if(Object.keys(updates).length>0)await update(ref(db),updates);
+  document.getElementById('purgeResult').textContent=`✅ ${purged} eliminado(s)`;
+  toast(`Purga: ${purged} eliminados`,'success');refreshAdminPanel();
 });
 
-// ═══════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 // SETTINGS
-// ═══════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 const togMap={togAD:'antiDebug',togAC:'autoClear',togCM:'ctxMenu',togMagic:'magic',togVerbose:'verbose'};
 Object.entries(togMap).forEach(([id,key])=>{const el=document.getElementById(id);if(!el)return;el.checked=S.cfg[key]??true;el.addEventListener('change',()=>{S.cfg[key]=el.checked;toast(key+': '+(el.checked?'ON':'OFF'),'info',1200);});});
 document.getElementById('selKdf').addEventListener('change',function(){S.cfg.kdf=this.value;document.getElementById('pbRow').style.display=this.value==='pbkdf2'?'flex':'none';});
 document.getElementById('selFont').addEventListener('change',function(){document.documentElement.style.setProperty('--mono',this.value);});
-document.querySelectorAll('.cswatch').forEach(s=>{s.addEventListener('click',()=>{document.querySelectorAll('.cswatch').forEach(x=>x.classList.remove('active'));s.classList.add('active');const c={blue:{p:'#38bdf8',p2:'#0ea5e9'},green:{p:'#34d399',p2:'#10b981'},amber:{p:'#f59e0b',p2:'#b45309'},purple:{p:'#a78bfa',p2:'#7c3aed'},red:{p:'#f87171',p2:'#ef4444'},pink:{p:'#fb7185',p2:'#e11d48'}}[s.dataset.c]||{p:'#38bdf8',p2:'#0ea5e9'};document.documentElement.style.setProperty('--p',c.p);document.documentElement.style.setProperty('--p2',c.p2);});});
+document.querySelectorAll('.cswatch').forEach(s=>s.addEventListener('click',()=>{
+  document.querySelectorAll('.cswatch').forEach(x=>x.classList.remove('active'));s.classList.add('active');
+  const c={blue:{p:'#38bdf8',p2:'#0ea5e9'},green:{p:'#34d399',p2:'#10b981'},amber:{p:'#f59e0b',p2:'#b45309'},purple:{p:'#a78bfa',p2:'#7c3aed'},red:{p:'#f87171',p2:'#ef4444'},pink:{p:'#fb7185',p2:'#e11d48'}}[s.dataset.c]||{p:'#38bdf8',p2:'#0ea5e9'};
+  document.documentElement.style.setProperty('--p',c.p);document.documentElement.style.setProperty('--p2',c.p2);
+}));
 document.getElementById('selNag').addEventListener('change',function(){S.nagTime=parseInt(this.value);});
 document.getElementById('btnClearLS').addEventListener('click',()=>{localStorage.clear();sessionStorage.clear();toast('Datos borrados','warn');});
 document.getElementById('btnReset').addEventListener('click',()=>location.reload());
 
 const refreshSettings = () => {
-  document.getElementById('sAuthState').textContent  = S.user ? 'Autenticado' : 'Invitado';
-  document.getElementById('sAuthEmail').textContent  = S.user?.email || '—';
-  document.getElementById('sAuthPlan').textContent   = S.plan.toUpperCase();
-  const expStr = S.planExpiry ? new Date(S.planExpiry).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'}) : '—';
-  document.getElementById('sPlanExpiry').textContent = expStr;
+  document.getElementById('sAuthState').textContent=S.user?'Autenticado':'Invitado';
+  document.getElementById('sAuthEmail').textContent=S.user?.email||'—';
+  document.getElementById('sAuthPlan').textContent=S.plan.toUpperCase();
+  document.getElementById('sPlanExpiry').textContent=S.planExpiry?new Date(S.planExpiry).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'}):'—';
 };
 
-// ═══════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 // ANTI-DEBUG
-// ═══════════════════════════════════════════
-setInterval(()=>{if(!S.cfg.antiDebug)return;const t=performance.now();debugger;if(performance.now()-t>50){S.patternNodes=[];S.textPw='';S.autoPw='';clearPattern();log('ALERTA: DevTools detectado','err');}},500);
+// ══════════════════════════════════════════════════════
+setInterval(()=>{
+  if(!S.cfg.antiDebug)return;
+  const t=performance.now();debugger;
+  if(performance.now()-t>50){S.patternNodes=[];S.textPw='';S.autoPw='';clearPattern();log('ALERTA: DevTools detectado','err');}
+},500);
 window.addEventListener('contextmenu',e=>{if(S.cfg.ctxMenu)e.preventDefault();});
 
-// ═══════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 // INIT
-// ═══════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 updateSecInd();
 generateAnonApiKey();
 applyPlanUI();
 startNag();
 
 try{
-  auth = getAuth(app);
-  db   = getDatabase(app);
-  fbReady = true;
+  auth=getAuth(app);db=getDatabase(app);fbReady=true;
   showFbStatus('Firebase conectado ✓','ok');
-  onAuthStateChanged(auth, handleAuthChange);
-  log('AegisPattern v10 listo — Firebase OK','ok');
-
-  // ── AUTO-INIT: generar 10 códigos si el vault está vacío ──
-  await autoInitVaultIfEmpty();
-  // Asegurar códigos repartidos entre 30_dias y siempre
-  await ensureCodePoolsExist();
-
-} catch(err){
-  showFbStatus('Error Firebase: '+err.message.slice(0,50),'err');
-  log('Firebase no disponible — modo offline','warn');
+  onAuthStateChanged(auth,handleAuthChange);
+  log('AegisPattern v11 listo — TURN+STUN activado','ok');
+}catch(err){
+  showFbStatus('Firebase no disponible: '+err.message.slice(0,40),'err');
+  log('Modo offline','warn');
 }
 
-if(!fbReady) document.getElementById('transferLoginWarn').style.display='block';
+if(!fbReady)document.getElementById('transferLoginWarn').style.display='block';
 
 // Public SDK
-window.AegisSDK = class AegisSDK {
+window.AegisSDK=class AegisSDK{
   constructor({apiKey}={}){this.apiKey=apiKey;}
-  async encrypt(text,pw){const enc=new TextEncoder();const raw=enc.encode(text);const keyBytes=new Uint8Array(await crypto.subtle.digest('SHA-256',enc.encode(pw)));const k16=keyBytes.slice(0,16);const key=await crypto.subtle.importKey('raw',k16,{name:'AES-CBC'},false,['encrypt']);const iv=crypto.getRandomValues(new Uint8Array(16));const encrypted=new Uint8Array(await crypto.subtle.encrypt({name:'AES-CBC',iv},key,raw));const combined=new Uint8Array(iv.length+encrypted.length);combined.set(iv);combined.set(encrypted,iv.length);return btoa(String.fromCharCode(...combined));}
-  async decrypt(b64,pw){const enc=new TextEncoder();const bytes=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));const keyBytes=new Uint8Array(await crypto.subtle.digest('SHA-256',enc.encode(pw)));const k16=keyBytes.slice(0,16);const key=await crypto.subtle.importKey('raw',k16,{name:'AES-CBC'},false,['decrypt']);const iv=bytes.slice(0,16);const decrypted=await crypto.subtle.decrypt({name:'AES-CBC',iv},key,bytes.slice(16));return new TextDecoder().decode(decrypted);}
-  async getStatus(){return {used:0,limit:PLAN_API_LIMIT[S.plan],plan:S.plan,apiKey:this.apiKey};}
+  async encrypt(text,pw){const enc=new TextEncoder();const raw=enc.encode(text);const kB=new Uint8Array(await crypto.subtle.digest('SHA-256',enc.encode(pw)));const k=await crypto.subtle.importKey('raw',kB.slice(0,16),{name:'AES-CBC'},false,['encrypt']);const iv=crypto.getRandomValues(new Uint8Array(16));const encrypted=new Uint8Array(await crypto.subtle.encrypt({name:'AES-CBC',iv},k,raw));const combined=new Uint8Array(iv.length+encrypted.length);combined.set(iv);combined.set(encrypted,iv.length);return btoa(String.fromCharCode(...combined));}
+  async decrypt(b64,pw){const enc=new TextEncoder();const bytes=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));const kB=new Uint8Array(await crypto.subtle.digest('SHA-256',enc.encode(pw)));const k=await crypto.subtle.importKey('raw',kB.slice(0,16),{name:'AES-CBC'},false,['decrypt']);const iv=bytes.slice(0,16);const dec=await crypto.subtle.decrypt({name:'AES-CBC',iv},k,bytes.slice(16));return new TextDecoder().decode(dec);}
+  async getStatus(){return{used:0,limit:PLAN_API_LIMIT[S.plan],plan:S.plan,apiKey:this.apiKey};}
 };
 </script>
 </body>
