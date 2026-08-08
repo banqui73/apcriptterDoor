@@ -1294,20 +1294,32 @@ const parseHeader = raw => {
   if(raw.length<5)throw new Error('Archivo demasiado pequeño o corrupto');
   const m=new TextDecoder().decode(raw.slice(0,4));
   if(m==='AG11'){
-    // Formato v11: conocemos el algo
+    // Formato v11: conocemos el algoritmo exacto
     const algoId=raw[4];
     const algo=ALGO_FROM_ID[algoId];
     if(!algo)throw new Error('Algoritmo desconocido en el archivo (id='+algoId+')');
     return {version:11,algo,headerLen:5};
   }else if(m==='AEGI'){
-    // Formato v10: no tenemos algo_id, usamos el seleccionado
-    return {version:10,algo:S.algo,headerLen:4};
+    // Formato v10: no tenemos algo_id, intentamos descubrirlo
+    return {version:10,algo:null,headerLen:4};
   }else if(!S.cfg.magic){
     // Sin magic bytes (modo legacy sin magic)
-    return {version:0,algo:S.algo,headerLen:0};
+    return {version:0,algo:null,headerLen:0};
   }else{
     throw new Error('Archivo no reconocido. ¿Contraseña incorrecta o archivo dañado?');
   }
+};
+
+const tryDecryptWithAlgorithms = async (payload, keyBytes, algos) => {
+  for(const algo of algos){
+    try{
+      const decrypted = await decryptRaw(payload, keyBytes, algo);
+      return {decrypted, algo};
+    }catch(err){
+      log(`Intento ${algo.toUpperCase()} falló: ${err.message}`,'warn');
+    }
+  }
+  throw new Error('No se pudo descifrar con los algoritmos disponibles. Verifica contraseña y formato.');
 };
 
 const setProgress=(lbl,pct)=>{const w=document.getElementById('progWrap');w.style.display='block';document.getElementById('progLbl').textContent=lbl;document.getElementById('progFill').style.width=pct+'%';};
@@ -1411,18 +1423,25 @@ const processFile = async mode => {
         setProgress('LEYENDO HEADER...',20);
         let hdr;
         try{hdr=parseHeader(raw);}catch(he){throw new Error(he.message);}
-        const algo=hdr.algo;
         const payload=raw.slice(hdr.headerLen);
-        log(`Formato v${hdr.version} · Algoritmo detectado: ${algo.toUpperCase()}`,'info');
-
-        // Verificar que el plan actual tiene permiso para descifrar
         const allowed=PLAN_ALGOS[S.plan]||[];
-        if(!allowed.includes(algo))throw new Error(`El archivo usa ${algo.toUpperCase()} — necesitas plan superior para descifrarlo`);
 
         setProgress('DERIVANDO CLAVE...',40);
         const keyBytes=await deriveKey(pw);
-        setProgress('DESCIFRANDO...',60);
-        output=await decryptRaw(payload,keyBytes,algo);
+
+        if(hdr.algo){
+          const algo=hdr.algo;
+          log(`Formato v${hdr.version} · Algoritmo detectado: ${algo.toUpperCase()}`,'info');
+          if(!allowed.includes(algo))throw new Error(`El archivo usa ${algo.toUpperCase()} — necesitas plan superior para descifrarlo`);
+          setProgress('DESCIFRANDO...',60);
+          output=await decryptRaw(payload,keyBytes,algo);
+        }else{
+          const candidates=[...new Set([S.algo,...allowed])];
+          setProgress('BUSCANDO ALGORITMO...',45);
+          const found=await tryDecryptWithAlgorithms(payload,keyBytes,candidates);
+          output=found.decrypted;
+          log(`Formato v${hdr.version} · Algoritmo detectado: ${found.algo.toUpperCase()}`,'info');
+        }
       }
 
       setProgress('DESCARGANDO...',95);
@@ -1789,9 +1808,12 @@ sfd.addEventListener('drop',e=>{e.preventDefault();sfd.classList.remove('drag-ov
 document.getElementById('sendFileInput').addEventListener('change',function(){if(this.files[0]){sendFileData=this.files[0];document.getElementById('sendFileLabel').innerHTML=`<div class="file-name">${this.files[0].name}</div><div class="file-sz">${fmtSize(this.files[0].size)}</div>`;document.getElementById('btnSendFile').disabled=false;}});
 
 const sendFileP2P = async file => {
+  const sendBtn=document.getElementById('btnSendFile');
   if(!dataChannel||dataChannel.readyState!=='open'){toast('Canal P2P no abierto','error');return;}
+  if(!file||file.size===0){toast('Selecciona un archivo válido','warn');return;}
   const maxSize=PLAN_P2P_LIMIT[S.plan];
   if(file.size>maxSize){toast(`Supera límite P2P (${fmtSize(maxSize)})`,'error');return;}
+  sendBtn.disabled=true;
   try{
     if(!sessionKey)sessionKey=await genSessionKey();
     dataChannel.send(JSON.stringify({type:'key',key:b64FromBytes(sessionKey.raw)}));
@@ -1799,6 +1821,7 @@ const sendFileP2P = async file => {
     document.getElementById('sendProgress').style.display='block';
     document.getElementById('sendFileName').textContent=file.name;
     document.getElementById('sendFill').style.width='0%';document.getElementById('sendPct').textContent='0%';
+    document.getElementById('sendFileMeta').textContent=`0 / ${fmtSize(file.size)}`;
     let offset=0,idx=0;
     while(offset<file.size){
       if(dataChannel.readyState!=='open')throw new Error('Canal cerrado durante el envío');
@@ -1821,9 +1844,11 @@ const sendFileP2P = async file => {
     toast('✅ Enviado: '+file.name,'success');
     log('Enviado: '+file.name,'ok');
   }catch(err){
-    try{dataChannel?.send(JSON.stringify({type:'abort',reason:err.message}));}catch(_){}
+    try{dataChannel?.send(JSON.stringify({type:'abort',reason:err.message}));}catch(_){/* ignore */}
     toast('Error enviando: '+err.message,'error');
     log('Error P2P send: '+err.message,'err');
+  }finally{
+    sendBtn.disabled=false;
   }
 };
 document.getElementById('btnSendFile').addEventListener('click',()=>{if(sendFileData)sendFileP2P(sendFileData);else toast('Selecciona un archivo','warn');});
