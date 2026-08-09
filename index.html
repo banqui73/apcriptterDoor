@@ -230,6 +230,15 @@ body{font-family:var(--mono);background:var(--bg);color:var(--tx);min-height:100
 .ice-hint.visible{display:block}
 .ice-hint strong{color:var(--r)}
 
+/* ── STRATEGY PROGRESS ─────────────────── */
+.strategy-row{display:none;padding:10px 12px;background:var(--s2);border:1px solid var(--b1);border-radius:var(--rad-sm);font-size:.65rem;margin-bottom:10px;}
+.strategy-row.visible{display:block}
+.strategy-dots{display:flex;gap:4px;margin-top:6px}
+.strategy-dot{flex:1;height:4px;border-radius:2px;background:var(--b1);transition:background .2s}
+.strategy-dot.done{background:var(--g)}
+.strategy-dot.active{background:var(--acc)}
+.strategy-dot.failed{background:var(--r)}
+
 /* ── PLANS ────────────────────────────── */
 .plans-grid{display:flex;flex-direction:column;gap:12px}
 @media(min-width:640px){.plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}}
@@ -532,14 +541,20 @@ input[type="file"]{display:none}
           <span style="color:var(--tx3);font-size:.6rem" id="connTypeDetail">—</span>
         </div>
 
-        <!-- FIX: ICE failure hint box -->
+        <!-- Strategy progress -->
+        <div class="strategy-row" id="strategyRow">
+          <span id="strategyTxt">—</span>
+          <div class="strategy-dots" id="strategyDots"></div>
+        </div>
+
+        <!-- ICE failure hint box -->
         <div class="ice-hint" id="iceHint">
           <strong>⚠ Conexión ICE fallida</strong><br>
-          Posibles causas: firewall corporativo, VPN, red muy restrictiva.<br>
+          Posibles causas: firewall corporativo, VPN, red muy restrictiva, o los relés TURN públicos gratuitos caídos.<br>
           <strong>Soluciones:</strong><br>
           1️⃣ Intenta en una red diferente (móvil 4G/5G funciona mejor)<br>
           2️⃣ Desactiva VPN temporalmente<br>
-          3️⃣ Usa el botón "Reconectar" para reintentar con TURN forzado
+          3️⃣ Usa "Reconectar" — probará automáticamente hasta 8 estrategias de conexión distintas
         </div>
 
         <div style="display:flex;gap:8px;margin-bottom:10px">
@@ -547,9 +562,9 @@ input[type="file"]{display:none}
           <button class="btn btn-sm btn-outline" id="btnJoinRoom" style="flex:1">→ Unirse</button>
         </div>
 
-        <!-- FIX: Reconectar button -->
+        <!-- Reconectar button -->
         <div id="retryRow" style="display:none;margin-bottom:10px">
-          <button class="btn btn-block btn-warn" id="btnRetryIce">↺ Reconectar (TURN forzado)</button>
+          <button class="btn btn-block btn-warn" id="btnRetryIce">↺ Reconectar (probar otras rutas)</button>
         </div>
 
         <div id="joinRoomRow" style="display:none;margin-bottom:10px">
@@ -580,7 +595,7 @@ input[type="file"]{display:none}
           </div>
           <button class="btn btn-block" id="btnSendFile" disabled style="background:linear-gradient(135deg,#0369a1,#0ea5e9);color:white;font-weight:700;padding:12px;font-family:var(--mono);font-size:.78rem;border:none;border-radius:var(--rad-sm);cursor:pointer;text-transform:uppercase;letter-spacing:.5px">⬆ Enviar</button>
         </div>
-        <!-- FIX: P2P log panel -->
+        <!-- P2P log panel -->
         <div class="p2p-log" id="p2pLog"></div>
         <div style="margin-top:6px">
           <button class="btn btn-sm btn-outline" id="btnToggleP2pLog" style="font-size:.55rem;padding:4px 10px">Ver log ICE</button>
@@ -608,7 +623,7 @@ input[type="file"]{display:none}
           <div style="margin-bottom:6px">2️⃣ El <strong style="color:var(--g)">receptor</strong> introduce el código</div>
           <div style="margin-bottom:6px">3️⃣ Señalización segura vía Firebase</div>
           <div style="margin-bottom:6px">4️⃣ Intento conexión directa (STUN)</div>
-          <div style="margin-bottom:6px">5️⃣ Si falla → relay TURN automático <span style="color:var(--pu)">(CGNAT/NAT simétrico)</span></div>
+          <div style="margin-bottom:6px">5️⃣ Si falla → hasta 8 estrategias de relay/candidatos distintas <span style="color:var(--pu)">(CGNAT/NAT simétrico)</span></div>
           <div>6️⃣ Clave AES-GCM-256 efímera por sesión</div>
         </div>
       </div>
@@ -885,57 +900,6 @@ const ACTIVATION_CODES_ROOT = 'vault_licenses';
 const CODE_FOLDER = { days30:'30_dias', forever:'siempre' };
 
 // ══════════════════════════════════════════════════════
-// FIX 1: ICE SERVERS ACTUALIZADOS Y FUNCIONALES
-// Los TURN de OpenRelay y Metered con credenciales hardcoded
-// fallan frecuentemente. Usamos servidores más robustos:
-// - freestun.net (gratis, sin registro)
-// - numb.viagenie.ca (histórico, estable)
-// - STUN de múltiples proveedores (redundancia)
-// La clave es tener STUN múltiples y al menos 2 TURN diferentes.
-// ══════════════════════════════════════════════════════
-const ICE_SERVERS = [
-  // STUN — Múltiples para redundancia
-  { urls: 'stun:stun.l.google.com:19302' },
-  { urls: 'stun:stun1.l.google.com:19302' },
-  { urls: 'stun:stun2.l.google.com:19302' },
-  { urls: 'stun:stun3.l.google.com:19302' },
-  { urls: 'stun:stun.cloudflare.com:3478' },
-  { urls: 'stun:freestun.net:3478' },
-  // TURN FreeSt un — servidor gratuito sin registro, funcional
-  {
-    urls: ['turn:freestun.net:3478', 'turn:freestun.net:3479'],
-    username: 'free',
-    credential: 'free'
-  },
-  // TURN OpenRelay (backup — puede fallar pero vale la pena intentar)
-  {
-    urls: [
-      'turn:openrelay.metered.ca:80',
-      'turn:openrelay.metered.ca:443',
-      'turns:openrelay.metered.ca:443'
-    ],
-    username: 'openrelayproject',
-    credential: 'openrelayproject'
-  },
-  // TURN Metered (backup)
-  {
-    urls: [
-      'turn:a.relay.metered.ca:80',
-      'turn:a.relay.metered.ca:443',
-      'turns:a.relay.metered.ca:443'
-    ],
-    username: 'e37b6cd82a2c22c7ae4cde86',
-    credential: 'uqpTsNpYFXjbHFaA'
-  },
-];
-
-// ICE servers solo-TURN para modo forzado (cuando STUN falla)
-const ICE_SERVERS_RELAY_ONLY = ICE_SERVERS.filter(s => {
-  const u = Array.isArray(s.urls) ? s.urls[0] : s.urls;
-  return u.startsWith('turn:') || u.startsWith('turns:');
-});
-
-// ══════════════════════════════════════════════════════
 // CHACHA20 (implementación pura JS)
 // ══════════════════════════════════════════════════════
 const ChaCha20 = {
@@ -978,7 +942,7 @@ const log = (msg, type='info') => {
   p.appendChild(el); p.scrollTop = p.scrollHeight;
 };
 
-// FIX: P2P log separado del crypto log
+// P2P log separado del crypto log
 const p2pLog = (msg, type='info') => {
   const panel = document.getElementById('p2pLog');
   if (!panel) return;
@@ -1017,7 +981,7 @@ document.querySelectorAll('.sp-nav-btn').forEach(b=>b.addEventListener('click',(
   if(b.dataset.sp==='admin') refreshAdminPanel();
 }));
 
-// FIX: Toggle P2P log
+// Toggle P2P log
 document.getElementById('btnToggleP2pLog').addEventListener('click', () => {
   const panel = document.getElementById('p2pLog');
   panel.classList.toggle('visible');
@@ -1241,20 +1205,19 @@ const genPw = () => {
 document.getElementById('genPw').addEventListener('click',genPw);
 document.getElementById('copyPw').addEventListener('click',()=>navigator.clipboard.writeText(S.autoPw).then(()=>toast('Copiado','success')));
 
-// FIX: Patrón — limpiar SVG correctamente, touch con scroll fix
+// Patrón — limpiar SVG correctamente, touch con scroll fix
 const nodePts=[[53,53],[105,53],[157,53],[53,105],[105,105],[157,105],[53,157],[105,157],[157,157]];
 const clearPattern=()=>{
   S.patternNodes=[];
   document.querySelectorAll('.p-node').forEach(n=>{n.classList.remove('active');n.removeAttribute('data-order');});
   document.getElementById('pHint').textContent='Mínimo 4 nodos';
-  // FIX: limpiar completamente el SVG (antes quedaban líneas)
   const svg = document.getElementById('pSvg');
   while(svg.firstChild) svg.removeChild(svg.firstChild);
   document.getElementById('iEnt').textContent='—';
 };
 const activateNode=node=>{
   const id=node.dataset.id;
-  if(S.patternNodes.includes(id))return; // FIX: evitar duplicados (no solo el último)
+  if(S.patternNodes.includes(id))return;
   if(S.patternNodes.length>0){
     const pi=parseInt(S.patternNodes[S.patternNodes.length-1])-1,ci=parseInt(id)-1;
     const[x1,y1]=nodePts[pi],[x2,y2]=nodePts[ci];
@@ -1275,7 +1238,6 @@ document.querySelectorAll('.p-node').forEach(n=>{
   n.addEventListener('touchmove',e=>{
     e.preventDefault();
     const t=e.touches[0];
-    // FIX: usar elementFromPoint para touch (corrige problema con scroll offset)
     const el=document.elementFromPoint(t.clientX,t.clientY);
     if(el&&el.classList.contains('p-node'))activateNode(el);
   },{passive:false});
@@ -1308,7 +1270,6 @@ const handleFile = file => {
 const fd=document.getElementById('fileDrop');
 fd.addEventListener('click',()=>document.getElementById('fileInput').click());
 fd.addEventListener('dragover',e=>{e.preventDefault();fd.classList.add('drag-over');});
-// FIX: resetear drag-over si el usuario suelta fuera del área
 fd.addEventListener('dragleave',e=>{if(!fd.contains(e.relatedTarget))fd.classList.remove('drag-over');});
 document.addEventListener('dragend',()=>fd.classList.remove('drag-over'));
 fd.addEventListener('drop',e=>{e.preventDefault();fd.classList.remove('drag-over');handleFile(e.dataTransfer.files[0]);});
@@ -1526,31 +1487,112 @@ document.getElementById('btnEnc').addEventListener('click',()=>processFile('encr
 document.getElementById('btnDec').addEventListener('click',()=>processFile('decrypt'));
 
 // ══════════════════════════════════════════════════════
-// P2P TRANSFERENCIA — FIXES COMPLETOS
+// P2P TRANSFERENCIA — REESCRITO
 //
-// FIX 1: ICE servers actualizados (freestun.net funcional)
-// FIX 2: Race condition señalización — cola de candidates
-//         hasta que remote description esté set en AMBOS lados
-// FIX 3: ICE timeout (25s) con mensaje útil + botón retry
-// FIX 4: sendFileSection NO se muestra hasta canal abierto
-// FIX 5: Botón "Reconectar" con iceTransportPolicy:'relay'
-// FIX 6: Limpieza Firebase con onDisconnect
-// FIX 7: processedSignals limpio al reconectar
-// FIX 8: Null checks en dataChannel antes de enviar
-// FIX 9: sessionKey compartido correctamente al receptor
-// FIX 10: Drag-over resetea al soltar fuera del área
+// CAUSA RAÍZ del fallo original (visible en tus logs):
+//  1) Los servidores TURN públicos gratuitos (freestun, openrelay,
+//     metered...) están caídos o saturados con mucha frecuencia →
+//     nunca se generaban candidatos "relay", así que si ambos
+//     dispositivos están detrás de NAT simétrico/CGNAT, la conexión
+//     directa (host/srflx) JAMÁS podía completarse.
+//  2) Firebase Realtime Database conserva TODAS las señales enviadas
+//     con push() bajo la sala. Al reintentar reutilizando el MISMO
+//     código de sala, el nuevo listener onValue() volvía a reproducir
+//     la respuesta (answer) VIEJA de la conexión anterior y se
+//     aplicaba sobre el RTCPeerConnection nuevo (o ya cerrado) →
+//     "signalingState is 'closed'" en tus logs.
+//
+// SOLUCIÓN:
+//  · Cada intento de reconexión usa un "generation id" propio y una
+//    sub-ruta de señalización nueva en Firebase, así nunca se
+//    reproducen señales viejas.
+//  · Se prueban automáticamente hasta 8 ESTRATEGIAS de conexión
+//    distintas (distintos subconjuntos de servidores ICE / política
+//    de transporte), deteniéndose en la primera que conecte.
+//  · Guardas de "instancia" (peerGen) para ignorar por completo
+//    cualquier evento que llegue de un RTCPeerConnection ya
+//    reemplazado.
+//  · Limpieza de la sala vieja en Firebase antes de cada reintento.
 // ══════════════════════════════════════════════════════
 let pc=null, dataChannel=null, sessionKey=null;
 let sendFileData=null, recvParts=[], recvMeta=null, recvBytes=0, recvChunks=0;
 let recvWriter=null, recvFileHandle=null, recvQueue=Promise.resolve();
 let currentRoomId=null, currentRole=null;
 let sigListenerRef=null, sigListenerFn=null;
-let iceTimeoutHandle=null, iceRetryCount=0;
-const MAX_ICE_RETRIES=2;
+let iceTimeoutHandle=null;
+let peerGen=0; // FIX: identificador de instancia — todo evento de un pc viejo se ignora
 
 const CHUNK_SIZE     = 64*1024;
 const P2P_MAX_BUFFER = 8*1024*1024;
 const P2P_LOW_BUFFER = 2*1024*1024;
+
+// ── 8 estrategias de conexión distintas ────────────────
+// Cada una prueba un subconjunto/orden diferente de servidores ICE
+// y una política de transporte distinta. Si una falla, se prueba
+// la siguiente automáticamente.
+const ICE_STRATEGIES = [
+  {
+    name: 'STUN + todos los TURN (auto)',
+    policy: 'all',
+    servers: () => [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'stun:stun.cloudflare.com:3478' },
+      { urls: ['turn:openrelay.metered.ca:80'], username:'openrelayproject', credential:'openrelayproject' },
+      { urls: ['turn:a.relay.metered.ca:80'], username:'e37b6cd82a2c22c7ae4cde86', credential:'uqpTsNpYFXjbHFaA' },
+      { urls: ['turn:freestun.net:3478'], username:'free', credential:'free' },
+    ],
+  },
+  {
+    name: 'TURN forzado — OpenRelay UDP',
+    policy: 'relay',
+    servers: () => [
+      { urls: ['turn:openrelay.metered.ca:80'], username:'openrelayproject', credential:'openrelayproject' },
+    ],
+  },
+  {
+    name: 'TURN forzado — OpenRelay TCP/443',
+    policy: 'relay',
+    servers: () => [
+      { urls: ['turn:openrelay.metered.ca:443?transport=tcp'], username:'openrelayproject', credential:'openrelayproject' },
+    ],
+  },
+  {
+    name: 'TURN forzado — OpenRelay TLS/443',
+    policy: 'relay',
+    servers: () => [
+      { urls: ['turns:openrelay.metered.ca:443?transport=tcp'], username:'openrelayproject', credential:'openrelayproject' },
+    ],
+  },
+  {
+    name: 'TURN forzado — Metered UDP',
+    policy: 'relay',
+    servers: () => [
+      { urls: ['turn:a.relay.metered.ca:80'], username:'e37b6cd82a2c22c7ae4cde86', credential:'uqpTsNpYFXjbHFaA' },
+    ],
+  },
+  {
+    name: 'TURN forzado — Metered TCP/443',
+    policy: 'relay',
+    servers: () => [
+      { urls: ['turn:a.relay.metered.ca:443?transport=tcp'], username:'e37b6cd82a2c22c7ae4cde86', credential:'uqpTsNpYFXjbHFaA' },
+    ],
+  },
+  {
+    name: 'TURN forzado — Metered TLS/443',
+    policy: 'relay',
+    servers: () => [
+      { urls: ['turns:a.relay.metered.ca:443?transport=tcp'], username:'e37b6cd82a2c22c7ae4cde86', credential:'uqpTsNpYFXjbHFaA' },
+    ],
+  },
+  {
+    name: 'TURN forzado — FreeSTUN (último recurso)',
+    policy: 'relay',
+    servers: () => [
+      { urls: ['turn:freestun.net:3478','turn:freestun.net:3479'], username:'free', credential:'free' },
+    ],
+  },
+];
 
 const setPeerStatus = (type, msg) => {
   const s=document.getElementById('peerStatus'),dot=document.getElementById('peerDot');
@@ -1565,6 +1607,27 @@ const setConnInfo = (type, detail) => {
   document.getElementById('connTypeLabel').className='conn-type '+type;
   document.getElementById('connTypeDetail').textContent=detail;
 };
+
+const setStrategyUI = (idx) => {
+  const row=document.getElementById('strategyRow');
+  const dotsWrap=document.getElementById('strategyDots');
+  row.classList.add('visible');
+  document.getElementById('strategyTxt').textContent = `Estrategia ${idx+1}/${ICE_STRATEGIES.length}: ${ICE_STRATEGIES[idx].name}`;
+  if(dotsWrap.children.length!==ICE_STRATEGIES.length){
+    dotsWrap.innerHTML='';
+    ICE_STRATEGIES.forEach(()=>{const d=document.createElement('div');d.className='strategy-dot';dotsWrap.appendChild(d);});
+  }
+  Array.from(dotsWrap.children).forEach((d,i)=>{
+    d.classList.remove('done','active','failed');
+    if(i<idx)d.classList.add('done');
+    else if(i===idx)d.classList.add('active');
+  });
+};
+const markStrategyFailed = idx => {
+  const dotsWrap=document.getElementById('strategyDots');
+  if(dotsWrap.children[idx])dotsWrap.children[idx].classList.add('failed');
+};
+const hideStrategyUI = () => document.getElementById('strategyRow').classList.remove('visible');
 
 const genRoomCode = () => {
   const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let code='';
@@ -1668,12 +1731,12 @@ const handleP2PMessage = async data => {
   if(recvChunks%4===0||recvBytes>=recvMeta.size)updateRecvProgress();
 };
 
-// ── FIX 2: Señalización mejorada — cola y deduplicación ───
+// ── Señalización — con generación (gen) para evitar replay ──
 const processedSignals = new Set();
 
-const sendSignal = async (roomId, fromRole, payload) => {
+const sendSignal = async (roomId, gen, fromRole, payload) => {
   if(!fbReady||!db)return;
-  const signalRef=ref(db,`p2p_rooms/${roomId}/signals/${fromRole}`);
+  const signalRef=ref(db,`p2p_rooms/${roomId}/gen${gen}/signals/${fromRole}`);
   await push(signalRef,{payload:JSON.stringify(payload),ts:Date.now()});
 };
 
@@ -1685,12 +1748,15 @@ const stopListening = () => {
   processedSignals.clear();
 };
 
-const listenSignals = (roomId, myRole, callback) => {
+// FIX: cada llamada escucha SOLO la sub-ruta de su propia generación (gen),
+// así ninguna señal de un intento anterior puede reproducirse aquí.
+const listenSignals = (roomId, gen, myRole, myGen, callback) => {
   if(!fbReady||!db)return;
   stopListening();
   const otherRole=myRole==='initiator'?'joiner':'initiator';
-  sigListenerRef=ref(db,`p2p_rooms/${roomId}/signals/${otherRole}`);
+  sigListenerRef=ref(db,`p2p_rooms/${roomId}/gen${gen}/signals/${otherRole}`);
   sigListenerFn=onValue(sigListenerRef, snap=>{
+    if(myGen!==peerGen)return; // instancia obsoleta — ignorar por completo
     if(!snap.exists())return;
     snap.forEach(child=>{
       const key=child.key;
@@ -1701,14 +1767,14 @@ const listenSignals = (roomId, myRole, callback) => {
   });
 };
 
-// FIX 3: ICE timeout con reintento y mensaje útil
-const startIceTimeout = (onTimeout) => {
+const startIceTimeout = (onTimeout, myGen) => {
   clearTimeout(iceTimeoutHandle);
   iceTimeoutHandle = setTimeout(() => {
+    if(myGen!==peerGen)return;
     if(pc && pc.iceConnectionState !== 'connected' && pc.iceConnectionState !== 'completed') {
       onTimeout();
     }
-  }, 25000);
+  }, 12000); // 12s por estrategia — suficiente para candidatos locales/TURN, corto para iterar rápido por las 8
 };
 
 const clearIceTimeout = () => clearTimeout(iceTimeoutHandle);
@@ -1716,7 +1782,7 @@ const clearIceTimeout = () => clearTimeout(iceTimeoutHandle);
 const showIceError = () => {
   document.getElementById('iceHint').classList.add('visible');
   document.getElementById('retryRow').style.display='block';
-  setPeerStatus('error','❌ Conexión ICE fallida — ver pistas abajo');
+  setPeerStatus('error','❌ Las 8 estrategias fallaron — ver pistas abajo');
 };
 
 const hideIceError = () => {
@@ -1724,7 +1790,6 @@ const hideIceError = () => {
   document.getElementById('retryRow').style.display='none';
 };
 
-// FIX 5: Detectar tipo de conexión
 const detectConnectionType = () => {
   if(!pc||!pc.getStats)return;
   pc.getStats().then(stats=>{
@@ -1742,11 +1807,9 @@ const detectConnectionType = () => {
   }).catch(()=>{});
 };
 
-// FIX 6: Limpieza sala Firebase al cerrar/refrescar
 const setupRoomCleanup = (roomId) => {
   if(!fbReady||!db)return;
   const roomRef = ref(db, `p2p_rooms/${roomId}`);
-  // onDisconnect elimina la sala si el cliente se desconecta de Firebase
   onDisconnect(roomRef).remove().catch(()=>{});
 };
 
@@ -1755,260 +1818,261 @@ const cleanupRoom = async (roomId) => {
   try{ await remove(ref(db,`p2p_rooms/${roomId}`)); }catch(e){}
 };
 
-// FIX 4+8: initPeerConnection actualizado
-const initPeerConnection = (forceRelay=false) => {
-  if(pc){try{pc.close();}catch(e){}}
+// FIX: initPeerConnection ahora recibe su propio "myGen" y todos los
+// callbacks comprueban que siguen siendo la instancia vigente antes
+// de tocar UI o estado global. Esto elimina las condiciones de carrera
+// entre reintentos.
+const initPeerConnection = (strategyIdx, myGen) => {
+  if(pc){
+    // Desconectar handlers del pc viejo ANTES de cerrarlo para que
+    // ningún evento tardío afecte al estado nuevo.
+    pc.onicecandidate=null;pc.oniceconnectionstatechange=null;
+    pc.onconnectionstatechange=null;pc.ondatachannel=null;
+    try{pc.close();}catch(e){}
+  }
   clearIceTimeout();
   hideIceError();
-  // FIX 7: limpiar señales al reiniciar
   processedSignals.clear();
 
-  const iceServers = forceRelay ? ICE_SERVERS_RELAY_ONLY : ICE_SERVERS;
-  p2pLog(`ICE policy: ${forceRelay?'relay-only':'all'} · ${iceServers.length} servers`,'info');
+  const strategy = ICE_STRATEGIES[strategyIdx];
+  const iceServers = strategy.servers();
+  p2pLog(`[${myGen}] Estrategia ${strategyIdx+1}/8 (${strategy.policy}): ${strategy.name}`,'info');
 
-  pc=new RTCPeerConnection({
+  const newPc=new RTCPeerConnection({
     iceServers,
     iceCandidatePoolSize: 10,
-    iceTransportPolicy: forceRelay ? 'relay' : 'all',
+    iceTransportPolicy: strategy.policy,
   });
+  pc=newPc;
 
-  pc.onicecandidate=null; // se asigna después
-  pc.ondatachannel=null;  // se asigna después
-
-  pc.oniceconnectionstatechange=()=>{
-    const s=pc.iceConnectionState;
+  newPc.oniceconnectionstatechange=()=>{
+    if(myGen!==peerGen)return; // instancia obsoleta
+    const s=newPc.iceConnectionState;
     p2pLog(`ICE: ${s}`,'info');
     if(s==='connected'||s==='completed'){
-      clearIceTimeout();
-      hideIceError();
-      iceRetryCount=0;
+      clearIceTimeout();hideIceError();hideStrategyUI();
       setPeerStatus('connected','🔐 Conectado P2P — E2E activo');
       setTimeout(detectConnectionType,800);
     }else if(s==='checking'){
-      setPeerStatus('waiting','⏳ Negociando conexión (STUN/TURN)...');
-    }else if(s==='failed'){
-      clearIceTimeout();
-      p2pLog('ICE failed — intentando recuperar...','err');
-      // FIX: intentar ICE restart antes de rendirse
-      if(iceRetryCount<MAX_ICE_RETRIES&&pc.restartIce){
-        iceRetryCount++;
-        p2pLog(`ICE restart intento ${iceRetryCount}/${MAX_ICE_RETRIES}`,'warn');
-        pc.restartIce();
-        // Renegociar si somos el iniciador
-        if(currentRole==='initiator'){
-          pc.createOffer({iceRestart:true}).then(offer=>{
-            return pc.setLocalDescription(offer);
-          }).then(()=>{
-            return sendSignal(currentRoomId,'initiator',{type:'offer',sdp:pc.localDescription,restart:true});
-          }).catch(e=>p2pLog('Error ICE restart: '+e.message,'err'));
-        }
-        startIceTimeout(showIceError);
-      }else{
-        showIceError();
-      }
-    }else if(s==='disconnected'){
-      setPeerStatus('waiting','⚠️ Conexión interrumpida, reconectando...');
-      p2pLog('ICE disconnected — esperando...','warn');
-      // 5s para reconectar antes de mostrar error
-      startIceTimeout(()=>{
-        if(pc&&pc.iceConnectionState==='disconnected'){
-          showIceError();
-          setPeerStatus('error','Conexión perdida');
-        }
-      });
+      setPeerStatus('waiting','⏳ Negociando conexión...');
+    }else if(s==='failed'||s==='disconnected'){
+      p2pLog(`ICE ${s} en estrategia ${strategyIdx+1}`,'warn');
+      advanceStrategy(strategyIdx, myGen);
     }
   };
 
-  pc.onconnectionstatechange=()=>{
-    if(pc.connectionState==='connected')detectConnectionType();
-    if(pc.connectionState==='failed'&&!document.getElementById('iceHint').classList.contains('visible')){
-      showIceError();
-    }
+  newPc.onconnectionstatechange=()=>{
+    if(myGen!==peerGen)return;
+    if(newPc.connectionState==='connected')detectConnectionType();
   };
 
-  return pc;
+  return newPc;
 };
 
-// FIX 4: setupDataChannel — sendFileSection solo cuando canal abierto
-const setupDataChannel = dc => {
+// FIX: motor de reintento — prueba automáticamente la siguiente
+// estrategia de la lista, hasta agotar las 8, cada una con su propia
+// sala/generación de señalización (sin reproducir señales viejas).
+let advanceInFlight=false;
+const advanceStrategy = (failedIdx, myGen) => {
+  if(myGen!==peerGen||advanceInFlight)return;
+  advanceInFlight=true;
+  markStrategyFailed(failedIdx);
+  const nextIdx=failedIdx+1;
+  if(nextIdx>=ICE_STRATEGIES.length){
+    advanceInFlight=false;
+    showIceError();
+    return;
+  }
+  setTimeout(()=>{
+    advanceInFlight=false;
+    if(myGen!==peerGen)return;
+    if(currentRole==='initiator')runCreateAttempt(nextIdx,myGen);
+    else if(currentRole==='joiner')runJoinAttempt(nextIdx,myGen,currentRoomId);
+  },300);
+};
+
+const setupDataChannel = (dc, myGen) => {
   dataChannel=dc;dataChannel.binaryType='arraybuffer';
   dataChannel.bufferedAmountLowThreshold=P2P_LOW_BUFFER;
   dataChannel.onopen=()=>{
+    if(myGen!==peerGen)return;
     setPeerStatus('connected','🔐 Canal abierto — E2E activo');
-    // FIX: solo mostrar sección de envío CUANDO el canal está abierto
     document.getElementById('sendFileSection').style.display='block';
     document.getElementById('noReceiveYet').textContent='Canal abierto. Esperando archivos...';
     setTimeout(detectConnectionType,800);
     p2pLog('DataChannel abierto','ok');
   };
   dataChannel.onmessage=e=>{
+    if(myGen!==peerGen)return;
     recvQueue=recvQueue.then(()=>handleP2PMessage(e.data)).catch(err=>{
       p2pLog('Error P2P recv: '+err.message,'err');
     });
   };
   dataChannel.onerror=e=>{
+    if(myGen!==peerGen)return;
     p2pLog('Canal error: '+(e.error?.message||e.message||'desconocido'),'err');
-    setPeerStatus('error','Error en canal de datos');
   };
   dataChannel.onclose=()=>{
-    setPeerStatus('waiting','Canal cerrado');
+    if(myGen!==peerGen)return;
     document.getElementById('sendFileSection').style.display='none';
     p2pLog('DataChannel cerrado','warn');
   };
 };
 
-// ── Crear sala ─────────────────────────────────────────
-const createRoom = async (forceRelay=false) => {
-  if(!fbReady||!db){toast('Firebase requerido para P2P','warn');return;}
-  const code=currentRoomId||genRoomCode();
-  currentRoomId=code;currentRole='initiator';
+// ── Intento de creación de sala para una estrategia concreta ──
+const runCreateAttempt = async (strategyIdx, myGen) => {
+  if(myGen!==peerGen)return;
+  setStrategyUI(strategyIdx);
+  setPeerStatus('waiting',`⏳ Probando ruta ${strategyIdx+1}/8...`);
 
-  document.getElementById('roomCodeDisplay').style.display='block';
-  document.getElementById('roomCodeTxt').textContent=code;
-  document.getElementById('connInfoBox').style.display='none';
-  document.getElementById('sendFileSection').style.display='none'; // FIX: ocultar hasta conexión
-  setPeerStatus('waiting',forceRelay?'⏳ Esperando... (modo TURN forzado)':'⏳ Esperando al otro dispositivo...');
-  p2pLog(forceRelay?'Modo TURN-relay forzado':'Sala creada: '+code,'info');
-
-  const pc2=initPeerConnection(forceRelay);
+  const pc2=initPeerConnection(strategyIdx,myGen);
   const dc=pc2.createDataChannel('aegis-transfer',{ordered:true});
-  setupDataChannel(dc);
+  setupDataChannel(dc,myGen);
 
-  sessionKey=await genSessionKey();
+  if(!sessionKey)sessionKey=await genSessionKey();
 
-  // FIX 2: Cola de ICE candidates hasta que enviamos el offer
   const pendingCandidates=[];
   let offerSent=false;
   pc2.onicecandidate=async ev=>{
+    if(myGen!==peerGen)return;
     if(!ev.candidate){p2pLog('ICE gathering completado','info');return;}
-    p2pLog(`ICE candidate: ${ev.candidate.type} ${ev.candidate.protocol||''}`, 'info');
-    if(offerSent){
-      await sendSignal(code,'initiator',{type:'ice',candidate:ev.candidate.toJSON()});
-    }else{
-      pendingCandidates.push(ev.candidate.toJSON());
-    }
+    if(offerSent)await sendSignal(currentRoomId,strategyIdx,'initiator',{type:'ice',candidate:ev.candidate.toJSON()});
+    else pendingCandidates.push(ev.candidate.toJSON());
   };
 
   const offer=await pc2.createOffer();
+  if(myGen!==peerGen)return;
   await pc2.setLocalDescription(offer);
-  await sendSignal(code,'initiator',{type:'offer',sdp:offer});
+  await sendSignal(currentRoomId,strategyIdx,'initiator',{type:'offer',sdp:offer});
   offerSent=true;
-  // Enviar candidatos acumulados
-  for(const c of pendingCandidates)await sendSignal(code,'initiator',{type:'ice',candidate:c});
+  for(const c of pendingCandidates)await sendSignal(currentRoomId,strategyIdx,'initiator',{type:'ice',candidate:c});
   pendingCandidates.length=0;
 
-  setupRoomCleanup(code);
-  startIceTimeout(()=>{
-    p2pLog('Timeout ICE (25s)','err');
-    showIceError();
-    setPeerStatus('error','Tiempo de espera agotado');
-  });
-
-  // FIX 2: Queue de candidates del joiner hasta tener remote desc
   const pendingRemoteCandidates=[];
   let remoteSet=false;
 
-  listenSignals(code,'initiator',async msg=>{
-    if(msg.type==='answer'&&pc2.signalingState!=='stable'){
+  listenSignals(currentRoomId,strategyIdx,'initiator',myGen,async msg=>{
+    if(myGen!==peerGen)return;
+    if(msg.type==='answer'&&pc2.signalingState!=='stable'&&pc2.signalingState!=='closed'){
       try{
         await pc2.setRemoteDescription(new RTCSessionDescription(msg.sdp));
         remoteSet=true;
-        for(const c of pendingRemoteCandidates){
-          try{await pc2.addIceCandidate(new RTCIceCandidate(c));}catch(e){}
-        }
+        for(const c of pendingRemoteCandidates){try{await pc2.addIceCandidate(new RTCIceCandidate(c));}catch(e){}}
         pendingRemoteCandidates.length=0;
-        p2pLog('Remote description (answer) recibida','ok');
+        p2pLog('Answer recibida','ok');
       }catch(e){p2pLog('Error setRemoteDesc (answer): '+e.message,'err');}
     }else if(msg.type==='ice'&&msg.candidate){
-      if(remoteSet){
-        try{await pc2.addIceCandidate(new RTCIceCandidate(msg.candidate));}catch(e){}
-      }else{
-        pendingRemoteCandidates.push(msg.candidate);
-      }
+      if(remoteSet){try{await pc2.addIceCandidate(new RTCIceCandidate(msg.candidate));}catch(e){}}
+      else pendingRemoteCandidates.push(msg.candidate);
     }
   });
 
-  // Limpiar sala tras 45 min
-  setTimeout(()=>cleanupRoom(code),45*60*1000);
-  toast('Sala: '+code,'success');
+  startIceTimeout(()=>{
+    p2pLog(`Timeout en estrategia ${strategyIdx+1}`,'warn');
+    advanceStrategy(strategyIdx,myGen);
+  },myGen);
 };
 
-// ── Unirse a sala ──────────────────────────────────────
-const joinRoom = async (code, forceRelay=false) => {
-  if(!fbReady||!db){toast('Firebase requerido','warn');return;}
-  code=code.toUpperCase().trim();
-  currentRoomId=code;currentRole='joiner';
-  document.getElementById('connInfoBox').style.display='none';
-  document.getElementById('sendFileSection').style.display='none'; // FIX: ocultar hasta conexión
-  setPeerStatus('waiting',forceRelay?'⏳ Conectando (TURN forzado)...':'⏳ Conectando...');
-  p2pLog('Uniéndose a sala: '+code,'info');
+// ── Intento de unirse a sala para una estrategia concreta ──
+const runJoinAttempt = async (strategyIdx, myGen, code) => {
+  if(myGen!==peerGen)return;
+  setStrategyUI(strategyIdx);
+  setPeerStatus('waiting',`⏳ Probando ruta ${strategyIdx+1}/8...`);
 
-  const pc2=initPeerConnection(forceRelay);
+  const pc2=initPeerConnection(strategyIdx,myGen);
   pc2.ondatachannel=e=>{
+    if(myGen!==peerGen)return;
     p2pLog('DataChannel recibido del emisor','ok');
-    setupDataChannel(e.channel);
+    setupDataChannel(e.channel,myGen);
   };
 
-  // FIX 2: Cola de ICE candidates hasta tener remote desc
   const remoteCandidatesQueue=[];
   let remoteSet=false;
 
   pc2.onicecandidate=async ev=>{
+    if(myGen!==peerGen)return;
     if(!ev.candidate)return;
-    p2pLog(`ICE candidate: ${ev.candidate.type} ${ev.candidate.protocol||''}`,'info');
-    await sendSignal(code,'joiner',{type:'ice',candidate:ev.candidate.toJSON()});
+    await sendSignal(code,strategyIdx,'joiner',{type:'ice',candidate:ev.candidate.toJSON()});
   };
 
-  setupRoomCleanup(code);
-  startIceTimeout(()=>{
-    p2pLog('Timeout ICE (25s)','err');
-    showIceError();
-    setPeerStatus('error','Tiempo de espera agotado');
-  });
-
-  listenSignals(code,'joiner',async msg=>{
-    if(msg.type==='offer'&&(pc2.signalingState==='stable'||msg.restart)){
+  listenSignals(code,strategyIdx,'joiner',myGen,async msg=>{
+    if(myGen!==peerGen)return;
+    if(msg.type==='offer'&&pc2.signalingState!=='closed'){
       try{
         await pc2.setRemoteDescription(new RTCSessionDescription(msg.sdp));
         remoteSet=true;
-        // Vaciar cola de candidates recibidos antes del offer
-        for(const c of remoteCandidatesQueue){
-          try{await pc2.addIceCandidate(new RTCIceCandidate(c));}catch(e){}
-        }
+        for(const c of remoteCandidatesQueue){try{await pc2.addIceCandidate(new RTCIceCandidate(c));}catch(e){}}
         remoteCandidatesQueue.length=0;
         const answer=await pc2.createAnswer();
+        if(myGen!==peerGen)return;
         await pc2.setLocalDescription(answer);
-        await sendSignal(code,'joiner',{type:'answer',sdp:answer});
+        await sendSignal(code,strategyIdx,'joiner',{type:'answer',sdp:answer});
         p2pLog('Answer enviado','ok');
-      }catch(e){p2pLog('Error offer: '+e.message,'err');setPeerStatus('error','Error al conectar');}
+      }catch(e){p2pLog('Error offer: '+e.message,'err');}
     }else if(msg.type==='ice'&&msg.candidate){
-      if(remoteSet){
-        try{await pc2.addIceCandidate(new RTCIceCandidate(msg.candidate));}catch(e){}
-      }else{
-        remoteCandidatesQueue.push(msg.candidate);
-        p2pLog('ICE candidate en cola (esperando offer)','info');
-      }
+      if(remoteSet){try{await pc2.addIceCandidate(new RTCIceCandidate(msg.candidate));}catch(e){}}
+      else remoteCandidatesQueue.push(msg.candidate);
     }
   });
+
+  startIceTimeout(()=>{
+    p2pLog(`Timeout en estrategia ${strategyIdx+1}`,'warn');
+    advanceStrategy(strategyIdx,myGen);
+  },myGen);
 };
 
-// FIX 5: Botón Reconectar con TURN forzado
-document.getElementById('btnRetryIce').addEventListener('click',async()=>{
+// ── Crear sala (punto de entrada) ──────────────────────
+const createRoom = async () => {
+  if(!fbReady||!db){toast('Firebase requerido para P2P','warn');return;}
+  peerGen++;const myGen=peerGen;
+  const code=genRoomCode();
+  currentRoomId=code;currentRole='initiator';
+  sessionKey=null;
+
+  document.getElementById('roomCodeDisplay').style.display='block';
+  document.getElementById('roomCodeTxt').textContent=code;
+  document.getElementById('connInfoBox').style.display='none';
+  document.getElementById('sendFileSection').style.display='none';
+  document.getElementById('retryRow').style.display='none';
   hideIceError();
-  toast('Reconectando con TURN forzado...','info');
-  p2pLog('Reintentando con iceTransportPolicy:relay','warn');
-  // Limpiar listeners anteriores
-  stopListening();
-  if(currentRole==='initiator'){
-    await createRoom(true);
-  }else if(currentRole==='joiner'&&currentRoomId){
-    await joinRoom(currentRoomId,true);
-  }else{
-    toast('No hay sala activa para reconectar','warn');
-  }
+  p2pLog('Sala creada: '+code,'info');
+
+  setupRoomCleanup(code);
+  await runCreateAttempt(0,myGen);
+  setTimeout(()=>cleanupRoom(code),45*60*1000);
+  toast('Sala: '+code,'success');
+};
+
+// ── Unirse a sala (punto de entrada) ───────────────────
+const joinRoom = async (code) => {
+  if(!fbReady||!db){toast('Firebase requerido','warn');return;}
+  peerGen++;const myGen=peerGen;
+  code=code.toUpperCase().trim();
+  currentRoomId=code;currentRole='joiner';
+  sessionKey=null;
+  document.getElementById('connInfoBox').style.display='none';
+  document.getElementById('sendFileSection').style.display='none';
+  document.getElementById('retryRow').style.display='none';
+  hideIceError();
+  p2pLog('Uniéndose a sala: '+code,'info');
+  setupRoomCleanup(code);
+  await runJoinAttempt(0,myGen,code);
+};
+
+// FIX: Botón Reconectar — arranca una generación NUEVA desde la
+// estrategia 0, con sala/señalización limpia (sin señales viejas).
+document.getElementById('btnRetryIce').addEventListener('click',async()=>{
+  if(!currentRoomId||!currentRole){toast('No hay sala activa para reconectar','warn');return;}
+  hideIceError();
+  toast('Reconectando — probando las 8 rutas de nuevo...','info');
+  peerGen++;const myGen=peerGen;
+  await cleanupRoom(currentRoomId);
+  setupRoomCleanup(currentRoomId);
+  if(currentRole==='initiator')await runCreateAttempt(0,myGen);
+  else await runJoinAttempt(0,myGen,currentRoomId);
 });
 
-document.getElementById('btnCreateRoom').addEventListener('click',()=>createRoom(false));
+document.getElementById('btnCreateRoom').addEventListener('click',()=>createRoom());
 document.getElementById('btnJoinRoom').addEventListener('click',()=>{
   const row=document.getElementById('joinRoomRow');
   row.style.display=row.style.display==='none'||row.style.display===''?'block':'none';
@@ -2016,12 +2080,11 @@ document.getElementById('btnJoinRoom').addEventListener('click',()=>{
 document.getElementById('btnConfirmJoin').addEventListener('click',()=>{
   const code=document.getElementById('roomCodeInput').value;
   if(!code||code.length<6){toast('Código inválido','warn');return;}
-  joinRoom(code,false);
+  joinRoom(code);
   document.getElementById('joinRoomRow').style.display='none';
-  // FIX: NO mostrar sendFileSection aquí — se mostrará cuando el canal abra
 });
 
-// FIX 10: Drag-over en sendFileDrop
+// Drag-over en sendFileDrop
 const sfd=document.getElementById('sendFileDrop');
 sfd.addEventListener('click',()=>document.getElementById('sendFileInput').click());
 sfd.addEventListener('dragover',e=>{e.preventDefault();sfd.classList.add('drag-over');});
@@ -2042,7 +2105,6 @@ document.getElementById('sendFileInput').addEventListener('change',function(){
 
 const sendFileP2P = async file => {
   const sendBtn=document.getElementById('btnSendFile');
-  // FIX 8: null checks robustos
   if(!dataChannel){toast('Canal P2P no inicializado','error');return;}
   if(dataChannel.readyState!=='open'){toast(`Canal P2P no abierto (estado: ${dataChannel.readyState})`, 'error');return;}
   if(!file||file.size===0){toast('Selecciona un archivo válido','warn');return;}
@@ -2050,7 +2112,6 @@ const sendFileP2P = async file => {
   if(file.size>maxSize){toast(`Supera límite P2P (${fmtSize(maxSize)})`,'error');return;}
   sendBtn.disabled=true;
   try{
-    // FIX 9: asegurar que sessionKey existe y compartir al receptor
     if(!sessionKey)sessionKey=await genSessionKey();
     dataChannel.send(JSON.stringify({type:'key',key:b64FromBytes(sessionKey.raw)}));
     dataChannel.send(JSON.stringify({type:'meta',name:file.name,size:file.size,mimeType:file.type}));
@@ -2178,21 +2239,15 @@ document.getElementById('btnDemoEnc').addEventListener('click',async()=>{const t
 document.getElementById('btnDemoDec').addEventListener('click',async()=>{const pw=document.getElementById('demoPw').value;if(!demoEncrypted){toast('Cifra algo primero','warn');return;}try{const dec=await apiDecrypt(demoEncrypted,pw);document.getElementById('demoResult').textContent='[DESCIFRADO] '+dec;document.getElementById('demoResult').style.color='var(--g)';toast('Descifrado OK','success',2000);}catch(e){document.getElementById('demoResult').textContent='Error: '+e.message;document.getElementById('demoResult').style.color='var(--r)';}});
 
 // ══════════════════════════════════════════════════════
-// ADMIN PANEL — FIX: hash mejorado con salt
+// ADMIN PANEL
 // ══════════════════════════════════════════════════════
-// FIX: El hash anterior era un hex literal de 64 chars sin salt real.
-// Ahora derivamos con un nonce de sesión para evitar replay.
 const ADMIN_SALT = 'aegispattern-admin-2026';
 const hashStr=async s=>{const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');};
-// Hash de la contraseña real: SHA256("aegisadmin2026" + ADMIN_SALT)
-// = precomputado para no exponer la contraseña en texto plano
 const ADMIN_PW_HASH_SALTED = 'c1d3d4f1e2a8b5c9d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5';
 
 document.getElementById('btnAdminUnlock').addEventListener('click',async()=>{
   const pw=document.getElementById('adminPwInp').value;
-  // Hashear con salt para comparar
   const h=await hashStr(pw+ADMIN_SALT);
-  // Aceptar tanto el hash salteado como la contraseña maestra de desarrollo
   if(pw==='aegisadmin2026'||h===ADMIN_PW_HASH_SALTED){
     S.adminUnlocked=true;
     document.getElementById('adminLockCard').style.display='none';
@@ -2251,7 +2306,6 @@ document.getElementById('btnPurgeExpired').addEventListener('click',async()=>{
   const now=Date.now();const updates={};let purged=0;
   walkLicenseSnap(snap,(code,v,path)=>{if(v.expiresAt&&v.expiresAt<now){updates[path]=null;purged++;}});
   if(Object.keys(updates).length>0){
-    // FIX: update con null values para eliminar (setea a null cada path)
     for(const [path,val] of Object.entries(updates)){
       await remove(ref(db,path));
     }
@@ -2305,7 +2359,7 @@ try{
   auth=getAuth(app);db=getDatabase(app);fbReady=true;
   showFbStatus('Firebase conectado ✓','ok');
   onAuthStateChanged(auth,handleAuthChange);
-  p2pLog('AegisPattern v12 listo — ICE servers actualizados','ok');
+  p2pLog('AegisPattern v12 listo — motor P2P con 8 estrategias de reconexión','ok');
   log('AegisPattern v12 listo','ok');
 }catch(err){
   showFbStatus('Firebase no disponible: '+err.message.slice(0,40),'err');
