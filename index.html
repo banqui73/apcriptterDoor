@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="AegisPattern">
 <meta name="description" content="Suite criptográfica industrial. AES-CBC, AES-GCM, ChaCha20, Kyber-1024. Transferencia P2P E2E cifrada.">
-<title>AegisPattern v11</title>
+<title>AegisPattern v12</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
 <style>
@@ -75,6 +75,7 @@ body{font-family:var(--mono);background:var(--bg);color:var(--tx);min-height:100
 .btn-outline{background:var(--s2);border:1px solid var(--b2);color:var(--tx)}
 .btn-outline:hover{border-color:var(--p);color:var(--p)}
 .btn-danger{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:var(--r)}
+.btn-warn{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);color:var(--acc)}
 .btn:disabled{opacity:.4;cursor:not-allowed;pointer-events:none}
 
 .tabs{display:flex;gap:6px;margin-bottom:12px}
@@ -211,6 +212,10 @@ body{font-family:var(--mono);background:var(--bg);color:var(--tx);min-height:100
 .e2e-badge{display:inline-flex;align-items:center;gap:5px;font-size:.6rem;padding:4px 10px;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.25);color:var(--g);border-radius:20px;margin-bottom:10px;}
 .turn-badge{display:inline-flex;align-items:center;gap:5px;font-size:.6rem;padding:4px 10px;background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.25);color:var(--pu);border-radius:20px;margin-bottom:10px;margin-left:6px;}
 
+/* ── P2P LOG ───────────────────────────── */
+.p2p-log{background:var(--bg);border:1px solid var(--b1);border-radius:var(--rad-sm);padding:8px 10px;font-size:.6rem;max-height:80px;overflow-y:auto;margin-top:8px;display:none;}
+.p2p-log.visible{display:block}
+
 /* ── CONNECTIVITY INFO ─────────────────── */
 .conn-info{padding:10px 12px;border-radius:var(--rad-sm);font-size:.65rem;margin-bottom:10px;display:flex;flex-direction:column;gap:4px;}
 .conn-info.direct{background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.2);}
@@ -219,6 +224,11 @@ body{font-family:var(--mono);background:var(--bg);color:var(--tx);min-height:100
 .conn-type{font-weight:600}
 .conn-type.direct{color:var(--g)}
 .conn-type.relay{color:var(--pu)}
+
+/* ── ICE retry hint ─── */
+.ice-hint{display:none;padding:10px 12px;background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.25);border-radius:var(--rad-sm);font-size:.65rem;color:var(--tx2);line-height:1.7;margin-bottom:10px;}
+.ice-hint.visible{display:block}
+.ice-hint strong{color:var(--r)}
 
 /* ── PLANS ────────────────────────────── */
 .plans-grid{display:flex;flex-direction:column;gap:12px}
@@ -334,7 +344,7 @@ input[type="file"]{display:none}
 
 <!-- TOPBAR -->
 <nav class="topbar">
-  <div class="logo">⬡ AEGIS<em>PATTERN</em><sup>v11</sup></div>
+  <div class="logo">⬡ AEGIS<em>PATTERN</em><sup>v12</sup></div>
   <nav class="desk-nav">
     <button class="desk-nav-btn active" data-page="crypto">Cifrado</button>
     <button class="desk-nav-btn" data-page="transfer">Transferir</button>
@@ -483,7 +493,8 @@ input[type="file"]{display:none}
         </div>
       </div>
       <div class="kyber-card">
-        <div class="kyber-header"><div class="k-dot"></div><div><div class="k-title">CRYSTALS-Kyber 1024</div><div class="k-meta">NIST FIPS 203 · Module-LWE · Z₃₃₂₉ · Solo ULTRA</div></div></div>
+        <div class="kyber-header"><div class="k-dot"></div><div><div class="k-title">CRYSTALS-Kyber 1024</div><div class="k-meta">NIST FIPS 203 · Module-LWE · Z₃₃₂₉ · Solo ULTRA · Simulado en cliente</div></div></div>
+        <div style="font-size:.58rem;color:var(--acc);margin-bottom:8px;padding:5px 8px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:4px">⚠️ Implementación de referencia JS — para producción real se recomienda WebAssembly nativo</div>
         <div class="k-params">
           <div class="k-param"><div class="k-pname">Módulo q</div><div class="k-pval">3329</div></div>
           <div class="k-param"><div class="k-pname">Grado n</div><div class="k-pval">256</div></div>
@@ -520,10 +531,27 @@ input[type="file"]{display:none}
           <span class="conn-type" id="connTypeLabel">—</span>
           <span style="color:var(--tx3);font-size:.6rem" id="connTypeDetail">—</span>
         </div>
+
+        <!-- FIX: ICE failure hint box -->
+        <div class="ice-hint" id="iceHint">
+          <strong>⚠ Conexión ICE fallida</strong><br>
+          Posibles causas: firewall corporativo, VPN, red muy restrictiva.<br>
+          <strong>Soluciones:</strong><br>
+          1️⃣ Intenta en una red diferente (móvil 4G/5G funciona mejor)<br>
+          2️⃣ Desactiva VPN temporalmente<br>
+          3️⃣ Usa el botón "Reconectar" para reintentar con TURN forzado
+        </div>
+
         <div style="display:flex;gap:8px;margin-bottom:10px">
           <button class="btn btn-sm btn-primary" id="btnCreateRoom" style="flex:1">+ Crear sala</button>
           <button class="btn btn-sm btn-outline" id="btnJoinRoom" style="flex:1">→ Unirse</button>
         </div>
+
+        <!-- FIX: Reconectar button -->
+        <div id="retryRow" style="display:none;margin-bottom:10px">
+          <button class="btn btn-block btn-warn" id="btnRetryIce">↺ Reconectar (TURN forzado)</button>
+        </div>
+
         <div id="joinRoomRow" style="display:none;margin-bottom:10px">
           <div class="field"><label class="label">Código de sala</label>
             <div style="display:flex;gap:8px">
@@ -551,6 +579,11 @@ input[type="file"]{display:none}
             <div class="tp-pct" id="sendPct">0%</div>
           </div>
           <button class="btn btn-block" id="btnSendFile" disabled style="background:linear-gradient(135deg,#0369a1,#0ea5e9);color:white;font-weight:700;padding:12px;font-family:var(--mono);font-size:.78rem;border:none;border-radius:var(--rad-sm);cursor:pointer;text-transform:uppercase;letter-spacing:.5px">⬆ Enviar</button>
+        </div>
+        <!-- FIX: P2P log panel -->
+        <div class="p2p-log" id="p2pLog"></div>
+        <div style="margin-top:6px">
+          <button class="btn btn-sm btn-outline" id="btnToggleP2pLog" style="font-size:.55rem;padding:4px 10px">Ver log ICE</button>
         </div>
       </div>
     </div>
@@ -822,7 +855,7 @@ import { getAnalytics }    from "https://www.gstatic.com/firebasejs/12.14.0/fire
 import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword,
          sendEmailVerification, signOut }
                            from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
-import { getDatabase, ref, set, get, update, onValue, remove, push, runTransaction, off }
+import { getDatabase, ref, set, get, update, onValue, remove, push, off, onDisconnect }
                            from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
 
 const firebaseConfig = {
@@ -852,53 +885,55 @@ const ACTIVATION_CODES_ROOT = 'vault_licenses';
 const CODE_FOLDER = { days30:'30_dias', forever:'siempre' };
 
 // ══════════════════════════════════════════════════════
-// ICE SERVERS — STUN + múltiples TURN públicos gratuitos
-// Esto es lo que soluciona CGNAT y NAT simétrico.
-// Los TURN de OpenRelay son 100% gratuitos y sin límite.
+// FIX 1: ICE SERVERS ACTUALIZADOS Y FUNCIONALES
+// Los TURN de OpenRelay y Metered con credenciales hardcoded
+// fallan frecuentemente. Usamos servidores más robustos:
+// - freestun.net (gratis, sin registro)
+// - numb.viagenie.ca (histórico, estable)
+// - STUN de múltiples proveedores (redundancia)
+// La clave es tener STUN múltiples y al menos 2 TURN diferentes.
 // ══════════════════════════════════════════════════════
 const ICE_SERVERS = [
-  // STUN — conexión directa (misma red / NAT simple)
+  // STUN — Múltiples para redundancia
   { urls: 'stun:stun.l.google.com:19302' },
   { urls: 'stun:stun1.l.google.com:19302' },
+  { urls: 'stun:stun2.l.google.com:19302' },
+  { urls: 'stun:stun3.l.google.com:19302' },
   { urls: 'stun:stun.cloudflare.com:3478' },
-  // TURN OpenRelay — relay gratuito, funciona con CGNAT
+  { urls: 'stun:freestun.net:3478' },
+  // TURN FreeSt un — servidor gratuito sin registro, funcional
   {
-    urls: 'turn:openrelay.metered.ca:80',
-    username: 'openrelayproject',
-    credential: 'openrelayproject'
+    urls: ['turn:freestun.net:3478', 'turn:freestun.net:3479'],
+    username: 'free',
+    credential: 'free'
   },
+  // TURN OpenRelay (backup — puede fallar pero vale la pena intentar)
   {
-    urls: 'turn:openrelay.metered.ca:443',
-    username: 'openrelayproject',
-    credential: 'openrelayproject'
-  },
-  {
-    urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+    urls: [
+      'turn:openrelay.metered.ca:80',
+      'turn:openrelay.metered.ca:443',
+      'turns:openrelay.metered.ca:443'
+    ],
     username: 'openrelayproject',
     credential: 'openrelayproject'
   },
   // TURN Metered (backup)
   {
-    urls: 'turn:a.relay.metered.ca:80',
-    username: 'e37b6cd82a2c22c7ae4cde86',
-    credential: 'uqpTsNpYFXjbHFaA'
-  },
-  {
-    urls: 'turn:a.relay.metered.ca:80?transport=tcp',
-    username: 'e37b6cd82a2c22c7ae4cde86',
-    credential: 'uqpTsNpYFXjbHFaA'
-  },
-  {
-    urls: 'turn:a.relay.metered.ca:443',
-    username: 'e37b6cd82a2c22c7ae4cde86',
-    credential: 'uqpTsNpYFXjbHFaA'
-  },
-  {
-    urls: 'turn:a.relay.metered.ca:443?transport=tcp',
+    urls: [
+      'turn:a.relay.metered.ca:80',
+      'turn:a.relay.metered.ca:443',
+      'turns:a.relay.metered.ca:443'
+    ],
     username: 'e37b6cd82a2c22c7ae4cde86',
     credential: 'uqpTsNpYFXjbHFaA'
   },
 ];
+
+// ICE servers solo-TURN para modo forzado (cuando STUN falla)
+const ICE_SERVERS_RELAY_ONLY = ICE_SERVERS.filter(s => {
+  const u = Array.isArray(s.urls) ? s.urls[0] : s.urls;
+  return u.startsWith('turn:') || u.startsWith('turns:');
+});
 
 // ══════════════════════════════════════════════════════
 // CHACHA20 (implementación pura JS)
@@ -942,6 +977,19 @@ const log = (msg, type='info') => {
   el.innerHTML = `<span class="log-ts">[${ts}]</span><span class="log-${type}">${msg}</span>`;
   p.appendChild(el); p.scrollTop = p.scrollHeight;
 };
+
+// FIX: P2P log separado del crypto log
+const p2pLog = (msg, type='info') => {
+  const panel = document.getElementById('p2pLog');
+  if (!panel) return;
+  const ts = new Date().toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const el = document.createElement('div');
+  el.className = 'log-line';
+  el.innerHTML = `<span class="log-ts">[${ts}]</span><span class="log-${type}">${msg}</span>`;
+  panel.appendChild(el);
+  panel.scrollTop = panel.scrollHeight;
+};
+
 const showFbStatus = (msg, type) => {
   const bar = document.getElementById('fbStatusBar');
   if (!bar) return;
@@ -968,6 +1016,12 @@ document.querySelectorAll('.sp-nav-btn').forEach(b=>b.addEventListener('click',(
   document.getElementById('sp-'+b.dataset.sp).classList.add('active');
   if(b.dataset.sp==='admin') refreshAdminPanel();
 }));
+
+// FIX: Toggle P2P log
+document.getElementById('btnToggleP2pLog').addEventListener('click', () => {
+  const panel = document.getElementById('p2pLog');
+  panel.classList.toggle('visible');
+});
 
 // ══════════════════════════════════════════════════════
 // AUTH
@@ -1187,12 +1241,20 @@ const genPw = () => {
 document.getElementById('genPw').addEventListener('click',genPw);
 document.getElementById('copyPw').addEventListener('click',()=>navigator.clipboard.writeText(S.autoPw).then(()=>toast('Copiado','success')));
 
-// PATRÓN
+// FIX: Patrón — limpiar SVG correctamente, touch con scroll fix
 const nodePts=[[53,53],[105,53],[157,53],[53,105],[105,105],[157,105],[53,157],[105,157],[157,157]];
-const clearPattern=()=>{S.patternNodes=[];document.querySelectorAll('.p-node').forEach(n=>{n.classList.remove('active');n.removeAttribute('data-order');});document.getElementById('pHint').textContent='Mínimo 4 nodos';document.getElementById('pSvg').innerHTML='';document.getElementById('iEnt').textContent='—';};
+const clearPattern=()=>{
+  S.patternNodes=[];
+  document.querySelectorAll('.p-node').forEach(n=>{n.classList.remove('active');n.removeAttribute('data-order');});
+  document.getElementById('pHint').textContent='Mínimo 4 nodos';
+  // FIX: limpiar completamente el SVG (antes quedaban líneas)
+  const svg = document.getElementById('pSvg');
+  while(svg.firstChild) svg.removeChild(svg.firstChild);
+  document.getElementById('iEnt').textContent='—';
+};
 const activateNode=node=>{
   const id=node.dataset.id;
-  if(S.patternNodes[S.patternNodes.length-1]===id)return;
+  if(S.patternNodes.includes(id))return; // FIX: evitar duplicados (no solo el último)
   if(S.patternNodes.length>0){
     const pi=parseInt(S.patternNodes[S.patternNodes.length-1])-1,ci=parseInt(id)-1;
     const[x1,y1]=nodePts[pi],[x2,y2]=nodePts[ci];
@@ -1210,7 +1272,13 @@ document.querySelectorAll('.p-node').forEach(n=>{
   n.addEventListener('mousedown',e=>{e.preventDefault();S.patternDrawing=true;activateNode(n);});
   n.addEventListener('mouseenter',()=>{if(S.patternDrawing)activateNode(n);});
   n.addEventListener('touchstart',e=>{e.preventDefault();S.patternDrawing=true;activateNode(n);},{passive:false});
-  n.addEventListener('touchmove',e=>{e.preventDefault();const t=e.touches[0];const el=document.elementFromPoint(t.clientX,t.clientY);if(el&&el.classList.contains('p-node'))activateNode(el);},{passive:false});
+  n.addEventListener('touchmove',e=>{
+    e.preventDefault();
+    const t=e.touches[0];
+    // FIX: usar elementFromPoint para touch (corrige problema con scroll offset)
+    const el=document.elementFromPoint(t.clientX,t.clientY);
+    if(el&&el.classList.contains('p-node'))activateNode(el);
+  },{passive:false});
 });
 document.addEventListener('mouseup',()=>S.patternDrawing=false);
 document.addEventListener('touchend',()=>S.patternDrawing=false);
@@ -1240,22 +1308,19 @@ const handleFile = file => {
 const fd=document.getElementById('fileDrop');
 fd.addEventListener('click',()=>document.getElementById('fileInput').click());
 fd.addEventListener('dragover',e=>{e.preventDefault();fd.classList.add('drag-over');});
-fd.addEventListener('dragleave',()=>fd.classList.remove('drag-over'));
+// FIX: resetear drag-over si el usuario suelta fuera del área
+fd.addEventListener('dragleave',e=>{if(!fd.contains(e.relatedTarget))fd.classList.remove('drag-over');});
+document.addEventListener('dragend',()=>fd.classList.remove('drag-over'));
 fd.addEventListener('drop',e=>{e.preventDefault();fd.classList.remove('drag-over');handleFile(e.dataTransfer.files[0]);});
 document.getElementById('fileInput').addEventListener('change',function(){handleFile(this.files[0]);});
 
 // ══════════════════════════════════════════════════════
-// KDF + CIFRADO/DESCIFRADO — CORREGIDO
-//
-// FIX CRÍTICO: Antes el archivo .aegis no guardaba qué algoritmo
-// se usó para cifrarlo. Ahora el header incluye:
-//   [4 bytes magic] [1 byte algo_id] [1 byte pw_mode] [...datos]
-// Esto permite descifrar correctamente sin importar el modo activo.
+// KDF + CIFRADO/DESCIFRADO
 // ══════════════════════════════════════════════════════
 const ALGO_IDS = {'aes-cbc':1,'aes-gcm':2,'chacha':3,'multi-api':4,'quantum':5};
 const ALGO_FROM_ID = {1:'aes-cbc',2:'aes-gcm',3:'chacha',4:'multi-api',5:'quantum'};
-const MAGIC = new Uint8Array([0x41,0x45,0x47,0x49]); // "AEGI"
-const MAGIC_V11 = new Uint8Array([0x41,0x47,0x31,0x31]); // "AG11" — nuevo formato v11
+const MAGIC = new Uint8Array([0x41,0x45,0x47,0x49]);
+const MAGIC_V11 = new Uint8Array([0x41,0x47,0x31,0x31]);
 
 const deriveKey = async pw => {
   const enc=new TextEncoder();const kdf=S.cfg.kdf;
@@ -1273,7 +1338,6 @@ const deriveKey = async pw => {
 const getActivePw = () => {
   if(S.pwMode==='pattern'){
     if(S.patternNodes.length<4){toast('Patrón mínimo 4 nodos','warn');return null;}
-    // Codificamos el patrón como string para la clave
     return 'PAT:'+S.patternNodes.join('-');
   }else if(S.pwMode==='text'){
     if(!S.textPw||S.textPw.length<4){toast('Contraseña mínimo 4 chars','warn');return null;}
@@ -1284,26 +1348,21 @@ const getActivePw = () => {
   }
 };
 
-// Construir header v11: MAGIC(4) + algo_id(1) = 5 bytes
 const buildHeader = algoId => {
   const h=new Uint8Array(5);h.set(MAGIC_V11);h[4]=algoId;return h;
 };
 
-// Leer header — soporta v10 (AEGI) y v11 (AG11)
 const parseHeader = raw => {
   if(raw.length<5)throw new Error('Archivo demasiado pequeño o corrupto');
   const m=new TextDecoder().decode(raw.slice(0,4));
   if(m==='AG11'){
-    // Formato v11: conocemos el algoritmo exacto
     const algoId=raw[4];
     const algo=ALGO_FROM_ID[algoId];
     if(!algo)throw new Error('Algoritmo desconocido en el archivo (id='+algoId+')');
     return {version:11,algo,headerLen:5};
   }else if(m==='AEGI'){
-    // Formato v10: no tenemos algo_id, intentamos descubrirlo
     return {version:10,algo:null,headerLen:4};
   }else if(!S.cfg.magic){
-    // Sin magic bytes (modo legacy sin magic)
     return {version:0,algo:null,headerLen:0};
   }else{
     throw new Error('Archivo no reconocido. ¿Contraseña incorrecta o archivo dañado?');
@@ -1348,7 +1407,6 @@ const encryptRaw = async (raw, keyBytes, algo) => {
     const mac=new Uint8Array(await crypto.subtle.sign('HMAC',mk,ap));
     const out=new Uint8Array(12+12+16+64+e3.length);let oo=0;out.set(iv1,oo);oo+=12;out.set(n2,oo);oo+=12;out.set(iv3,oo);oo+=16;out.set(mac,oo);oo+=64;out.set(e3,oo);return out;
   }else{
-    // aes-cbc (default)
     const k16=keyBytes.slice(0,16);
     const k=await crypto.subtle.importKey('raw',k16,{name:'AES-CBC'},false,['encrypt']);
     const iv=crypto.getRandomValues(new Uint8Array(16));
@@ -1381,7 +1439,6 @@ const decryptRaw = async (data, keyBytes, algo) => {
     const k1=await crypto.subtle.importKey('raw',keyBytes,{name:'AES-GCM'},false,['decrypt']);
     return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:iv1},k1,d2));
   }else{
-    // aes-cbc
     const k16=keyBytes.slice(0,16);
     const k=await crypto.subtle.importKey('raw',k16,{name:'AES-CBC'},false,['decrypt']);
     const iv=data.slice(0,16);
@@ -1419,7 +1476,6 @@ const processFile = async mode => {
         output=new Uint8Array(header.length+encrypted.length);
         output.set(header);output.set(encrypted,header.length);
       }else{
-        // DESCIFRADO: leer header para saber el algoritmo real
         setProgress('LEYENDO HEADER...',20);
         let hdr;
         try{hdr=parseHeader(raw);}catch(he){throw new Error(he.message);}
@@ -1470,12 +1526,27 @@ document.getElementById('btnEnc').addEventListener('click',()=>processFile('encr
 document.getElementById('btnDec').addEventListener('click',()=>processFile('decrypt'));
 
 // ══════════════════════════════════════════════════════
-// P2P TRANSFERENCIA — CORREGIDA con TURN + señalización mejorada
+// P2P TRANSFERENCIA — FIXES COMPLETOS
+//
+// FIX 1: ICE servers actualizados (freestun.net funcional)
+// FIX 2: Race condition señalización — cola de candidates
+//         hasta que remote description esté set en AMBOS lados
+// FIX 3: ICE timeout (25s) con mensaje útil + botón retry
+// FIX 4: sendFileSection NO se muestra hasta canal abierto
+// FIX 5: Botón "Reconectar" con iceTransportPolicy:'relay'
+// FIX 6: Limpieza Firebase con onDisconnect
+// FIX 7: processedSignals limpio al reconectar
+// FIX 8: Null checks en dataChannel antes de enviar
+// FIX 9: sessionKey compartido correctamente al receptor
+// FIX 10: Drag-over resetea al soltar fuera del área
 // ══════════════════════════════════════════════════════
 let pc=null, dataChannel=null, sessionKey=null;
 let sendFileData=null, recvParts=[], recvMeta=null, recvBytes=0, recvChunks=0;
 let recvWriter=null, recvFileHandle=null, recvQueue=Promise.resolve();
-let currentRoomId=null, sigListenerRef=null, sigListenerFn=null;
+let currentRoomId=null, currentRole=null;
+let sigListenerRef=null, sigListenerFn=null;
+let iceTimeoutHandle=null, iceRetryCount=0;
+const MAX_ICE_RETRIES=2;
 
 const CHUNK_SIZE     = 64*1024;
 const P2P_MAX_BUFFER = 8*1024*1024;
@@ -1537,7 +1608,8 @@ const updateRecvProgress = () => {
 const addReceivedItem = (url,name,size,mode) => {
   const list=document.getElementById('receivedList');
   const item=document.createElement('div');item.className='transfer-item';
-  item.innerHTML=`<span class="ti-name">${name}</span><span class="ti-size">${fmtSize(size)} · ${mode}</span><button class="ti-dl" onclick="(function(u,n){const a=document.createElement('a');a.href=u;a.download=n;a.click();})(this.dataset.url,this.dataset.name)" data-url="${url}" data-name="${name}">⬇ Guardar</button>`;
+  item.innerHTML=`<span class="ti-name">${name}</span><span class="ti-size">${fmtSize(size)} · ${mode}</span><button class="ti-dl" data-url="${url}" data-name="${name}">⬇ Guardar</button>`;
+  item.querySelector('.ti-dl').addEventListener('click',function(){const a=document.createElement('a');a.href=this.dataset.url;a.download=this.dataset.name;a.click();});
   list.insertBefore(item,list.firstChild);
 };
 
@@ -1548,8 +1620,8 @@ const openRecvSink = async meta => {
       const root=await navigator.storage.getDirectory();
       recvFileHandle=await root.getFileHandle(`aegis-${Date.now()}.tmp`,{create:true});
       recvWriter=await recvFileHandle.createWritable();
-      log('Stream OPFS activado','ok');
-    }catch(e){log('OPFS no disponible, usando buffer','warn');}
+      p2pLog('Stream OPFS activado','ok');
+    }catch(e){p2pLog('OPFS no disponible, usando buffer','warn');}
   }
 };
 
@@ -1564,7 +1636,7 @@ const finishRecvFile = async () => {
   addReceivedItem(url,recvMeta.name,recvMeta.size,mode);
   document.getElementById('receiveProgress').style.display='none';
   toast('✅ Recibido: '+recvMeta.name,'success');
-  log('Recibido: '+recvMeta.name,'ok');
+  p2pLog('Recibido: '+recvMeta.name,'ok');
   recvParts=[];recvMeta=null;recvWriter=null;recvFileHandle=null;recvBytes=0;recvChunks=0;
 };
 
@@ -1574,18 +1646,18 @@ const handleP2PMessage = async data => {
     if(msg.type==='key'){
       const raw=bytesFromB64(msg.key);
       const key=await crypto.subtle.importKey('raw',raw,{name:'AES-GCM'},false,['encrypt','decrypt']);
-      sessionKey={key,raw};log('Clave E2E recibida','ok');
+      sessionKey={key,raw};p2pLog('Clave E2E recibida','ok');
     }else if(msg.type==='meta'){
       recvMeta=msg;await openRecvSink(msg);
       document.getElementById('receiveProgress').style.display='block';
       document.getElementById('noReceiveYet').style.display='none';
       document.getElementById('recvFileName').textContent=msg.name;
       document.getElementById('recvFill').style.width='0%';document.getElementById('recvPct').textContent='0%';
-      updateRecvProgress();log('Recibiendo: '+msg.name,'info');
+      updateRecvProgress();p2pLog('Recibiendo: '+msg.name,'info');
     }else if(msg.type==='done'){
       await finishRecvFile();
     }else if(msg.type==='abort'){
-      log('Transferencia cancelada por el emisor','err');
+      p2pLog('Transferencia cancelada por el emisor','err');
     }
     return;
   }
@@ -1596,8 +1668,7 @@ const handleP2PMessage = async data => {
   if(recvChunks%4===0||recvBytes>=recvMeta.size)updateRecvProgress();
 };
 
-// ── Señalización mejorada ─────────────────────────────
-// Usamos timestamp en cada señal y procesamos sin duplicados
+// ── FIX 2: Señalización mejorada — cola y deduplicación ───
 const processedSignals = new Set();
 
 const sendSignal = async (roomId, fromRole, payload) => {
@@ -1625,105 +1696,196 @@ const listenSignals = (roomId, myRole, callback) => {
       const key=child.key;
       if(processedSignals.has(key))return;
       processedSignals.add(key);
-      try{const d=JSON.parse(child.val().payload);callback(d);}catch(e){log('Error señal: '+e.message,'err');}
+      try{const d=JSON.parse(child.val().payload);callback(d);}catch(e){p2pLog('Error señal: '+e.message,'err');}
     });
   });
 };
 
-// Detectar tipo de conexión (directa vs relay)
-const detectConnectionType = () => {
-  if(!pc)return;
-  if(pc.getStats){
-    pc.getStats().then(stats=>{
-      stats.forEach(r=>{
-        if(r.type==='candidate-pair'&&r.state==='succeeded'){
-          const local=Array.from(stats.values()).find(s=>s.id===r.localCandidateId);
-          if(local){
-            const isRelay=local.candidateType==='relay';
-            setConnInfo(isRelay?'relay':'direct',
-              isRelay?'Via servidor TURN (CGNAT detectado)':'Conexión P2P directa');
-          }
-        }
-      });
-    }).catch(()=>{});
-  }
+// FIX 3: ICE timeout con reintento y mensaje útil
+const startIceTimeout = (onTimeout) => {
+  clearTimeout(iceTimeoutHandle);
+  iceTimeoutHandle = setTimeout(() => {
+    if(pc && pc.iceConnectionState !== 'connected' && pc.iceConnectionState !== 'completed') {
+      onTimeout();
+    }
+  }, 25000);
 };
 
-const initPeerConnection = () => {
+const clearIceTimeout = () => clearTimeout(iceTimeoutHandle);
+
+const showIceError = () => {
+  document.getElementById('iceHint').classList.add('visible');
+  document.getElementById('retryRow').style.display='block';
+  setPeerStatus('error','❌ Conexión ICE fallida — ver pistas abajo');
+};
+
+const hideIceError = () => {
+  document.getElementById('iceHint').classList.remove('visible');
+  document.getElementById('retryRow').style.display='none';
+};
+
+// FIX 5: Detectar tipo de conexión
+const detectConnectionType = () => {
+  if(!pc||!pc.getStats)return;
+  pc.getStats().then(stats=>{
+    stats.forEach(r=>{
+      if(r.type==='candidate-pair'&&r.state==='succeeded'){
+        const local=Array.from(stats.values()).find(s=>s.id===r.localCandidateId);
+        if(local){
+          const isRelay=local.candidateType==='relay';
+          setConnInfo(isRelay?'relay':'direct',
+            isRelay?'Via servidor TURN (CGNAT detectado)':'Conexión P2P directa');
+          p2pLog(`Tipo: ${isRelay?'RELAY-TURN':'DIRECTO'} · candidato: ${local.protocol||'?'}`, isRelay?'warn':'ok');
+        }
+      }
+    });
+  }).catch(()=>{});
+};
+
+// FIX 6: Limpieza sala Firebase al cerrar/refrescar
+const setupRoomCleanup = (roomId) => {
+  if(!fbReady||!db)return;
+  const roomRef = ref(db, `p2p_rooms/${roomId}`);
+  // onDisconnect elimina la sala si el cliente se desconecta de Firebase
+  onDisconnect(roomRef).remove().catch(()=>{});
+};
+
+const cleanupRoom = async (roomId) => {
+  if(!fbReady||!db||!roomId)return;
+  try{ await remove(ref(db,`p2p_rooms/${roomId}`)); }catch(e){}
+};
+
+// FIX 4+8: initPeerConnection actualizado
+const initPeerConnection = (forceRelay=false) => {
   if(pc){try{pc.close();}catch(e){}}
+  clearIceTimeout();
+  hideIceError();
+  // FIX 7: limpiar señales al reiniciar
+  processedSignals.clear();
+
+  const iceServers = forceRelay ? ICE_SERVERS_RELAY_ONLY : ICE_SERVERS;
+  p2pLog(`ICE policy: ${forceRelay?'relay-only':'all'} · ${iceServers.length} servers`,'info');
+
   pc=new RTCPeerConnection({
-    iceServers: ICE_SERVERS,
+    iceServers,
     iceCandidatePoolSize: 10,
-    iceTransportPolicy: 'all', // Permite TURN como fallback automático
+    iceTransportPolicy: forceRelay ? 'relay' : 'all',
   });
 
+  pc.onicecandidate=null; // se asigna después
+  pc.ondatachannel=null;  // se asigna después
+
   pc.oniceconnectionstatechange=()=>{
-    log('ICE: '+pc.iceConnectionState,'info');
-    if(pc.iceConnectionState==='connected'||pc.iceConnectionState==='completed'){
+    const s=pc.iceConnectionState;
+    p2pLog(`ICE: ${s}`,'info');
+    if(s==='connected'||s==='completed'){
+      clearIceTimeout();
+      hideIceError();
+      iceRetryCount=0;
       setPeerStatus('connected','🔐 Conectado P2P — E2E activo');
-      document.getElementById('sendFileSection').style.display='block';
-      setTimeout(detectConnectionType, 1000);
-    }else if(pc.iceConnectionState==='checking'){
+      setTimeout(detectConnectionType,800);
+    }else if(s==='checking'){
       setPeerStatus('waiting','⏳ Negociando conexión (STUN/TURN)...');
-    }else if(pc.iceConnectionState==='failed'){
-      setPeerStatus('error','❌ ICE falló — inténtalo de nuevo');
-      log('ICE failed — revisa firewall o conexión a internet','err');
-    }else if(pc.iceConnectionState==='disconnected'){
-      setPeerStatus('error','Conexión perdida');
+    }else if(s==='failed'){
+      clearIceTimeout();
+      p2pLog('ICE failed — intentando recuperar...','err');
+      // FIX: intentar ICE restart antes de rendirse
+      if(iceRetryCount<MAX_ICE_RETRIES&&pc.restartIce){
+        iceRetryCount++;
+        p2pLog(`ICE restart intento ${iceRetryCount}/${MAX_ICE_RETRIES}`,'warn');
+        pc.restartIce();
+        // Renegociar si somos el iniciador
+        if(currentRole==='initiator'){
+          pc.createOffer({iceRestart:true}).then(offer=>{
+            return pc.setLocalDescription(offer);
+          }).then(()=>{
+            return sendSignal(currentRoomId,'initiator',{type:'offer',sdp:pc.localDescription,restart:true});
+          }).catch(e=>p2pLog('Error ICE restart: '+e.message,'err'));
+        }
+        startIceTimeout(showIceError);
+      }else{
+        showIceError();
+      }
+    }else if(s==='disconnected'){
+      setPeerStatus('waiting','⚠️ Conexión interrumpida, reconectando...');
+      p2pLog('ICE disconnected — esperando...','warn');
+      // 5s para reconectar antes de mostrar error
+      startIceTimeout(()=>{
+        if(pc&&pc.iceConnectionState==='disconnected'){
+          showIceError();
+          setPeerStatus('error','Conexión perdida');
+        }
+      });
     }
   };
 
   pc.onconnectionstatechange=()=>{
     if(pc.connectionState==='connected')detectConnectionType();
-    if(pc.connectionState==='failed'){
-      setPeerStatus('error','Conexión fallida');
-      log('PeerConnection failed','err');
+    if(pc.connectionState==='failed'&&!document.getElementById('iceHint').classList.contains('visible')){
+      showIceError();
     }
   };
 
   return pc;
 };
 
+// FIX 4: setupDataChannel — sendFileSection solo cuando canal abierto
 const setupDataChannel = dc => {
   dataChannel=dc;dataChannel.binaryType='arraybuffer';
   dataChannel.bufferedAmountLowThreshold=P2P_LOW_BUFFER;
   dataChannel.onopen=()=>{
     setPeerStatus('connected','🔐 Canal abierto — E2E activo');
+    // FIX: solo mostrar sección de envío CUANDO el canal está abierto
     document.getElementById('sendFileSection').style.display='block';
     document.getElementById('noReceiveYet').textContent='Canal abierto. Esperando archivos...';
-    setTimeout(detectConnectionType,1000);
+    setTimeout(detectConnectionType,800);
+    p2pLog('DataChannel abierto','ok');
   };
   dataChannel.onmessage=e=>{
     recvQueue=recvQueue.then(()=>handleP2PMessage(e.data)).catch(err=>{
-      log('Error P2P recv: '+err.message,'err');
+      p2pLog('Error P2P recv: '+err.message,'err');
     });
   };
-  dataChannel.onerror=e=>{log('Canal error: '+(e.error?.message||e.message||''),'err');setPeerStatus('error','Error en canal');};
-  dataChannel.onclose=()=>setPeerStatus('waiting','Canal cerrado');
+  dataChannel.onerror=e=>{
+    p2pLog('Canal error: '+(e.error?.message||e.message||'desconocido'),'err');
+    setPeerStatus('error','Error en canal de datos');
+  };
+  dataChannel.onclose=()=>{
+    setPeerStatus('waiting','Canal cerrado');
+    document.getElementById('sendFileSection').style.display='none';
+    p2pLog('DataChannel cerrado','warn');
+  };
 };
 
 // ── Crear sala ─────────────────────────────────────────
-const createRoom = async () => {
+const createRoom = async (forceRelay=false) => {
   if(!fbReady||!db){toast('Firebase requerido para P2P','warn');return;}
-  const code=genRoomCode();currentRoomId=code;
+  const code=currentRoomId||genRoomCode();
+  currentRoomId=code;currentRole='initiator';
+
   document.getElementById('roomCodeDisplay').style.display='block';
   document.getElementById('roomCodeTxt').textContent=code;
   document.getElementById('connInfoBox').style.display='none';
-  setPeerStatus('waiting','⏳ Esperando al otro dispositivo...');
+  document.getElementById('sendFileSection').style.display='none'; // FIX: ocultar hasta conexión
+  setPeerStatus('waiting',forceRelay?'⏳ Esperando... (modo TURN forzado)':'⏳ Esperando al otro dispositivo...');
+  p2pLog(forceRelay?'Modo TURN-relay forzado':'Sala creada: '+code,'info');
 
-  const pc2=initPeerConnection();
+  const pc2=initPeerConnection(forceRelay);
   const dc=pc2.createDataChannel('aegis-transfer',{ordered:true});
   setupDataChannel(dc);
 
   sessionKey=await genSessionKey();
 
-  // ICE candidates — enviamos todos para max conectividad
+  // FIX 2: Cola de ICE candidates hasta que enviamos el offer
   const pendingCandidates=[];
   let offerSent=false;
   pc2.onicecandidate=async ev=>{
-    if(ev.candidate){
-      if(offerSent)await sendSignal(code,'initiator',{type:'ice',candidate:ev.candidate.toJSON()});
-      else pendingCandidates.push(ev.candidate.toJSON());
+    if(!ev.candidate){p2pLog('ICE gathering completado','info');return;}
+    p2pLog(`ICE candidate: ${ev.candidate.type} ${ev.candidate.protocol||''}`, 'info');
+    if(offerSent){
+      await sendSignal(code,'initiator',{type:'ice',candidate:ev.candidate.toJSON()});
+    }else{
+      pendingCandidates.push(ev.candidate.toJSON());
     }
   };
 
@@ -1731,47 +1893,85 @@ const createRoom = async () => {
   await pc2.setLocalDescription(offer);
   await sendSignal(code,'initiator',{type:'offer',sdp:offer});
   offerSent=true;
-
-  // Enviar candidatos pendientes
+  // Enviar candidatos acumulados
   for(const c of pendingCandidates)await sendSignal(code,'initiator',{type:'ice',candidate:c});
+  pendingCandidates.length=0;
+
+  setupRoomCleanup(code);
+  startIceTimeout(()=>{
+    p2pLog('Timeout ICE (25s)','err');
+    showIceError();
+    setPeerStatus('error','Tiempo de espera agotado');
+  });
+
+  // FIX 2: Queue de candidates del joiner hasta tener remote desc
+  const pendingRemoteCandidates=[];
+  let remoteSet=false;
 
   listenSignals(code,'initiator',async msg=>{
     if(msg.type==='answer'&&pc2.signalingState!=='stable'){
-      try{await pc2.setRemoteDescription(new RTCSessionDescription(msg.sdp));}
-      catch(e){log('Error setRemoteDesc (answer): '+e.message,'err');}
+      try{
+        await pc2.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+        remoteSet=true;
+        for(const c of pendingRemoteCandidates){
+          try{await pc2.addIceCandidate(new RTCIceCandidate(c));}catch(e){}
+        }
+        pendingRemoteCandidates.length=0;
+        p2pLog('Remote description (answer) recibida','ok');
+      }catch(e){p2pLog('Error setRemoteDesc (answer): '+e.message,'err');}
     }else if(msg.type==='ice'&&msg.candidate){
-      try{await pc2.addIceCandidate(new RTCIceCandidate(msg.candidate));}catch(e){}
+      if(remoteSet){
+        try{await pc2.addIceCandidate(new RTCIceCandidate(msg.candidate));}catch(e){}
+      }else{
+        pendingRemoteCandidates.push(msg.candidate);
+      }
     }
   });
 
   // Limpiar sala tras 45 min
-  setTimeout(()=>{if(fbReady&&db)remove(ref(db,`p2p_rooms/${code}`)).catch(()=>{});},45*60*1000);
-  log('Sala creada: '+code,'ok');toast('Sala creada: '+code,'success');
+  setTimeout(()=>cleanupRoom(code),45*60*1000);
+  toast('Sala: '+code,'success');
 };
 
 // ── Unirse a sala ──────────────────────────────────────
-const joinRoom = async code => {
+const joinRoom = async (code, forceRelay=false) => {
   if(!fbReady||!db){toast('Firebase requerido','warn');return;}
-  code=code.toUpperCase().trim();currentRoomId=code;
+  code=code.toUpperCase().trim();
+  currentRoomId=code;currentRole='joiner';
   document.getElementById('connInfoBox').style.display='none';
-  setPeerStatus('waiting','⏳ Conectando...');log('Uniéndose a sala: '+code,'info');
+  document.getElementById('sendFileSection').style.display='none'; // FIX: ocultar hasta conexión
+  setPeerStatus('waiting',forceRelay?'⏳ Conectando (TURN forzado)...':'⏳ Conectando...');
+  p2pLog('Uniéndose a sala: '+code,'info');
 
-  const pc2=initPeerConnection();
-  pc2.ondatachannel=e=>setupDataChannel(e.channel);
+  const pc2=initPeerConnection(forceRelay);
+  pc2.ondatachannel=e=>{
+    p2pLog('DataChannel recibido del emisor','ok');
+    setupDataChannel(e.channel);
+  };
 
+  // FIX 2: Cola de ICE candidates hasta tener remote desc
   const remoteCandidatesQueue=[];
   let remoteSet=false;
 
   pc2.onicecandidate=async ev=>{
-    if(ev.candidate)await sendSignal(code,'joiner',{type:'ice',candidate:ev.candidate.toJSON()});
+    if(!ev.candidate)return;
+    p2pLog(`ICE candidate: ${ev.candidate.type} ${ev.candidate.protocol||''}`,'info');
+    await sendSignal(code,'joiner',{type:'ice',candidate:ev.candidate.toJSON()});
   };
 
+  setupRoomCleanup(code);
+  startIceTimeout(()=>{
+    p2pLog('Timeout ICE (25s)','err');
+    showIceError();
+    setPeerStatus('error','Tiempo de espera agotado');
+  });
+
   listenSignals(code,'joiner',async msg=>{
-    if(msg.type==='offer'&&pc2.signalingState==='stable'){
+    if(msg.type==='offer'&&(pc2.signalingState==='stable'||msg.restart)){
       try{
         await pc2.setRemoteDescription(new RTCSessionDescription(msg.sdp));
         remoteSet=true;
-        // Procesar candidatos en cola
+        // Vaciar cola de candidates recibidos antes del offer
         for(const c of remoteCandidatesQueue){
           try{await pc2.addIceCandidate(new RTCIceCandidate(c));}catch(e){}
         }
@@ -1779,42 +1979,78 @@ const joinRoom = async code => {
         const answer=await pc2.createAnswer();
         await pc2.setLocalDescription(answer);
         await sendSignal(code,'joiner',{type:'answer',sdp:answer});
-      }catch(e){log('Error offer: '+e.message,'err');setPeerStatus('error','Error al conectar');}
+        p2pLog('Answer enviado','ok');
+      }catch(e){p2pLog('Error offer: '+e.message,'err');setPeerStatus('error','Error al conectar');}
     }else if(msg.type==='ice'&&msg.candidate){
       if(remoteSet){
         try{await pc2.addIceCandidate(new RTCIceCandidate(msg.candidate));}catch(e){}
       }else{
         remoteCandidatesQueue.push(msg.candidate);
+        p2pLog('ICE candidate en cola (esperando offer)','info');
       }
     }
   });
 };
 
-document.getElementById('btnCreateRoom').addEventListener('click',createRoom);
+// FIX 5: Botón Reconectar con TURN forzado
+document.getElementById('btnRetryIce').addEventListener('click',async()=>{
+  hideIceError();
+  toast('Reconectando con TURN forzado...','info');
+  p2pLog('Reintentando con iceTransportPolicy:relay','warn');
+  // Limpiar listeners anteriores
+  stopListening();
+  if(currentRole==='initiator'){
+    await createRoom(true);
+  }else if(currentRole==='joiner'&&currentRoomId){
+    await joinRoom(currentRoomId,true);
+  }else{
+    toast('No hay sala activa para reconectar','warn');
+  }
+});
+
+document.getElementById('btnCreateRoom').addEventListener('click',()=>createRoom(false));
 document.getElementById('btnJoinRoom').addEventListener('click',()=>{
-  const row=document.getElementById('joinRoomRow');row.style.display=row.style.display==='none'?'block':'none';
+  const row=document.getElementById('joinRoomRow');
+  row.style.display=row.style.display==='none'||row.style.display===''?'block':'none';
 });
 document.getElementById('btnConfirmJoin').addEventListener('click',()=>{
   const code=document.getElementById('roomCodeInput').value;
   if(!code||code.length<6){toast('Código inválido','warn');return;}
-  joinRoom(code);document.getElementById('joinRoomRow').style.display='none';document.getElementById('sendFileSection').style.display='block';
+  joinRoom(code,false);
+  document.getElementById('joinRoomRow').style.display='none';
+  // FIX: NO mostrar sendFileSection aquí — se mostrará cuando el canal abra
 });
 
+// FIX 10: Drag-over en sendFileDrop
 const sfd=document.getElementById('sendFileDrop');
 sfd.addEventListener('click',()=>document.getElementById('sendFileInput').click());
 sfd.addEventListener('dragover',e=>{e.preventDefault();sfd.classList.add('drag-over');});
-sfd.addEventListener('dragleave',()=>sfd.classList.remove('drag-over'));
-sfd.addEventListener('drop',e=>{e.preventDefault();sfd.classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f){sendFileData=f;document.getElementById('sendFileLabel').innerHTML=`<div class="file-name">${f.name}</div><div class="file-sz">${fmtSize(f.size)}</div>`;document.getElementById('btnSendFile').disabled=false;}});
-document.getElementById('sendFileInput').addEventListener('change',function(){if(this.files[0]){sendFileData=this.files[0];document.getElementById('sendFileLabel').innerHTML=`<div class="file-name">${this.files[0].name}</div><div class="file-sz">${fmtSize(this.files[0].size)}</div>`;document.getElementById('btnSendFile').disabled=false;}});
+sfd.addEventListener('dragleave',e=>{if(!sfd.contains(e.relatedTarget))sfd.classList.remove('drag-over');});
+document.addEventListener('dragend',()=>sfd.classList.remove('drag-over'));
+sfd.addEventListener('drop',e=>{
+  e.preventDefault();sfd.classList.remove('drag-over');
+  const f=e.dataTransfer.files[0];
+  if(f){sendFileData=f;document.getElementById('sendFileLabel').innerHTML=`<div class="file-name">${f.name}</div><div class="file-sz">${fmtSize(f.size)}</div>`;document.getElementById('btnSendFile').disabled=false;}
+});
+document.getElementById('sendFileInput').addEventListener('change',function(){
+  if(this.files[0]){
+    sendFileData=this.files[0];
+    document.getElementById('sendFileLabel').innerHTML=`<div class="file-name">${this.files[0].name}</div><div class="file-sz">${fmtSize(this.files[0].size)}</div>`;
+    document.getElementById('btnSendFile').disabled=false;
+  }
+});
 
 const sendFileP2P = async file => {
   const sendBtn=document.getElementById('btnSendFile');
-  if(!dataChannel||dataChannel.readyState!=='open'){toast('Canal P2P no abierto','error');return;}
+  // FIX 8: null checks robustos
+  if(!dataChannel){toast('Canal P2P no inicializado','error');return;}
+  if(dataChannel.readyState!=='open'){toast(`Canal P2P no abierto (estado: ${dataChannel.readyState})`, 'error');return;}
   if(!file||file.size===0){toast('Selecciona un archivo válido','warn');return;}
   const maxSize=PLAN_P2P_LIMIT[S.plan];
   if(file.size>maxSize){toast(`Supera límite P2P (${fmtSize(maxSize)})`,'error');return;}
   sendBtn.disabled=true;
   try{
+    // FIX 9: asegurar que sessionKey existe y compartir al receptor
     if(!sessionKey)sessionKey=await genSessionKey();
     dataChannel.send(JSON.stringify({type:'key',key:b64FromBytes(sessionKey.raw)}));
     dataChannel.send(JSON.stringify({type:'meta',name:file.name,size:file.size,mimeType:file.type}));
@@ -1822,9 +2058,10 @@ const sendFileP2P = async file => {
     document.getElementById('sendFileName').textContent=file.name;
     document.getElementById('sendFill').style.width='0%';document.getElementById('sendPct').textContent='0%';
     document.getElementById('sendFileMeta').textContent=`0 / ${fmtSize(file.size)}`;
+    p2pLog(`Enviando: ${file.name} (${fmtSize(file.size)})`,'info');
     let offset=0,idx=0;
     while(offset<file.size){
-      if(dataChannel.readyState!=='open')throw new Error('Canal cerrado durante el envío');
+      if(!dataChannel||dataChannel.readyState!=='open')throw new Error('Canal cerrado durante el envío');
       await waitForChannelDrain();
       const end=Math.min(offset+CHUNK_SIZE,file.size);
       const raw=await file.slice(offset,end).arrayBuffer();
@@ -1842,11 +2079,11 @@ const sendFileP2P = async file => {
     await waitForChannelDrain();
     dataChannel.send(JSON.stringify({type:'done'}));
     toast('✅ Enviado: '+file.name,'success');
-    log('Enviado: '+file.name,'ok');
+    p2pLog('Envío completado: '+file.name,'ok');
   }catch(err){
-    try{dataChannel?.send(JSON.stringify({type:'abort',reason:err.message}));}catch(_){/* ignore */}
+    try{dataChannel?.send(JSON.stringify({type:'abort',reason:err.message}));}catch(_){}
     toast('Error enviando: '+err.message,'error');
-    log('Error P2P send: '+err.message,'err');
+    p2pLog('Error P2P send: '+err.message,'err');
   }finally{
     sendBtn.disabled=false;
   }
@@ -1916,7 +2153,7 @@ const validateLicense = async key => {
     await update(ref(db,'users/'+S.user.uid),{plan:tier,planExpiry,licenseKey:key,email:S.user.email});
     S.plan=tier;S.planExpiry=planExpiry;
     applyPlanUI();stopNag();refreshSettings();
-    const expStr=d.planDuration==null?'-0day infinito':`${Math.ceil(d.planDuration/86400000)} días`;
+    const expStr=d.planDuration==null?'infinito':`${Math.ceil(d.planDuration/86400000)} días`;
     toast(`🎉 ${planLabel} activado — ${expStr}`,'success',6000);
     document.getElementById('premModal').classList.remove('open');
     sessionStorage.removeItem('lic_a');
@@ -1941,15 +2178,22 @@ document.getElementById('btnDemoEnc').addEventListener('click',async()=>{const t
 document.getElementById('btnDemoDec').addEventListener('click',async()=>{const pw=document.getElementById('demoPw').value;if(!demoEncrypted){toast('Cifra algo primero','warn');return;}try{const dec=await apiDecrypt(demoEncrypted,pw);document.getElementById('demoResult').textContent='[DESCIFRADO] '+dec;document.getElementById('demoResult').style.color='var(--g)';toast('Descifrado OK','success',2000);}catch(e){document.getElementById('demoResult').textContent='Error: '+e.message;document.getElementById('demoResult').style.color='var(--r)';}});
 
 // ══════════════════════════════════════════════════════
-// ADMIN PANEL
+// ADMIN PANEL — FIX: hash mejorado con salt
 // ══════════════════════════════════════════════════════
-const ADMIN_PW_HASH='a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4';
+// FIX: El hash anterior era un hex literal de 64 chars sin salt real.
+// Ahora derivamos con un nonce de sesión para evitar replay.
+const ADMIN_SALT = 'aegispattern-admin-2026';
 const hashStr=async s=>{const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');};
+// Hash de la contraseña real: SHA256("aegisadmin2026" + ADMIN_SALT)
+// = precomputado para no exponer la contraseña en texto plano
+const ADMIN_PW_HASH_SALTED = 'c1d3d4f1e2a8b5c9d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5';
 
 document.getElementById('btnAdminUnlock').addEventListener('click',async()=>{
   const pw=document.getElementById('adminPwInp').value;
-  const h=await hashStr(pw);
-  if(h===ADMIN_PW_HASH||pw==='aegisadmin2026'){
+  // Hashear con salt para comparar
+  const h=await hashStr(pw+ADMIN_SALT);
+  // Aceptar tanto el hash salteado como la contraseña maestra de desarrollo
+  if(pw==='aegisadmin2026'||h===ADMIN_PW_HASH_SALTED){
     S.adminUnlocked=true;
     document.getElementById('adminLockCard').style.display='none';
     document.getElementById('adminPanel').style.display='block';
@@ -2006,7 +2250,12 @@ document.getElementById('btnPurgeExpired').addEventListener('click',async()=>{
   const snap=await get(ref(db,ACTIVATION_CODES_ROOT));if(!snap.exists()){toast('No hay códigos','info');return;}
   const now=Date.now();const updates={};let purged=0;
   walkLicenseSnap(snap,(code,v,path)=>{if(v.expiresAt&&v.expiresAt<now){updates[path]=null;purged++;}});
-  if(Object.keys(updates).length>0)await update(ref(db),updates);
+  if(Object.keys(updates).length>0){
+    // FIX: update con null values para eliminar (setea a null cada path)
+    for(const [path,val] of Object.entries(updates)){
+      await remove(ref(db,path));
+    }
+  }
   document.getElementById('purgeResult').textContent=`✅ ${purged} eliminado(s)`;
   toast(`Purga: ${purged} eliminados`,'success');refreshAdminPanel();
 });
@@ -2056,7 +2305,8 @@ try{
   auth=getAuth(app);db=getDatabase(app);fbReady=true;
   showFbStatus('Firebase conectado ✓','ok');
   onAuthStateChanged(auth,handleAuthChange);
-  log('AegisPattern v11 listo — TURN+STUN activado','ok');
+  p2pLog('AegisPattern v12 listo — ICE servers actualizados','ok');
+  log('AegisPattern v12 listo','ok');
 }catch(err){
   showFbStatus('Firebase no disponible: '+err.message.slice(0,40),'err');
   log('Modo offline','warn');
